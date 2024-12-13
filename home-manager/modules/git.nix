@@ -8,5 +8,9 @@
       ci = "commit";
       st = "status";
     };
+
+    extraConfig = {
+      pull = { rebase = true; };
+    };
   };
 }
