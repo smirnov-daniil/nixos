@@ -25,7 +25,6 @@
     microfetch          # system info
     ripgrep             # cl search
     starship            # shell castomizer (replace with oh-my-posh)
-    swww                # wallpaper (maybe delete)
     tmux                # terminal multiplexer
     unzip               # extract files from zip
     wget                # cl web downloader
