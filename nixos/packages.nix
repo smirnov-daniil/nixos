@@ -36,6 +36,7 @@
     # Coding stuff
 
     # WM stuff
+    hyprlock                       # lock screen
     libsForQt5.xwaylandvideobridge # impove vide in wayland QT apps
     waybar                         # wayland status bar
     xdg-desktop-portal-gtk         # gtk basef portal for desktop integration in sandboxed apps
