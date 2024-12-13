@@ -19,6 +19,7 @@
       "$menu" = "fuzzel";
 
       exec-once = [
+        "hyprpaper"
         "waybar"
         "wl-paste --type text --watch cliphist store"
         "wl-paste --type image --watch cliphist store"
@@ -91,7 +92,7 @@
 
       misc = {
         force_default_wallpaper = 0;
-        disable_hyprland_logo = false;
+        disable_hyprland_logo = true;
       };
 
       gestures = {

@@ -13,7 +13,13 @@
   hardware.nvidia = {
     open = true;
 
+    powerManagement.finegrained = false;
+
     modesetting.enable = true;
+
+    nvidiaSettings = true;
+
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
 
     prime = {
       offload = {
