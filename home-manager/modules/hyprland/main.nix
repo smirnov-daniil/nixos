@@ -63,11 +63,9 @@
 
         "float,class:(mpv)|(imv)"
 
-        "workspace 3,class:(obsidian)"
+        "workspace 1,class:(vivaldi)"
+        "workspace 3,class:(telegram)"
         "workspace 4,class:(com.obsproject.Studio)"
-        "workspace 5,class:(telegram)"
-        "workspace 5,class:(vesktop)"
-        "workspace 6,class:(teams-for-linux)"
 
         "suppressevent maximize, class:.*"
         "nofocus,class:^$,title:^$,xwayland:1,floating:1,fullscreen:0,pinned:0"
@@ -93,7 +91,7 @@
 
       misc = {
         force_default_wallpaper = 0;
-        disable_hyprland_logo = true;
+        disable_hyprland_logo = false;
       };
 
       gestures = {
