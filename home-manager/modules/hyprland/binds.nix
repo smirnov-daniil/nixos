@@ -4,23 +4,18 @@
       "$mainMod SHIFT, Return, exec, $terminal"
       "$mainMod SHIFT, C, killactive,"
       "$mainMod SHIFT, Q, exit,"
-      # "$mainMod,       E, exec, $fileManager"
+      "$mainMod,       E, exec, $fileManager"
       "$mainMod,       F, togglefloating,"
       "$mainMod,   SPACE, exec, $menu"
       "$mainMod,       P, pseudo,"
       "$mainMod,       J, togglesplit,"
-      "$mainMod,       E, exec, bemoji -c"
       "$mainMod,       V, exec, cliphist list | $menu --dmenu | cliphist decode | wl-copy"
       "$mainMod,       B, exec, pkill -SIGUSR2 waybar"
       "$mainMod SHIFT, B, exec, pkill -SIGUSR1 waybar"
       "$mainMod,       L, exec, loginctl lock-session"
-      "$mainMod,       P, exec, hyprpicker -an"
 
       # Configuration files
       "$mainMod SHIFT, R, exec, $terminal -e sh -c 'nh os switch'"
-      "$mainMod SHIFT, N, exec, $terminal -e sh -c '$EDITOR $FLAKE/nixos/configuration.nix'"
-      "$mainMod SHIFT, H, exec, $terminal -e sh -c '$EDITOR ~/.config/hypr/hyprland.conf'"
-      "$mainMod SHIFT, W, exec, $terminal -e sh -c '$EDITOR ~/.config/waybar/config.json'"
       ", Print, exec, grimblast --notify --freeze copysave area"
 
       # Moving focus
@@ -84,14 +79,6 @@
       ",XF86AudioMicMute,      exec, wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"
       "$mainMod, bracketright, exec, brightnessctl s 10%+"
       "$mainMod, bracketleft,  exec, brightnessctl s 10%-"
-    ];
-
-    # Audio playback
-    bindl = [
-      ", XF86AudioNext,  exec, playerctl next"
-      ", XF86AudioPause, exec, playerctl play-pause"
-      ", XF86AudioPlay,  exec, playerctl play-pause"
-      ", XF86AudioPrev,  exec, playerctl previous"
     ];
   };
 }
