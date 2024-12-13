@@ -5,7 +5,6 @@
     # Desktop apps
     alacritty           # termianl emulator
     blueman             # bluetoorh gui
-    chromium
     vivaldi             # browser
     fuzzel              # app launcher
     imv                 # cl image viewer
