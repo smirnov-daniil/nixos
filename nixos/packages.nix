@@ -32,7 +32,6 @@
     zip                 # zip files
 
     # Coding stuff
-    vscodium
 
     # WM stuff
     hyprlock                       # lock screen

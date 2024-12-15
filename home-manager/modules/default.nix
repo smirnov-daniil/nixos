@@ -10,6 +10,7 @@
     ./starship.nix
     ./tmux.nix
     ./waybar
+    ./vscode.nix
     ./zsh.nix
   ];
 }

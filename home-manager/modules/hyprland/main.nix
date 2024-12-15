@@ -66,7 +66,7 @@
 
         "workspace 1,class:(vivaldi)"
         "workspace 3,class:(telegram)"
-        "workspace 4,class:(vscodium)"
+        "workspace 4,class:(codium)"
         "workspace 5,class:(com.obsproject.Studio)"
 
         "suppressevent maximize, class:.*"
