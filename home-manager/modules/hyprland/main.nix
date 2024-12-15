@@ -66,7 +66,8 @@
 
         "workspace 1,class:(vivaldi)"
         "workspace 3,class:(telegram)"
-        "workspace 4,class:(com.obsproject.Studio)"
+        "workspace 4,class:(vscodium)"
+        "workspace 5,class:(com.obsproject.Studio)"
 
         "suppressevent maximize, class:.*"
         "nofocus,class:^$,title:^$,xwayland:1,floating:1,fullscreen:0,pinned:0"
