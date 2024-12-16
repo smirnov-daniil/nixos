@@ -1,6 +1,7 @@
 {
   wayland.windowManager.hyprland = {
     enable = true;
+    systemd.enable = false;
     settings = {
       env = [
         # Hint Electron apps to use Wayland
@@ -10,13 +11,14 @@
         "XDG_SESSION_DESKTOP,Hyprland"
         "QT_QPA_PLATFORM,wayland"
         "XDG_SCREENSHOTS_DIR,$HOME/screens"
+        "AQ_DRM_DEVICES,/dev/dri/card1:/dev/dri/card0"
       ];
 
       monitor = ",1920x1080@144,auto,1";
       "$mainMod" = "SUPER";
       "$terminal" = "alacritty";
       "$fileManager" = "$terminal -e sh -c 'lf'";
-      "$menu" = "fuzzel";
+      "$menu" = "wofi";
 
       exec-once = [
         "waybar"

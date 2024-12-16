@@ -5,7 +5,7 @@
     enable = true;
 
     commands = {
-      editor-open = "$EDITROR"
+      editor-open = "$EDITROR";
     };
   };
 }

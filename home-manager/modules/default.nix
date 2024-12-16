@@ -1,16 +1,19 @@
 {
   imports = [
+    ./hyprland
+    ./waybar
+    ./wofi
     ./alacritty.nix
     ./eza.nix
     ./git.nix
-    ./hyprland
     ./lazygit.nix
+    ./lf.nix
+    ./qt.nix
     ./starship.nix
+    ./stylix.nix
     ./tmux.nix
-    ./waybar
-    ./wofi
+    ./vivaldi.nix
     ./vscode.nix
     ./zsh.nix
-    ./vivaldi.nix
   ];
 }
