@@ -19,16 +19,10 @@
       "$menu" = "fuzzel";
 
       exec-once = [
-        "hyprpaper"
         "waybar"
         "wl-paste --type text --watch cliphist store"
         "wl-paste --type image --watch cliphist store"
       ];
-
-      input = {
-        kb_layout = "us,ru";
-        kb_options = "grp:caps_toggle";
-      };
 
       general = {
         gaps_in = 0;
@@ -46,6 +40,11 @@
       };
 
       decoration = {
+        rounding = 0;
+
+        active_opacity = 1.0;
+        inactive_opacity = 1.0;
+
         shadow = {
           enabled = false;
         };
@@ -59,26 +58,16 @@
         enabled = false;
       };
 
-      windowrulev2 = [
-        "bordersize 0, floating:0, onworkspace:w[t1]"
+      input = {
+        kb_layout = "us,ru";
+        kb_options = "grp:caps_toggle";
+      };
 
-        "float,class:(mpv)|(imv)"
-
-        "workspace 1,class:(vivaldi)"
-        "workspace 3,class:(telegram)"
-        "workspace 4,class:(codium)"
-        "workspace 5,class:(com.obsproject.Studio)"
-
-        "suppressevent maximize, class:.*"
-        "nofocus,class:^$,title:^$,xwayland:1,floating:1,fullscreen:0,pinned:0"
-
-        "opacity 0.0 override, class:^(xwaylandvideobridge)$"
-        "noanim, class:^(xwaylandvideobridge)$"
-        "noinitialfocus, class:^(xwaylandvideobridge)$"
-        "maxsize 1 1, class:^(xwaylandvideobridge)$"
-        "noblur, class:^(xwaylandvideobridge)$"
-        "nofocus, class:^(xwaylandvideobridge)$"
-      ];
+      gestures = {
+        workspace_swipe = true;
+        workspace_swipe_invert = false;
+        workspace_swipe_forever	= true;
+      };
 
       dwindle = {
         pseudotile = true;
@@ -96,11 +85,33 @@
         disable_hyprland_logo = true;
       };
 
-      gestures = {
-        workspace_swipe = true;
-        workspace_swipe_invert = false;
-        workspace_swipe_forever	= true;
-      };
+      windowrulev2 = [
+        "bordersize 0, floating:0, onworkspace:w[t1]"
+
+        "float,class:(mpv)|(imv)|(showmethekey-gtk)"
+        "move 990 60,size 900 170,pin,noinitialfocus,class:(showmethekey-gtk)"
+        "noborder,nofocus,class:(showmethekey-gtk)"
+        
+        "workspace 1,class:(vivaldi)"
+        "workspace 3,class:(telegram)"
+        "workspace 4,class:(codium)"
+        "workspace 5,class:(com.obsproject.Studio)"
+
+        "suppressevent maximize, class:.*"
+        "nofocus,class:^$,title:^$,xwayland:1,floating:1,fullscreen:0,pinned:0"
+
+        "opacity 0.0 override, class:^(xwaylandvideobridge)$"
+        "noanim, class:^(xwaylandvideobridge)$"
+        "noinitialfocus, class:^(xwaylandvideobridge)$"
+        "maxsize 1 1, class:^(xwaylandvideobridge)$"
+        "noblur, class:^(xwaylandvideobridge)$"
+        "nofocus, class:^(xwaylandvideobridge)$"
+      ];
+
+      workspace = [
+        "w[tv1], gapsout:0, gapsin:0"
+        "f[1], gapsout:0, gapsin:0"
+      ];
     };
   };
 }

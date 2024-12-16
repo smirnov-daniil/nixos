@@ -64,3 +64,9 @@ window#waybar {
   color: #b16286;
   border-bottom: 5px solid #b16286;
 }
+
+#tray {
+  margin: 0;
+  color: #d65d0e;
+  border-bottom: 5px solid #d65d0e;
+}

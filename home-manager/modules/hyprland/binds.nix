@@ -6,7 +6,7 @@
       "$mainMod SHIFT, Q, exit,"
       "$mainMod,       E, exec, $fileManager"
       "$mainMod,       F, togglefloating,"
-      "$mainMod,   SPACE, exec, $menu"
+      "$mainMod,   SPACE, exec, $menu --show drun"
       "$mainMod,       P, pseudo,"
       "$mainMod,       J, togglesplit,"
       "$mainMod,       V, exec, cliphist list | $menu --dmenu | cliphist decode | wl-copy"
