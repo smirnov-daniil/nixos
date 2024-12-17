@@ -9,6 +9,8 @@
       ./hardware
     ];
 
+  nixpkgs.config.allowUnfree = true;
+
   environment.systemPackages = [ pkgs.home-manager ];
 
   networking.hostName = hostname;

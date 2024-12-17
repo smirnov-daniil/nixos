@@ -61,6 +61,6 @@
       light = "Papirus-Light";
     };
 
-    image = ./wallpaper.png;
+    image = ./gruvbox-dark-rainbow.png;
   };
 }
