@@ -8,6 +8,8 @@
     extraOptions = [
       "--group-directories-first"
       "--header"
+      "--oneline"
+      "--all"
     ];
   };
 }
