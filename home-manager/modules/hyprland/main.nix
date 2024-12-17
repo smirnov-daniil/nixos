@@ -21,6 +21,8 @@
       "$menu" = "wofi";
 
       exec-once = [
+        "uwsm app -- systemctl --user enable --now hyprpaper.service"
+        "uwsm app -- systemctl --user enable --now hypridle.service"
         "waybar"
         "wl-paste --type text --watch cliphist store"
         "wl-paste --type image --watch cliphist store"

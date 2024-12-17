@@ -23,7 +23,11 @@
     wtype               # wayland keyboard input simulator
     zip                 # zip files
 
+    # vpn
+    networkmanager-l2tp
+
     # Coding stuff
+    #jetbrains.clion
 
     # WM stuff
     libsForQt5.xwaylandvideobridge # impove vide in wayland QT apps

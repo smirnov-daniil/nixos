@@ -2,7 +2,7 @@
   programs.alacritty = {
     enable = true;
     settings = {
-      window.opacity = 1.0;
+      window.opacity = lib.mkForce 0.85;
 
       font = {
         builtin_box_drawing = true;

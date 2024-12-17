@@ -6,8 +6,6 @@
     users.${user} = {
       isNormalUser = true;
       extraGroups = [ "wheel" "networkmanager" ];
-      packages = with pkgs; [
-      ];
     };
   };
 
