@@ -26,6 +26,7 @@
         "waybar"
         "wl-paste --type text --watch cliphist store"
         "wl-paste --type image --watch cliphist store"
+        "uwsm app -- alacritty"
       ];
 
       general = {
@@ -70,7 +71,7 @@
       gestures = {
         workspace_swipe = true;
         workspace_swipe_invert = false;
-        workspace_swipe_forever	= true;
+        workspace_swipe_forever = true;
       };
 
       dwindle = {
@@ -95,7 +96,7 @@
         "float,class:(mpv)|(imv)|(showmethekey-gtk)"
         "move 990 60,size 900 170,pin,noinitialfocus,class:(showmethekey-gtk)"
         "noborder,nofocus,class:(showmethekey-gtk)"
-        
+
         "workspace 1,class:(vivaldi)"
         "workspace 3,class:(telegram)"
         "workspace 4,class:(codium)"

@@ -1,13 +1,17 @@
-{ pkgs, stateVersion, hostname, ... }:
+{
+  pkgs,
+  stateVersion,
+  hostname,
+  ...
+}:
 
 {
-  imports =
-    [
-      ./hardware-configuration.nix
-      ./local-packages.nix
-      ../../nixos/modules
-      ./hardware
-    ];
+  imports = [
+    ./hardware-configuration.nix
+    ./local-packages.nix
+    ../../nixos/modules
+    ./hardware
+  ];
 
   nixpkgs.config.allowUnfree = true;
 

@@ -5,7 +5,10 @@
       gui.showIcons = true;
       gui.theme = {
         lightTheme = false;
-        activeBorderColor = [ "green" "bold" ];
+        activeBorderColor = [
+          "green"
+          "bold"
+        ];
         inactiveBorderColor = [ "grey" ];
         selectedLineBgColor = [ "blue" ];
       };

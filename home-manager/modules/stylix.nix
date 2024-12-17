@@ -1,4 +1,5 @@
-{ pkgs, inputs, ... }: {
+{ pkgs, inputs, ... }:
+{
   imports = [ inputs.stylix.homeManagerModules.stylix ];
 
   home.packages = with pkgs; [

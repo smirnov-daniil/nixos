@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 {
   options.hardware.intelgpu = {
     driver = lib.mkOption {
@@ -38,9 +43,11 @@
       intel-vaapi-driver = (pkgs.intel-vaapi-driver or pkgs.vaapiIntel).override {
         enableHybridCodec = cfg.enableHybridCodec;
       };
-      intel-vaapi-driver-32 = (pkgs.driversi686Linux.intel-vaapi-driver or pkgs.driversi686Linux.vaapiIntel).override {
-        enableHybridCodec = cfg.enableHybridCodec;
-      };
+      intel-vaapi-driver-32 =
+        (pkgs.driversi686Linux.intel-vaapi-driver or pkgs.driversi686Linux.vaapiIntel).override
+          {
+            enableHybridCodec = cfg.enableHybridCodec;
+          };
 
       useIntelOcl = useIntelVaapiDriver;
       intel-ocl = pkgs.intel-ocl;

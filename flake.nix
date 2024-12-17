@@ -12,49 +12,70 @@
 
     stylix.url = "github:danth/stylix";
 
-    # COMING SOON...
-    #nixvim = {
-    #  url = "github:nix-community/nixvim";
-    #  inputs.nixpkgs.follows = "nixpkgs";
-    #};
+    nix-vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }@inputs: let
-    system = "x86_64-linux";
-    homeStateVersion = "24.11";
-    user = "ds2";
-    hosts = [
-      { hostname = "fx51"; stateVersion = "24.11"; }
-    ];
-
-    makeSystem = { hostname, stateVersion }: nixpkgs.lib.nixosSystem {
-      system = system;
-      specialArgs = {
-        inherit inputs stateVersion hostname user;
-      };
-
-      modules = [
-        ./hosts/${hostname}/configuration.nix
+  outputs =
+    {
+      self,
+      nixpkgs,
+      home-manager,
+      ...
+    }@inputs:
+    let
+      system = "x86_64-linux";
+      homeStateVersion = "24.11";
+      user = "ds2";
+      hosts = [
+        {
+          hostname = "fx51";
+          stateVersion = "24.11";
+        }
       ];
-    };
 
-  in {
-    nixosConfigurations = nixpkgs.lib.foldl' (configs: host:
-      configs // {
-        "${host.hostname}" = makeSystem {
-          inherit (host) hostname stateVersion;
+      makeSystem =
+        { hostname, stateVersion }:
+        nixpkgs.lib.nixosSystem {
+          system = system;
+          specialArgs = {
+            inherit
+              inputs
+              stateVersion
+              hostname
+              user
+              ;
+          };
+
+          modules = [
+            ./hosts/${hostname}/configuration.nix
+          ];
         };
-      }) {} hosts;
 
-    homeConfigurations.${user} = home-manager.lib.homeManagerConfiguration {
-      pkgs = import nixpkgs { inherit system; config.allowUnfree = true; };
-      extraSpecialArgs = {
-        inherit inputs homeStateVersion user;
+    in
+    {
+      nixosConfigurations = nixpkgs.lib.foldl' (
+        configs: host:
+        configs
+        // {
+          "${host.hostname}" = makeSystem {
+            inherit (host) hostname stateVersion;
+          };
+        }
+      ) { } hosts;
+
+      homeConfigurations.${user} = home-manager.lib.homeManagerConfiguration {
+        pkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+          overlays = [ inputs.nix-vscode-extensions.overlays.default ];
+        };
+        extraSpecialArgs = {
+          inherit inputs homeStateVersion user;
+        };
+
+        modules = [
+          ./home-manager/home.nix
+        ];
       };
-
-      modules = [
-        ./home-manager/home.nix
-      ];
     };
-  };
 }

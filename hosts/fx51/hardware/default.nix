@@ -5,4 +5,4 @@
     ./nvidia.nix
     ./battery.nix
   ];
-} 
+}
