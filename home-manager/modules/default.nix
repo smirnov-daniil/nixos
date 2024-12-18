@@ -15,5 +15,6 @@
     ./vivaldi.nix
     ./vscode.nix
     ./zsh.nix
+    ./swaync.nix
   ];
 }

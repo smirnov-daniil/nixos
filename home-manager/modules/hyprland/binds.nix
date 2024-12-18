@@ -13,6 +13,7 @@
       "$mainMod,       B, exec, pkill -SIGUSR2 waybar"
       "$mainMod SHIFT, B, exec, pkill -SIGUSR1 waybar"
       "$mainMod,       L, exec, loginctl lock-session"
+      "$mainMod,       N, exec, swaync-client -t"
 
       # Configuration files
       "$mainMod SHIFT, R, exec, $terminal -e sh -c 'nh os switch'"
@@ -77,8 +78,9 @@
       ",XF86AudioLowerVolume,  exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"
       ",XF86AudioMute,         exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"
       ",XF86AudioMicMute,      exec, wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"
-      "$mainMod, bracketright, exec, brightnessctl s 10%+"
-      "$mainMod, bracketleft,  exec, brightnessctl s 10%-"
+      ",XF86AudioMicMute,      exec, wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"
+      ",XF86MonBrightnessUp,   exec, brightnessctl s 10%+"
+      ",XF86MonBrightnessDown, exec, brightnessctl s 10%-"
     ];
   };
 }
