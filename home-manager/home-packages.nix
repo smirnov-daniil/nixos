@@ -8,6 +8,7 @@
     mpv # cl video viewer
     obs-studio # screen capture
     telegram-desktop # messager
+    localsend # share files
 
     # CLI utils
     bottom # performance monitor
@@ -28,8 +29,8 @@
     networkmanager-l2tp
 
     # Coding stuff
-    nixd
-    nixfmt-rfc-style
+    nixd # nix LSP
+    nixfmt-rfc-style # nix syntax
     #jetbrains.clion
 
     # WM stuff
