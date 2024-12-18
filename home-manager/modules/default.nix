@@ -9,7 +9,7 @@
     ./lazygit.nix
     ./lf.nix
     ./qt.nix
-    ./starship.nix
+    ./oh-my-posh.nix
     ./stylix.nix
     ./tmux.nix
     ./vivaldi.nix
