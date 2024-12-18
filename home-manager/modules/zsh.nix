@@ -38,5 +38,12 @@
         exec systemd-cat -t uwsm-start uwsm start default
       fi
     '';
+
+    oh-my-zsh = {
+      enable = true;
+      plugins = [
+        "rbw"
+      ];
+    };
   };
 }
