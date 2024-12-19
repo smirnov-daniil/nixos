@@ -16,5 +16,6 @@
     ./vscode.nix
     ./zsh.nix
     ./swaync.nix
+    ./neovim.nix
   ];
 }

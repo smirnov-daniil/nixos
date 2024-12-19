@@ -15,9 +15,9 @@
         upd = "nh os switch --update";
         hms = "nh home switch";
 
-        pkgs = "nano ${flakeDir}/nixos/packages.nix";
+        pkgs = "nvim ${flakeDir}/nixos/packages.nix";
 
-        n = "nano";
+        n = "nvim";
         se = "sudoedit";
         microfetch = "microfetch && echo";
 
