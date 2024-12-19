@@ -12,6 +12,7 @@
 
     # CLI utils
     bottom # performance monitor
+    fzf # better navigation
     brightnessctl # cl screan brightness control
     cliphist # cl clipboard history
     ffmpeg # multimedia converter
