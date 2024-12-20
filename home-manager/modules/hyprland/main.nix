@@ -14,7 +14,6 @@
         "AQ_DRM_DEVICES,/dev/dri/card1:/dev/dri/card0"
       ];
 
-      monitor = ",1920x1080@144,auto,1";
       "$mainMod" = "SUPER";
       "$terminal" = "alacritty";
       "$fileManager" = "$terminal -e sh -c 'lf'";
@@ -24,6 +23,7 @@
         "uwsm app -- systemctl --user enable --now hyprpaper.service"
         "uwsm app -- systemctl --user enable --now hypridle.service"
         "uwsm app -- systemctl --user start swaync.service"
+        "uwsm app -- kanshi"
         "waybar"
         "wl-paste --type text --watch cliphist store"
         "wl-paste --type image --watch cliphist store"

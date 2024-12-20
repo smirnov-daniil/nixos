@@ -19,9 +19,6 @@
     extensions =
       with pkgs.vscode-marketplace;
       [
-	# Vim
-	asvetliakov.vscode-neovim
-
         # Nix
         jnoortheen.nix-ide
         arrterian.nix-env-selector
