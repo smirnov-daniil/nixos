@@ -31,7 +31,7 @@
 
     # Coding stuff
     nixd # nix LSP
-    nixfmt-rfc-style # nix syntax
+    alejandra # nix syntax
     #jetbrains.clion
 
     # WM stuff
