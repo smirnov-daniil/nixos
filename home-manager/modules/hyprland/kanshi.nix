@@ -10,6 +10,7 @@
             {
               criteria = "eDP-1";
               position = "0,0";
+              scale = 0.8;
             }
           ];
         };
