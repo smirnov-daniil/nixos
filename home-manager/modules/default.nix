@@ -1,7 +1,6 @@
 {
   imports = [
     ./hyprland
-    ./kanshi.nix
     ./waybar
     ./wofi
     ./alacritty.nix

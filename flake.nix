@@ -12,7 +12,10 @@
 
     stylix.url = "github:danth/stylix";
 
-    nix-vscode-extensions.url = "github:nix-community/nix-vscode-extensions";
+    #nixvim = {
+    #  url = "github:nix-community/nixvim/nixos-24.11";
+    #  inputs.nixpkgs.follows = "nixpkgs";
+    #};
   };
 
   outputs =
@@ -67,7 +70,6 @@
         pkgs = import nixpkgs {
           inherit system;
           config.allowUnfree = true;
-          overlays = [ inputs.nix-vscode-extensions.overlays.default ];
         };
         extraSpecialArgs = {
           inherit inputs homeStateVersion user;
