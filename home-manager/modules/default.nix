@@ -7,15 +7,16 @@
     ./eza.nix
     ./git.nix
     ./lazygit.nix
-    ./lf.nix
-    ./qt.nix
+    ./neovim
     ./oh-my-posh.nix
+    ./qt.nix
+    ./ranger.nix
     ./stylix.nix
+    ./swaync.nix
     ./tmux.nix
     ./vivaldi.nix
     ./vscode.nix
+    ./zoxide.nix
     ./zsh.nix
-    ./swaync.nix
-    ./neovim
   ];
 }

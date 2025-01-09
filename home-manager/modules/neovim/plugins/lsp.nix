@@ -3,7 +3,15 @@
     enable = true;
 
     servers = {
-      nixd.enable = true;
+      nixd = {
+        enable = true;
+#        nixpkgs = {
+#          expr = "import <nixpkgs> {}";
+#        };
+#        formatting = {
+#          command = [ "alejandra" ];
+#        };
+      };
     };
   };
 }

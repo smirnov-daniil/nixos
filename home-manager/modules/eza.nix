@@ -7,8 +7,6 @@
     icons = "always";
     extraOptions = [
       "--group-directories-first"
-      "--header"
-      "--oneline"
     ];
   };
 }

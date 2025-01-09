@@ -1,5 +1,4 @@
-{ pkgs, ... }:
-{
+{pkgs, ...}: {
   programs.vscode = {
     enable = true;
 
@@ -10,6 +9,7 @@
       "editor.insertSpaces" = true;
       "editor.detectIndentation" = false;
       "editor.minimap.scale" = 2;
+      "nix.formatterPath" = ["alejandra" "--" "-"];
       "nix.enableLanguageServer" = true;
       "nix.serverPath" = "nixd";
       "workbench.activityBar.location" = "top";

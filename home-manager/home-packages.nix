@@ -5,19 +5,19 @@
   home.packages = with pkgs; [
     # Desktop apps
     imv # cl image viewer
+    localsend # share files
     mpv # cl video viewer
     obs-studio # screen capture
     telegram-desktop # messager
-    localsend # share files
 
     # CLI utils
-    bottom # performance monitor
-    fzf # better navigation
+    bat # dispplay file content
     brightnessctl # cl screan brightness control
     cliphist # cl clipboard history
     ffmpeg # multimedia converter
+    fzf # better navigation
     grimblast # screenshot
-    lf # file manager
+    htop bottom # performance monitor
     microfetch # system info
     ripgrep # cl search
     unzip # extract files from zip
@@ -30,9 +30,9 @@
     networkmanager-l2tp
 
     # Coding stuff
-    nixd # nix LSP
     alejandra # nix syntax
-    #jetbrains.clion
+    # jetbrains.clion
+    nixd # nix LSP
 
     # WM stuff
     libsForQt5.xwaylandvideobridge # impove vide in wayland QT apps

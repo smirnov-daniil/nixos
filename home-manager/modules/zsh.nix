@@ -20,6 +20,13 @@
         n = "nvim";
         se = "sudoedit";
         microfetch = "microfetch && echo";
+        
+        ls = "exa --oneline";
+        ll = "exa --all --header --long";
+        tree = "exa --tree";
+
+        z = "cd";
+        zz = "cd -";
 
         ".." = "cd ..";
       };
