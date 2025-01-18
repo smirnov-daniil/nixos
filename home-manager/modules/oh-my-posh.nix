@@ -15,7 +15,13 @@
             {
               foreground = "magenta";
               style = "plain";
-              template = "❯";
+              template = "{{ if not .Env.IN_NIX_SHELL }}❯{{ end }}";
+              type = "text";
+            }
+            {
+              foreground = "green";
+              style = "plain";
+              template = "{{ if .Env.IN_NIX_SHELL }}❯{{ end }}";
               type = "text";
             }
             {
@@ -60,7 +66,7 @@
               };
             }
           ];
-        }
+        }      
       ];
       secondary_prompt = {
         background = "transparent";
@@ -69,6 +75,7 @@
       };
       transient_prompt = {
         background = "transparent";
+        newline = true;
         foreground_templates = [
           "{{if gt .Code 0}}red{{end}}"
           "{{if eq .Code 0}}magenta{{end}}"
