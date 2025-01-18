@@ -17,13 +17,15 @@
 
     extensions = with pkgs.vscode-extensions; [
       # Nix
-      jnoortheen.nix-ide
       arrterian.nix-env-selector
+      jnoortheen.nix-ide
 
       # C++
+      ms-vscode.cmake-tools
       ms-vscode.cpptools
-      xaver.clang-format
+      ms-vscode.cpptools-extension-pack
       twxs.cmake
+      xaver.clang-format
 
       # Utility
       alefragnani.bookmarks
