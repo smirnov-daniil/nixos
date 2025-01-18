@@ -11,7 +11,6 @@
         modules-center = [ "hyprland/window" ];
         modules-right = [
           "hyprland/language"
-          "custom/weather"
           "pulseaudio"
           "battery"
           "clock"
@@ -29,27 +28,18 @@
             "3" = "";
             "4" = "󰨞";
             "5" = "";
-            "9" = "";
-            "magic" = "";
+            "6" = " ";
           };
 
           persistent-workspaces = {
-            "*" = 9;
+            "*" = 5;
           };
         };
 
         "hyprland/language" = {
-          format-en = "🇺🇸";
-          format-ru = "🇷🇺";
-          min-length = 5;
-          tooltip = false;
-        };
-
-        "custom/weather" = {
-          format = " {} ";
-          exec = "curl -s 'wttr.in/SPB?format=%c%t'";
-          interval = 300;
-          class = "weather";
+          format-en = "en";
+          format-ru = "ru";
+          format = "{}";
         };
 
         "battery" = {
