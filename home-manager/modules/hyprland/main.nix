@@ -16,19 +16,19 @@
 
       "$mainMod" = "SUPER";
       "$terminal" = "alacritty";
-      "$fileManager" = "$terminal -e sh -c 'lf'";
+      "$fileManager" = "$terminal -e sh -c 'ranger'";
       "$menu" = "wofi";
 
       exec-once = [
         "uwsm app -- systemctl --user enable --now hyprpaper.service"
         "uwsm app -- systemctl --user enable --now hypridle.service"
         "uwsm app -- systemctl --user start swaync.service"
-        "uwsm app -- kanshi"
+        "kanshi"
         "waybar"
         "wl-paste --type text --watch cliphist store"
         "wl-paste --type image --watch cliphist store"
-        "uwsm app -- alacritty"
-        "uwsm app -- telegram"
+        "telegram-desktop"
+        "alacritty"
       ];
 
       general = {
@@ -100,7 +100,7 @@
         "noborder,nofocus,class:(showmethekey-gtk)"
 
         "workspace 1,class:(vivaldi)"
-        "workspace 2,class:(alacritty)"
+        "workspace 2,class:(Alacritty)"
         "workspace 3,class:(telegram)"
         "workspace 4,class:(code)"
         "workspace 5,class:(com.obsproject.Studio)"
