@@ -28,6 +28,7 @@
         "wl-paste --type text --watch cliphist store"
         "wl-paste --type image --watch cliphist store"
         "uwsm app -- alacritty"
+        "uwsm app -- telegram"
       ];
 
       general = {
@@ -99,6 +100,7 @@
         "noborder,nofocus,class:(showmethekey-gtk)"
 
         "workspace 1,class:(vivaldi)"
+        "workspace 2,class:(alacritty)"
         "workspace 3,class:(telegram)"
         "workspace 4,class:(code)"
         "workspace 5,class:(com.obsproject.Studio)"
