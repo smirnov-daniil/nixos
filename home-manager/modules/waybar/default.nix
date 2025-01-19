@@ -5,10 +5,11 @@
     settings = {
       mainBar = {
         layer = "top";
-        position = "top";
+        position = "bottom";
         height = 30;
-        modules-left = [ "hyprland/workspaces" ];
-        modules-center = [ "hyprland/window" ];
+#        width = 1240;
+        modules-center = [ "hyprland/workspaces" ];
+        modules-left = [ "hyprland/window" ];
         modules-right = [
           "hyprland/language"
           "pulseaudio"
@@ -65,8 +66,7 @@
         };
 
         "clock" = {
-          format = "{:%d.%m.%Y - %H:%M}";
-          format-alt = "{:%A, %B %d at %R}";
+           format = "{:%a %H:%M}";
         };
 
         "pulseaudio" = {
