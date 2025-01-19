@@ -100,7 +100,7 @@
         "noborder,nofocus,class:(showmethekey-gtk)"
 
         "workspace 1,class:(vivaldi)"
-        "workspace 2,class:(Alacritty)"
+        "workspace 2,class:(tty)"
         "workspace 3,class:(telegram)"
         "workspace 4,class:(code)"
         "workspace 5,class:(com.obsproject.Studio)"
