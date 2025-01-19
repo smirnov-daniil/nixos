@@ -15,7 +15,7 @@
       ];
 
       "$mainMod" = "SUPER";
-      "$terminal" = "alacritty";
+      "$terminal" = "ghostty";
       "$fileManager" = "$terminal -e sh -c 'ranger'";
       "$menu" = "wofi";
 
@@ -28,7 +28,7 @@
         "wl-paste --type text --watch cliphist store"
         "wl-paste --type image --watch cliphist store"
         "telegram-desktop"
-        "alacritty"
+        "$terminal"
       ];
 
       general = {
