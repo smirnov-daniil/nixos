@@ -14,14 +14,18 @@
 
   stylix = {
     enable = true;
+    autoEnable = true;
     polarity = "dark";
-    base16Scheme = "${pkgs.base16-schemes}/share/themes/gruvbox-dark-medium.yaml";
+    base16Scheme = "${pkgs.base16-schemes}/share/themes/chalk.yaml"; #precious-dark-fifteen #helios #framer #eighties #decaf #gruvbox-dark-medium.yaml
+
+    opacity = {
+      applications = 0.85;
+      desktop = 0.90;
+      popups = 0.85;
+      terminal = 0.85;
+    };
 
     targets = {
-      neovim.enable = false;
-      waybar.enable = false;
-      wofi.enable = false;
-      hyprland.enable = false;
       hyprlock.enable = false;
     };
 
@@ -50,8 +54,10 @@
       };
 
       sizes = {
-        terminal = 13;
-        applications = 11;
+        terminal = 14;
+        applications = 12;
+        desktop = 16;
+        popups = 12;
       };
     };
 

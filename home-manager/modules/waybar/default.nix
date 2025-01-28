@@ -1,12 +1,11 @@
 {
   programs.waybar = {
     enable = true;
-    style = ./style.css;
     settings = {
       mainBar = {
         layer = "top";
         position = "bottom";
-        height = 30;
+        height = 30; 
 #        width = 1240;
         modules-center = [ "hyprland/workspaces" ];
         modules-left = [ "hyprland/window" ];

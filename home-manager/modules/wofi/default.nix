@@ -8,6 +8,4 @@
       height = 450;
     };
   };
-
-  home.file.".config/wofi/style.css".source = ./style.css;
 }

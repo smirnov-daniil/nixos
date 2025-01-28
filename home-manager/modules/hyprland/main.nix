@@ -37,8 +37,8 @@
 
         border_size = 5;
 
-        "col.active_border" = "rgba(d65d0eff) rgba(98971aff) 45deg";
-        "col.inactive_border" = "rgba(3c3836ff)";
+#        "col.active_border" = "rgba(d65d0eff) rgba(98971aff) 45deg";
+#        "col.inactive_border" = "rgba(3c3836ff)";
 
         resize_on_border = true;
 
@@ -49,15 +49,15 @@
       decoration = {
         rounding = 0;
 
-        active_opacity = 1.0;
-        inactive_opacity = 1.0;
+#        active_opacity = 1.0;
+#        inactive_opacity = 1.0;
 
         shadow = {
           enabled = false;
         };
 
         blur = {
-          enabled = false;
+          enabled = true;
         };
       };
 
