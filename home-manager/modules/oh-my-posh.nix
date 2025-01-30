@@ -13,7 +13,7 @@
           type = "prompt";
           segments = [
             {
-              foreground = "magenta";
+              foreground = "cyan";
               style = "plain";
               template = "{{ if not .Env.IN_NIX_SHELL }}❯{{ end }}";
               type = "text";
@@ -70,7 +70,7 @@
       ];
       secondary_prompt = {
         background = "transparent";
-        foreground = "magenta";
+        foreground = "cyan";
         template = "❯❯ ";
       };
       transient_prompt = {
