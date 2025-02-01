@@ -14,7 +14,6 @@
     ./stylix.nix
     ./swaync.nix
     ./tmux.nix
-    ./vivaldi.nix
     ./vscode.nix
     ./zoxide.nix
     ./zsh.nix

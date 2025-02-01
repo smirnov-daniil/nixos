@@ -37,9 +37,6 @@
 
         border_size = 5;
 
-#        "col.active_border" = "rgba(d65d0eff) rgba(98971aff) 45deg";
-#        "col.inactive_border" = "rgba(3c3836ff)";
-
         resize_on_border = true;
 
         allow_tearing = false;
@@ -48,9 +45,6 @@
 
       decoration = {
         rounding = 0;
-
-#        active_opacity = 1.0;
-#        inactive_opacity = 1.0;
 
         shadow = {
           enabled = false;
@@ -99,7 +93,7 @@
         "move 990 60,size 900 170,pin,noinitialfocus,class:(showmethekey-gtk)"
         "noborder,nofocus,class:(showmethekey-gtk)"
 
-        "workspace 1,class:(vivaldi)"
+        "workspace 1,class:(zen)"
         "workspace 2,class:(tty)"
         "workspace 3,class:(telegram)"
         "workspace 4,class:(code)"

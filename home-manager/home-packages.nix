@@ -26,6 +26,9 @@
     wtype # wayland keyboard input simulator
     zip # zip files
 
+    # Browser
+    zen-browser
+
     # vpn
     networkmanager-l2tp
 

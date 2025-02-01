@@ -5,6 +5,11 @@
 
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.11";
 
+    zen-browser = {
+      url = "github:youwen5/zen-browser-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     home-manager = {
       url = "github:nix-community/home-manager/release-24.11";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -70,6 +75,11 @@
         pkgs = import nixpkgs {
           inherit system;
           config.allowUnfree = true;
+          overlays = [
+            (final: prev: {
+              zen-browser = inputs.zen-browser.packages.${system}.default;
+            })
+          ];
         };
         extraSpecialArgs = {
           inherit inputs homeStateVersion user;
