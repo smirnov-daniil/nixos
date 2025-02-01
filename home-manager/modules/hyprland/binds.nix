@@ -3,9 +3,8 @@
     bind = [
       "$mainMod SHIFT, Return, exec, $terminal"
       "$mainMod SHIFT, C, killactive,"
-      "$mainMod SHIFT, Q, exit,"
+      "$mainMod SHIFT, Q, exec, uwsm stop"
       "$mainMod,       E, exec, $fileManager"
-      "$mainMod,       F, togglefloating,"
       "$mainMod,   SPACE, exec, $menu --show drun"
       "$mainMod,       P, pseudo,"
       "$mainMod,       J, togglesplit,"
@@ -16,7 +15,6 @@
       "$mainMod,       N, exec, swaync-client -t"
 
       # Configuration files
-      "$mainMod SHIFT, R, exec, $terminal -e sh -c 'nh os switch'"
       ", Print, exec, grimblast --notify --freeze copysave area"
 
       # Moving focus
@@ -38,16 +36,16 @@
       "$mainMod CTRL, down,  resizeactive,  0  60"
 
       # Switching workspaces
-      "$mainMod, 1, workspace, 1"
-      "$mainMod, 2, workspace, 2"
-      "$mainMod, 3, workspace, 3"
-      "$mainMod, 4, workspace, 4"
-      "$mainMod, 5, workspace, 5"
-      "$mainMod, 6, workspace, 6"
-      "$mainMod, 7, workspace, 7"
-      "$mainMod, 8, workspace, 8"
-      "$mainMod, 9, workspace, 9"
-      "$mainMod, 0, workspace, 10"
+      "$mainMod, 1, focusworkspaceoncurrentmonitor, 1"
+      "$mainMod, 2, focusworkspaceoncurrentmonitor, 2"
+      "$mainMod, 3, focusworkspaceoncurrentmonitor, 3"
+      "$mainMod, 4, focusworkspaceoncurrentmonitor, 4"
+      "$mainMod, 5, focusworkspaceoncurrentmonitor, 5"
+      "$mainMod, 6, focusworkspaceoncurrentmonitor, 6"
+      "$mainMod, 7, focusworkspaceoncurrentmonitor, 7"
+      "$mainMod, 8, focusworkspaceoncurrentmonitor, 8"
+      "$mainMod, 9, focusworkspaceoncurrentmonitor, 9"
+      "$mainMod, 0, focusworkspaceoncurrentmonitor, 10"
 
       # Moving windows to workspaces
       "$mainMod SHIFT, 1, movetoworkspacesilent, 1"

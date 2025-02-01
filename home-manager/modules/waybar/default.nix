@@ -6,6 +6,10 @@
         layer = "top";
         position = "bottom";
         height = 30; 
+        output = [
+          "eDP-1"
+          "HDMI-A-1"
+        ];
 #        width = 1240;
         modules-center = [ "hyprland/workspaces" ];
         modules-left = [ "hyprland/window" ];
@@ -32,7 +36,7 @@
           };
 
           persistent-workspaces = {
-            "*" = 5;
+            "*" = [ 2 3 4 5 ];
           };
         };
 
