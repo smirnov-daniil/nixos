@@ -24,4 +24,11 @@
 
   # for VPN
   networking.firewall.allowedUDPPorts = [500 4500 1701];
+
+  services.openvpn.servers = {
+    somevpn = {
+      config = "config /root/nixos/openvpn/somevpn.conf";
+      autoStart = false;
+    };
+  };
 }
