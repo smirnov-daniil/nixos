@@ -1,9 +1,13 @@
+{ pkgs, ... }:
+
 {
   networking = {
     networkmanager = {
       enable = true;
+      plugins = with pkgs; [ networkmanager-l2tp ];
       wifi.backend = "iwd";
     };
+
     wireless.iwd = {
       enable = true;
 
@@ -17,4 +21,9 @@
       };
     };
   };
+
+  environment.systemPackages = [ pkgs.networkmanager-l2tp ];
+
+  # for VPN
+  networking.firewall.allowedUDPPorts = [ 500 4500 1701 ];
 }

@@ -29,9 +29,6 @@
     # Browser
     zen-browser
 
-    # vpn
-    networkmanager-l2tp
-
     # Coding stuff
     alejandra # nix syntax
     # jetbrains.clion
