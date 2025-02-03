@@ -78,6 +78,7 @@
         bash.enable = true;
         clang.enable = true;
         python.enable = true;
+        java.enable = true;
         nix = {
           enable = true;
           format = {
