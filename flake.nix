@@ -17,8 +17,8 @@
 
     stylix.url = "github:danth/stylix";
 
-    nixvim = {
-      url = "github:nix-community/nixvim/nixos-24.11";
+    nvf = {
+      url = "github:notashelf/nvf";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };

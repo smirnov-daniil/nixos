@@ -17,7 +17,8 @@
     ffmpeg # multimedia converter
     fzf # better navigation
     grimblast # screenshot
-    htop bottom # performance monitor
+    htop
+    bottom # performance monitor
     microfetch # system info
     ripgrep # cl search
     unzip # extract files from zip
@@ -30,8 +31,6 @@
     zen-browser
 
     # Coding stuff
-    alejandra # nix syntax
-    # jetbrains.clion
     nixd # nix LSP
 
     # WM stuff

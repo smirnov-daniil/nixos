@@ -1,13 +1,13 @@
 {
   imports = [
     ./hyprland
-    ./neovim
     ./waybar
     ./wofi
     ./eza.nix
     ./ghostty.nix
     ./git.nix
     ./lazygit.nix
+    ./nvf.nix
     ./oh-my-posh.nix
     ./qt.nix
     ./ranger.nix
