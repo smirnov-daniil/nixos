@@ -3,9 +3,7 @@
   stateVersion,
   hostname,
   ...
-}:
-
-{
+}: {
   imports = [
     ./hardware-configuration.nix
     ./local-packages.nix
@@ -15,7 +13,7 @@
 
   nixpkgs.config.allowUnfree = true;
 
-  environment.systemPackages = [ pkgs.home-manager ];
+  environment.systemPackages = [pkgs.home-manager];
 
   networking.hostName = hostname;
 

@@ -66,7 +66,7 @@
               };
             }
           ];
-        }      
+        }
       ];
       secondary_prompt = {
         background = "transparent";

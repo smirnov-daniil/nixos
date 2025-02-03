@@ -9,8 +9,8 @@
           "green"
           "bold"
         ];
-        inactiveBorderColor = [ "grey" ];
-        selectedLineBgColor = [ "blue" ];
+        inactiveBorderColor = ["grey"];
+        selectedLineBgColor = ["blue"];
       };
     };
   };

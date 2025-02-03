@@ -1,6 +1,9 @@
-{ pkgs, inputs, ... }:
 {
-  imports = [ inputs.stylix.homeManagerModules.stylix ];
+  pkgs,
+  inputs,
+  ...
+}: {
+  imports = [inputs.stylix.homeManagerModules.stylix];
 
   home.packages = with pkgs; [
     jetbrains-mono
@@ -9,7 +12,7 @@
     font-awesome
     powerline-fonts
     powerline-symbols
-    (nerdfonts.override { fonts = [ "NerdFontsSymbolsOnly" ]; })
+    (nerdfonts.override {fonts = ["NerdFontsSymbolsOnly"];})
   ];
 
   stylix = {

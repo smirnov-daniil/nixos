@@ -5,14 +5,14 @@
       mainBar = {
         layer = "top";
         position = "bottom";
-        height = 30; 
+        height = 30;
         output = [
           "eDP-1"
           "HDMI-A-1"
         ];
-#        width = 1240;
-        modules-center = [ "hyprland/workspaces" ];
-        modules-left = [ "hyprland/window" ];
+        #        width = 1240;
+        modules-center = ["hyprland/workspaces"];
+        modules-left = ["hyprland/window"];
         modules-right = [
           "hyprland/language"
           "pulseaudio"
@@ -36,7 +36,7 @@
           };
 
           persistent-workspaces = {
-            "*" = [ 2 3 4 5 ];
+            "*" = [2 3 4 5];
           };
         };
 
@@ -69,7 +69,7 @@
         };
 
         "clock" = {
-           format = "{:%a %H:%M}";
+          format = "{:%a %H:%M}";
         };
 
         "pulseaudio" = {

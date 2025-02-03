@@ -1,5 +1,4 @@
-{ inputs, ... } :
-{
+{inputs, ...}: {
   environment = {
     sessionVariables = rec {
       TERMINAL = "ghostty";

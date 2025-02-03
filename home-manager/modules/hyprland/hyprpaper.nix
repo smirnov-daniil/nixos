@@ -4,8 +4,8 @@
     enable = true;
 
     settings = {
-      preload = [ "~/.config/wallpaper.png" ];
-      wallpaper = [ ",~/.config/wallpaper.png" ];
+      preload = ["~/.config/wallpaper.png"];
+      wallpaper = [",~/.config/wallpaper.png"];
     };
   };
 }
