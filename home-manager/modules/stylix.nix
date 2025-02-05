@@ -19,7 +19,7 @@
     enable = true;
     autoEnable = true;
     polarity = "dark";
-    base16Scheme = "${pkgs.base16-schemes}/share/themes/chalk.yaml"; #precious-dark-fifteen #helios #framer #eighties #decaf #gruvbox-dark-medium.yaml
+    base16Scheme = "${pkgs.base16-schemes}/share/themes/chalk.yaml"; #precious-dark-fifteen #helios #framer #eighties #decaf
 
     opacity = {
       applications = 0.85;
