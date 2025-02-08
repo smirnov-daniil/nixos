@@ -31,6 +31,7 @@
 
     # Coding stuff
     nixd # nix LSP
+    jetbrains.idea-ultimate
 
     # WM stuff
     libsForQt5.xwaylandvideobridge # impove vide in wayland QT apps
