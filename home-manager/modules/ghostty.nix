@@ -9,6 +9,12 @@
       mouse-hide-while-typing = true;
       window-decoration = true;
       keybind = [
+        "performable:ctrl+c=copy_to_clipboard"
+        "performable:ctrl+v=paste_from_clipboard"
+
+        "ctrl+equal=increase_font_size:1"
+        "ctrl+minus=decrease_font_size:1"
+
         "alt+h=goto_split:left"
         "alt+j=goto_split:down"
         "alt+k=goto_split:top"
