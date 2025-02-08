@@ -31,6 +31,8 @@
         "$terminal"
       ];
 
+      xwayland.force_zero_scaling = true;
+
       general = {
         gaps_in = 0;
         gaps_out = 0;
