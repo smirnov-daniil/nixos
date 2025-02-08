@@ -19,7 +19,7 @@
     enable = true;
     autoEnable = true;
     polarity = "dark";
-    base16Scheme = "${pkgs.base16-schemes}/share/themes/chalk.yaml"; #precious-dark-fifteen #helios #framer #eighties #decaf
+    base16Scheme = "${pkgs.base16-schemes}/share/themes/helios.yaml"; #precious-dark-fifteen #helios #framer #eighties # chalk
 
     opacity = {
       applications = 0.85;
@@ -30,6 +30,7 @@
 
     targets = {
       hyprlock.enable = false;
+      wofi.enable = true;
     };
 
     cursor = {
@@ -57,10 +58,10 @@
       };
 
       sizes = {
-        terminal = 14;
-        applications = 14;
-        desktop = 16;
-        popups = 12;
+        terminal = 12;
+        applications = 12;
+        desktop = 12;
+        popups = 10;
       };
     };
 

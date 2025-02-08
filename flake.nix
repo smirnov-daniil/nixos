@@ -55,6 +55,7 @@
 
         modules = [
           ./hosts/${hostname}/configuration.nix
+          inputs.stylix.nixosModules.stylix
         ];
       };
   in {
