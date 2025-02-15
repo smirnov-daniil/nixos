@@ -5,17 +5,16 @@
     autosuggestion.enable = true;
     syntaxHighlighting.enable = true;
 
-    shellAliases = let
-      flakeDir = "~/flake";
-    in {
+    shellAliases = {
       sw = "nh os switch";
       upd = "nh os switch --update";
       hms = "nh home switch";
 
-      pkgs = "nvim ${flakeDir}/nixos/packages.nix";
-
       n = "nvim";
       se = "sudoedit";
+
+      nixshell = "nix-shell --command zsh";
+
       microfetch = "microfetch && echo";
 
       z = "cd";

@@ -27,7 +27,6 @@
         "waybar"
         "wl-paste --type text --watch cliphist store"
         "wl-paste --type image --watch cliphist store"
-        "telegram-desktop"
         "$terminal"
       ];
 
@@ -97,7 +96,7 @@
 
         "workspace 1,class:(zen)"
         "workspace 2,class:(tty)"
-        "workspace 3,class:(telegram)"
+        "workspace 3,class:(ayugram-desktop)"
         "workspace 4,class:(code)"
         "workspace 5,class:(com.obsproject.Studio)"
 

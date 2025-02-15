@@ -7,7 +7,7 @@
     localsend # share files
     mpv # cl video viewer
     obs-studio # screen capture
-    telegram-desktop # messager
+    ayugram-desktop # messager
 
     # CLI utils
     bat # dispplay file content
