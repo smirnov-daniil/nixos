@@ -3,21 +3,22 @@
 
   home.packages = with pkgs; [
     # Desktop apps
+    ayugram-desktop # messager
     imv # cl image viewer
+    jetbrains.idea-ultimate # IDE
     localsend # share files
     mpv # cl video viewer
     obs-studio # screen capture
-    ayugram-desktop # messager
+    zen-browser # browser
 
     # CLI utils
     bat # dispplay file content
+    bottom # performance monitor
     brightnessctl # cl screan brightness control
     cliphist # cl clipboard history
     ffmpeg # multimedia converter
     fzf # better navigation
     grimblast # screenshot
-    htop
-    bottom # performance monitor
     microfetch # system info
     ripgrep # cl search
     unzip # extract files from zip
@@ -25,13 +26,6 @@
     wl-clipboard # wayland clipboard
     wtype # wayland keyboard input simulator
     zip # zip files
-
-    # Browser
-    zen-browser
-
-    # Coding stuff
-    nixd # nix LSP
-    jetbrains.idea-ultimate
 
     # WM stuff
     libsForQt5.xwaylandvideobridge # impove vide in wayland QT apps

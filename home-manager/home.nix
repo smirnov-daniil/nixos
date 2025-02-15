@@ -4,7 +4,6 @@
   ...
 }: {
   imports = [
-    ./modules
     ./home-packages.nix
   ];
 
