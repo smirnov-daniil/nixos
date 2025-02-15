@@ -1,4 +1,4 @@
-{
+{lib, config, ...}: {
   imports = [
     ./binds.nix
     ./hypridle.nix
@@ -7,4 +7,8 @@
     ./kanshi.nix
     ./main.nix
   ];
+
+  options = {
+    hyprland.use = lib.mkEnableOption "enables Hyprland and stuff.";
+  };
 }

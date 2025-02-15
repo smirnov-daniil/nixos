@@ -1,17 +1,27 @@
 {
-  programs.git = {
-    enable = true;
-    userName = "Daniil Smirnov";
-    userEmail = "dsmirnov.ds2+github@yandex.com";
+  lib,
+  config,
+  ...
+}: {
+  options = {
+    git.use = lib.mkEnableOption "enables git";
+  };
 
-    aliases = {
-      ci = "commit";
-      st = "status";
-    };
+  config = lib.mkIf config.git.use {
+    programs.git = {
+      enable = true;
+      userName = "Daniil Smirnov";
+      userEmail = "dsmirnov.ds2+github@yandex.com";
 
-    extraConfig = {
-      pull = {
-        rebase = true;
+      aliases = {
+        ci = "commit";
+        st = "status";
+      };
+
+      extraConfig = {
+        pull = {
+          rebase = true;
+        };
       };
     };
   };
