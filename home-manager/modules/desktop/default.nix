@@ -2,6 +2,7 @@
   imports = [
     ./wofi.nix
     ./waybar.nix
+    ./packages.nix
     ./swaync.nix
     ./hyprland
   ];

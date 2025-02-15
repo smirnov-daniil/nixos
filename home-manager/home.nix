@@ -3,9 +3,7 @@
   user,
   ...
 }: {
-  imports = [
-    ./home-packages.nix
-  ];
+  nixpkgs.config.allowUnfree = true;
 
   home = {
     username = user;
