@@ -80,9 +80,9 @@
       };
 
       #image = ./wallpaper.png;
-      image = pkgs.fetchurl {
-        url = "https://www.pixelstalk.net/wp-content/uploads/2016/05/Epic-Anime-Awesome-Wallpapers.jpg";
-        sha256 = "enQo3wqhgf0FEPHj2coOCvo7DuZv+x5rL/WIo4qPI50=";
+      image =  pkgs.fetchurl {
+        url = "https://i.redd.it/ohj1l323kve81.jpg";
+        sha256 = "1ff5n5njqq2bsb4p9hdvhlj29286qwqbj3d5xlsh2avkbhzk6r5i";
       };
     };
   };
