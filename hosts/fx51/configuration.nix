@@ -8,7 +8,7 @@
     ./hardware-configuration.nix
     ./local-packages.nix
     ../../nixos/modules
-    ./hardware
+    ./modules
   ];
 
   nixpkgs.config.allowUnfree = true;

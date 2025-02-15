@@ -2,11 +2,10 @@
   imports = [
     ./hyprland
     ./waybar
-    ./wofi
+    ./wofi.nix
     ./eza.nix
     ./ghostty.nix
     ./git.nix
-    ./lazygit.nix
     ./nvf.nix
     ./oh-my-posh.nix
     ./qt.nix
