@@ -14,10 +14,8 @@
         "$mainMod,       P, pseudo,"
         "$mainMod,       J, togglesplit,"
         "$mainMod,       V, exec, cliphist list | $menu --dmenu | cliphist decode | wl-copy"
-        "$mainMod,       B, exec, pkill -SIGUSR2 waybar"
-        "$mainMod SHIFT, B, exec, pkill -SIGUSR1 waybar"
+        "$mainMod,       B, exec, hyprpanel toggleWindow bar-0"
         "$mainMod,       L, exec, loginctl lock-session"
-        "$mainMod,       N, exec, swaync-client -t"
 
         # Configuration files
         ", Print, exec, grimblast --notify --freeze copysave area"

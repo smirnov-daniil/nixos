@@ -80,7 +80,7 @@
       };
 
       #image = ./wallpaper.png;
-      image =  pkgs.fetchurl {
+      image = pkgs.fetchurl {
         url = "https://i.redd.it/ohj1l323kve81.jpg";
         sha256 = "1ff5n5njqq2bsb4p9hdvhlj29286qwqbj3d5xlsh2avkbhzk6r5i";
       };

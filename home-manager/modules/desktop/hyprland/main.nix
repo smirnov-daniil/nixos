@@ -27,9 +27,7 @@
         exec-once = [
           "uwsm app -- systemctl --user enable --now hyprpaper.service"
           "uwsm app -- systemctl --user enable --now hypridle.service"
-          "uwsm app -- systemctl --user start swaync.service"
           "kanshi"
-          "waybar"
           "wl-paste --type text --watch cliphist store"
           "wl-paste --type image --watch cliphist store"
           "$terminal"

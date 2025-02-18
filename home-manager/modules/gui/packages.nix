@@ -1,11 +1,16 @@
-{pkgs, lib, config, ...}: {
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}: {
   options = {
     media.use = lib.mkEnableOption "enables media apps";
     browser.use = lib.mkEnableOption "enables browser apps";
     idea.use = lib.mkEnableOption "enables ItelliJ IDEA";
     obs.use = lib.mkEnableOption "enables OBS Studio";
     telegram.use = lib.mkEnableOption "enables Telegram";
-    localsend.use = lib.mkEnableOption "enables localsend"; 
+    localsend.use = lib.mkEnableOption "enables localsend";
   };
 
   config = lib.mkMerge [
@@ -32,7 +37,7 @@
     })
     (lib.mkIf config.telegram.use {
       home.packages = with pkgs; [
-        ayugram-desktop # messager
+        telegram-desktop # messager
       ];
     })
     (lib.mkIf config.telegram.use {
@@ -42,3 +47,4 @@
     })
   ];
 }
+

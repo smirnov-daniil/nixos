@@ -14,16 +14,22 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    ayugram-desktop = {
-      url = "github:/ayugram-port/ayugram-desktop/release?submodules=1";
+    stylix = {
+      url = "github:danth/stylix/release-24.11";
+      #      inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    stylix.url = "github:danth/stylix/release-24.11";
 
     nvf = {
       url = "github:notashelf/nvf";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    hyprpanel = {
+      url = "github:jas-singhfsu/hyprpanel";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    ags.url = "github:Aylur/ags";
   };
 
   outputs = {
@@ -82,8 +88,8 @@
         overlays = [
           (final: prev: {
             zen-browser = inputs.zen-browser.packages.${system}.default;
-            ayugram-desktop = inputs.ayugram-desktop.packages.${system}.ayugram-desktop;
           })
+          inputs.hyprpanel.overlay
         ];
       };
       extraSpecialArgs = {
