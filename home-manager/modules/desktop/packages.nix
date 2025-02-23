@@ -17,6 +17,15 @@
         libgtop
         upower
         power-profiles-daemon
+        wireplumber
+        libgtop
+        bluez
+        #bluez-utils
+        networkmanager
+        dart-sass
+        wl-clipboard
+        upower
+        gvfs
       ];
     })
   ];
