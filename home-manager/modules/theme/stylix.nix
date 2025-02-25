@@ -9,6 +9,11 @@
 
   options = {
     stylix.use = lib.mkEnableOption "enables stylix";
+    stylix.theme = lib.mkOption {
+      #     type = lib.types.str;
+      default = "porple";
+      description = "theme";
+    };
   };
 
   config = lib.mkIf config.stylix.use {
@@ -26,11 +31,11 @@
       enable = true;
       autoEnable = true;
       polarity = "dark";
-      base16Scheme = "${pkgs.base16-schemes}/share/themes/helios.yaml"; #precious-dark-fifteen #helios #framer #eighties # chalk
+      base16Scheme = "${pkgs.base16-schemes}/share/themes/${config.stylix.theme}.yaml"; #precious-dark-fifteen #helios #framer #eighties # chalk
 
       opacity = {
         applications = 0.85;
-        desktop = 0.90;
+        desktop = 0.85;
         popups = 0.85;
         terminal = 0.85;
       };
@@ -38,6 +43,7 @@
       targets = {
         hyprlock.enable = false;
         wofi.enable = true;
+        neovim.enable = true;
       };
 
       cursor = {

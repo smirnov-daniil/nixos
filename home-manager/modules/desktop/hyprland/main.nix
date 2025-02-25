@@ -53,10 +53,6 @@
           shadow = {
             enabled = false;
           };
-
-          blur = {
-            enabled = true;
-          };
         };
 
         animations = {
@@ -99,8 +95,9 @@
 
           "workspace 1,class:(zen)"
           "workspace 2,class:(tty)"
-          "workspace 3,class:(ayugram-desktop)"
+          "workspace 3,class:(telegram-desktop)"
           "workspace 4,class:(code)"
+          "workspace 4,class:(idea)"
           "workspace 5,class:(com.obsproject.Studio)"
 
           "suppressevent maximize, class:.*"

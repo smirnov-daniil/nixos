@@ -89,7 +89,6 @@
           (final: prev: {
             zen-browser = inputs.zen-browser.packages.${system}.default;
           })
-          inputs.hyprpanel.overlay
         ];
       };
       extraSpecialArgs = {
