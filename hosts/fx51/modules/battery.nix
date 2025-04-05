@@ -12,7 +12,7 @@ in {
   options.hardware.asus.battery = {
     chargeUpto = lib.mkOption {
       description = "Maximum level of charge for your battery, as a percentage.";
-      default = 100;
+      default = 80;
       type = lib.types.int;
     };
     enableChargeUptoScript = lib.mkOption {
