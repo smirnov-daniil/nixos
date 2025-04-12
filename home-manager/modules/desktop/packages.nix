@@ -14,13 +14,8 @@
     })
     (lib.mkIf config.hyprpanel.use {
       home.packages = with pkgs; [
-        libgtop
-        upower
-        power-profiles-daemon
-        power-profiles-daemon
         wireplumber
         bluez
-        #bluez-utils
         networkmanager
         dart-sass
         wl-clipboard
