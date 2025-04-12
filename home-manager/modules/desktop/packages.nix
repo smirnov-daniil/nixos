@@ -19,7 +19,6 @@
         power-profiles-daemon
         power-profiles-daemon
         wireplumber
-        libgtop
         bluez
         #bluez-utils
         networkmanager

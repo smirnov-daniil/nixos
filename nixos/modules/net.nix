@@ -27,7 +27,7 @@
 
   services.openvpn.servers = {
     somevpn = {
-      config = "config /root/nixos/openvpn/somevpn.conf";
+      config = "config /root/nixos/openvpn/be.ovpn";
       autoStart = false;
     };
   };

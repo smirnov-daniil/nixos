@@ -33,21 +33,21 @@ in {
 
       overlay.enable = true;
 
-      layout = {
-        "bar.layouts" = {
-          "0" = {
-            "left" = ["windowtitle"];
-            "middle" = ["workspaces"];
-            "right" = [
-              "systray"
-              "battery"
-              "network"
-              "clock"
-              "notifications"
-            ];
-          };
-        };
-      };
+      #     layout = {
+      #       "bar.layouts" = {
+      #         "0" = {
+      #           left = ["windowtitle"];
+      #           middle = ["workspaces"];
+      #           right = [
+      #             "systray"
+      #             "battery"
+      #             "network"
+      #             "clock"
+      #             "notifications"
+      #           ];
+      #         };
+      #       };
+      #     };
 
       override = {
         "bar.media.show_active_only" = true;

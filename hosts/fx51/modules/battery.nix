@@ -41,5 +41,7 @@ in {
         ExecStart = "${pkgs.runtimeShell} -c 'echo ${toString cfg.chargeUpto} > /sys/class/power_supply/BAT?/charge_control_end_threshold'";
       };
     };
+
+    services.upower.enable = true;
   };
 }

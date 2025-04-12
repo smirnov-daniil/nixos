@@ -4,5 +4,6 @@
     ./intel.nix
     ./nvidia.nix
     ./battery.nix
+    ./xray.nix
   ];
 }

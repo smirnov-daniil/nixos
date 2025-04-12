@@ -1,4 +1,9 @@
-{pkgs, lib, config, ...}: {
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}: {
   options.cli = {
     tools.use = lib.mkEnableOption "enables cli tools";
     utils.use = lib.mkEnableOption "enables cli utils";
@@ -7,6 +12,7 @@
   config = lib.mkMerge [
     (lib.mkIf config.cli.tools.use {
       home.packages = with pkgs; [
+        helix
         bat # dispplay file content
         bottom # performance monitor
         fzf # better navigation
@@ -29,3 +35,4 @@
     })
   ];
 }
+

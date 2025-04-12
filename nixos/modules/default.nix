@@ -13,7 +13,6 @@
     ./stylix.nix
     ./timezone.nix
     ./user.nix
-    ./vpn.nix
     ./zram.nix
   ];
 }
