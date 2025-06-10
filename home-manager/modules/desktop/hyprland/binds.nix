@@ -19,6 +19,7 @@
 
         # Configuration files
         ", Print, exec, grimblast --notify --freeze copysave area"
+        "SHIFT, Print, exec, grimblast --notify --freeze save area"
 
         # Moving focus
         "$mainMod, left, movefocus, l"
@@ -37,6 +38,7 @@
         "$mainMod CTRL, right, resizeactive,  60 0"
         "$mainMod CTRL, up,    resizeactive,  0 -60"
         "$mainMod CTRL, down,  resizeactive,  0  60"
+        "$mainMod,      F,     fullscreen"
 
         # Switching workspaces
         "$mainMod, 1, focusworkspaceoncurrentmonitor, 1"
