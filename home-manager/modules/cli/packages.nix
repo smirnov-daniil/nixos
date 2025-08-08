@@ -15,7 +15,6 @@
         helix
         bat # dispplay file content
         bottom # performance monitor
-        fzf # better navigation
         microfetch # system info
         ripgrep # cl search
         wget # cl web downloader
@@ -35,4 +34,3 @@
     })
   ];
 }
-
