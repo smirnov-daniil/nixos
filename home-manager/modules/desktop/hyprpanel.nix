@@ -27,48 +27,44 @@ in {
     programs.hyprpanel = {
       enable = true;
 
-      hyprland.enable = true;
+      #     hyprland.enable = true;
 
-      overwrite.enable = true;
+      settings = {
+        #     layout = {
+        #       "bar.layouts" = {
+        #         "0" = {
+        #           left = ["windowtitle"];
+        #           middle = ["workspaces"];
+        #           right = [
+        #             "systray"
+        #             "battery"
+        #             "network"
+        #             "clock"
+        #             "notifications"
+        #           ];
+        #         };
+        #       };
+        #     };
 
-      overlay.enable = true;
-
-      #     layout = {
-      #       "bar.layouts" = {
-      #         "0" = {
-      #           left = ["windowtitle"];
-      #           middle = ["workspaces"];
-      #           right = [
-      #             "systray"
-      #             "battery"
-      #             "network"
-      #             "clock"
-      #             "notifications"
-      #           ];
-      #         };
-      #       };
-      #     };
-
-      override = {
-        "bar.media.show_active_only" = true;
-        "bar.workspaces.applicationIconEmptyWorkspace" = "";
-        "bar.workspaces.hideUnoccupied" = false;
-        "bar.workspaces.monitorSpecific" = false;
-        "bar.workspaces.numbered_active_indicator" = "color";
-        "bar.workspaces.workspaces" = 5;
-        "menus.power.lowBatteryNotification" = true;
-        "theme.bar.buttons.monochrome" = true;
-        "theme.bar.dropdownGap" = "4.5em";
-        "theme.bar.location" = "bottom";
-        "theme.bar.menus.monochrome" = true;
-        "theme.bar.opacity" = opacity;
-        "theme.bar.transparrent" = true;
-        "theme.font.name" = "${font}";
-        "theme.font.size" = "${fontSize}px";
-        "theme.matugen" = true;
-        "theme.matugen_settings.scheme_type" = "content";
-        "wallpaper.image" = config.stylix.image;
-        "wallpaper.pywal" = true;
+        bar.media.show_active_only = true;
+        bar.workspaces.applicationIconEmptyWorkspace = "";
+        bar.workspaces.hideUnoccupied = false;
+        bar.workspaces.monitorSpecific = false;
+        bar.workspaces.numbered_active_indicator = "color";
+        bar.workspaces.workspaces = 5;
+        menus.power.lowBatteryNotification = true;
+        theme.bar.buttons.monochrome = true;
+        theme.bar.dropdownGap = "4.5em";
+        theme.bar.location = "bottom";
+        theme.bar.menus.monochrome = true;
+        theme.bar.opacity = opacity;
+        theme.bar.transparrent = true;
+        theme.font.name = "${font}";
+        theme.font.size = "${fontSize}px";
+        theme.matugen = true;
+        theme.matugen_settings.scheme_type = "content";
+        wallpaper.image = config.stylix.image;
+        wallpaper.pywal = true;
       };
     };
 

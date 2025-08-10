@@ -5,7 +5,7 @@
   config,
   ...
 }: {
-  imports = [inputs.stylix.homeManagerModules.stylix];
+  imports = [inputs.stylix.homeModules.stylix];
 
   options = {
     stylix.use = lib.mkEnableOption "enables stylix";
@@ -24,7 +24,6 @@
       font-awesome
       powerline-fonts
       powerline-symbols
-      (nerdfonts.override {fonts = ["NerdFontsSymbolsOnly"];})
     ];
 
     stylix = {
@@ -59,7 +58,7 @@
         };
         monospace = {
           name = "JetBrains Mono";
-          package = pkgs.jetbrains-mono;
+          package = pkgs.nerd-fonts.jetbrains-mono;
         };
         sansSerif = {
           name = "Noto Sans";

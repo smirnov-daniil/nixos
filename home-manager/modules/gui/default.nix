@@ -7,7 +7,7 @@
   vscode.use = lib.mkDefault true;
   media.use = lib.mkDefault true;
   browser.use = lib.mkDefault true;
-  idea.use = lib.mkDefault true;
+  idea.use = lib.mkDefault false;
   obs.use = lib.mkDefault true;
   telegram.use = lib.mkDefault true;
   localsend.use = lib.mkDefault true;

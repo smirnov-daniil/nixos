@@ -53,8 +53,8 @@
           lspSignature.enable = true;
         };
 
+	lsp.enable = true;
         languages = {
-          enableLSP = true;
           enableFormat = true;
           enableTreesitter = true;
           enableExtraDiagnostics = true;
