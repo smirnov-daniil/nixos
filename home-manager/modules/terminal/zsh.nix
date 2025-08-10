@@ -19,7 +19,6 @@
         upd = "nh os switch --update";
         hms = "nh home switch";
 
-        n = "nvim";
         se = "sudoedit";
 
         nixshell = "nix-shell --command zsh";

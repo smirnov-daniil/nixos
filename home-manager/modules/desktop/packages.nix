@@ -12,7 +12,7 @@
         xdg-desktop-portal-hyprland # same, but hyperland-specific
       ];
     })
-    (lib.mkIf config.hyprpanel.use {
+    (lib.mkIf true {
       home.packages = with pkgs; [
         wireplumber
         bluez

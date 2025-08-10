@@ -19,17 +19,10 @@
       #      inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nvf = {
-      url = "github:notashelf/nvf";
+    gBar = {
+      url = "github:scorpion-26/gBar";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    hyprpanel = {
-      url = "github:jas-singhfsu/hyprpanel";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    ags.url = "github:Aylur/ags";
   };
 
   outputs = {
