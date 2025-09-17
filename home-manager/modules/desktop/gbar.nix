@@ -8,16 +8,17 @@
     gbar.use = lib.mkEnableOption "enables gbar";
   };
 
-  config = lib.mkIf config.gbar.use {
-    imports = [ inputs.gBar.homeManagerModules.x86_64-linux.default ];
-    programs.gBar = {
-      enables = true;
+  imports = [ inputs.gBar.homeManagerModules.x86_64-linux.default ];
 
+  config = lib.mkIf config.gbar.use {
+    programs.gBar = {
+      enable = true;
       config = {
-        Location = "B";
-        WorspaceSymbols = ["1" "2" "3" "4" "5"];
+        Location = "L";                       # B = bottom
+        UseHyprlandIPC = true;                # hyprland workspaces support
         EnableSNI = true;
-      }
-    }
+        NumWorkspaces = 5;
+      };
+    };
   };
 }

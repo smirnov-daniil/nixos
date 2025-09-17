@@ -31,6 +31,7 @@
           "wl-paste --type text --watch cliphist store"
           "wl-paste --type image --watch cliphist store"
           "$terminal"
+          "gBar bar eDP-1"
         ];
 
         xwayland.force_zero_scaling = true;
