@@ -4,7 +4,6 @@
     ./bluetooth.nix
     ./boot.nix
     ./env.nix
-    ./home-manager.nix
     ./hyprland.nix
     ./mime.nix
     ./net.nix

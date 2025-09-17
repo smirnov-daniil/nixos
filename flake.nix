@@ -37,7 +37,6 @@
   } @ inputs: let
     system = "x86_64-linux";
     homeStateVersion = "25.05";
-    user = "ds2";
     hosts = [
       {
         hostname = "fx51";
@@ -60,12 +59,11 @@
             inputs
             stateVersion
             hostname
-            user
+            system
             ;
         };
 
         modules = [
-          {nixpkgs.config.allowUnfree = true;}
           ./hosts/${hostname}/configuration.nix
         ];
       };
@@ -81,25 +79,5 @@
           }
       ) {}
       hosts;
-
-    homeConfigurations.${user} = home-manager.lib.homeManagerConfiguration {
-      pkgs = import nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
-        overlays = [
-          (final: prev: {
-            zen-browser = inputs.zen-browser.packages.${system}.default;
-          })
-        ];
-      };
-      extraSpecialArgs = {
-        inherit inputs homeStateVersion user;
-      };
-
-      modules = [
-        ./home-manager/home.nix
-        ./home-manager/modules
-      ];
-    };
   };
 }
