@@ -3,6 +3,8 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
+    
+    vscode-server.url = "github:nix-community/nixos-vscode-server";
 
     zen-browser = {
       url = "github:youwen5/zen-browser-flake";
@@ -39,6 +41,10 @@
         hostname = "fx51";
         stateVersion = "25.05";
       }
+      {
+        hostname = "wsl";
+        stateVersion = "25.05";
+      }
     ];
 
     makeSystem = {
@@ -58,7 +64,6 @@
 
         modules = [
           ./hosts/${hostname}/configuration.nix
-          inputs.stylix.nixosModules.stylix
         ];
       };
   in {
