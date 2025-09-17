@@ -2,6 +2,8 @@
   pkgs,
   stateVersion,
   hostname,
+  inputs,
+  specialArgs,
   ...
 }: {
   imports = [
@@ -24,18 +26,29 @@
     };
     interop.register = true;
     docker-desktop.enable = true;
-    defaultUser = user;   
+    defaultUser = specialArgs.user;   
     startMenuLaunchers = true;
   };
-
+  
   nixpkgs.config.allowUnfree = true;
 
   environment.systemPackages = [pkgs.home-manager];
 
-  desktop.use = false;
-  gui.use = false;
-  ghostty.use = false;
-  tmux.use = false;
-  qt.use = false;
-  stylix.use = false;
+  hyprland.use     = false;
+  gbar.use         = false;
+  wofi.use         = false;
+  waybar.use       = false;
+  swaync.use       = false;
+  vscode.use       = false;
+  media.use        = false;
+  browser.use      = false;
+  idea.use         = false;
+  obs.use          = false;
+  telegram.use     = false;
+  localsend.use    = false;
+  ghostty.use      = false;
+  tmux.use         = false;
+  qt.use           = false;
+  stylix.use       = false;
+  vscode-server.use = true;
 }

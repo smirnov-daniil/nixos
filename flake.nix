@@ -3,7 +3,9 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.05";
-    
+
+    nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
+
     vscode-server.url = "github:nix-community/nixos-vscode-server";
 
     zen-browser = {
@@ -63,6 +65,7 @@
         };
 
         modules = [
+          {nixpkgs.config.allowUnfree = true;}
           ./hosts/${hostname}/configuration.nix
         ];
       };

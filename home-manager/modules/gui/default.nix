@@ -4,13 +4,11 @@
     ./packages.nix
   ];
 
-  gui.use = lib.mkDefault true;
-
-  vscode.use = lib.mkDefault gui.use;
-  media.use = lib.mkDefault gui.use;
-  browser.use = lib.mkDefault gui.use;
-  idea.use = lib.mkDefault gui.use;
-  obs.use = lib.mkDefault gui.use;
-  telegram.use = lib.mkDefault gui.use;
-  localsend.use = lib.mkDefault gui.use;
+  vscode.use = lib.mkDefault true;
+  media.use = lib.mkDefault true;
+  browser.use = lib.mkDefault true;
+  idea.use = lib.mkDefault false;
+  obs.use = lib.mkDefault true;
+  telegram.use = lib.mkDefault true;
+  localsend.use = lib.mkDefault true;
 }
