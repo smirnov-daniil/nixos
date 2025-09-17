@@ -11,10 +11,10 @@
   imports = [
     inputs.nixos-wsl.nixosModules.default
     inputs.home-manager.nixosModules.default
-    ../../nixos/modules/env.nix
-    ../../nixos/modules/nh.nix
-    ../../nixos/modules/nix.nix
-    ../../nixos/modules/user.nix
+    ../../modules/nixos/env.nix
+    ../../modules/nixos/nh.nix
+    ../../modules/nixos/nix.nix
+    ../../modules/nixos/user.nix
     ./modules
   ];
 

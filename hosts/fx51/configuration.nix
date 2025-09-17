@@ -9,7 +9,7 @@
     inputs.home-manager.nixosModules.default
     ./hardware-configuration.nix
     ./local-packages.nix
-    ../../nixos/modules
+    ../../modules/nixos
     ./modules
   ];
 
