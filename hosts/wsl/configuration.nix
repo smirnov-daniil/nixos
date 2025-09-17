@@ -5,7 +5,8 @@
   inputs,
   ...
 }: let 
-  user = "ds2";
+    user = "ds2";
+    system = "x86_64-linux";
   in{
   imports = [
     inputs.nixos-wsl.nixosModules.default
@@ -16,6 +17,11 @@
     ../../nixos/modules/user.nix
     ./modules
   ];
+
+  main-user = {
+    enable = true;
+    username = user;
+  };
 
   system.stateVersion = stateVersion;
   wsl = {
@@ -39,12 +45,13 @@
     extraSpecialArgs = {
       inherit inputs;
       pkgs = import inputs.nixpkgs {
+        inherit system;
         config.allowUnfree = true;
       };
     };
 
     users = {
-      "ds2" = import ./home.nix;
+      "${user}" = import ./users/ds2.nix;
     };
   };
 }

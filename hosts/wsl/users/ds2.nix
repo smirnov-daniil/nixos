@@ -1,6 +1,6 @@
 {...}: {
   imports = [
-    ../../home-manager/modules
+    ../../../home-manager/modules
   ];
   nixpkgs.config.allowUnfree = true;
 
@@ -25,6 +25,6 @@
   ghostty.use      = false;
   tmux.use         = false;
   qt.use           = false;
-  stylix.use       = false;
+# stylix.use       = false;
   vscode-server.use = true;
 }

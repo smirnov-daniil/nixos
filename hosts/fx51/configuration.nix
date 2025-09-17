@@ -30,6 +30,11 @@
 
   system.stateVersion = stateVersion;
 
+  main-user = {
+    enable = true;
+    username = user;
+  };
+
   home-manager = {
     extraSpecialArgs = {
       inherit inputs;
@@ -44,7 +49,7 @@
     };
 
     users = {
-      "ds2" = import ./home.nix;
+      "ds2" = import ./ds2.nix;
     };
   };
 }

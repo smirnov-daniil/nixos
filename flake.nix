@@ -36,7 +36,6 @@
     ...
   } @ inputs: let
     system = "x86_64-linux";
-    homeStateVersion = "25.05";
     hosts = [
       {
         hostname = "fx51";
