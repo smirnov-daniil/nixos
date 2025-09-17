@@ -33,20 +33,18 @@
   home-manager = {
     extraSpecialArgs = {
       inherit inputs;
+      pkgs = import nixpkgs {
+        config.allowUnfree = true;
+        overlays = [
+          (final: prev: {
+            zen-browser = inputs.zen-browser.packages.${system}.default;
+          })
+        ];
+      };
     };
 
     users = {
       "ds2" = import ./home.nix;
-    };
-
-    pkgs = import nixpkgs {
-      inherit system;
-      config.allowUnfree = true;
-      overlays = [
-        (final: prev: {
-          zen-browser = inputs.zen-browser.packages.${system}.default;
-        })
-      ];
     };
   };
 }

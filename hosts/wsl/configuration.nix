@@ -3,13 +3,14 @@
   stateVersion,
   hostname,
   inputs,
-  specialArgs,
   ...
-}: {
+}: let 
+  user = "ds2";
+  in{
   imports = [
     inputs.nixos-wsl.nixosModules.default
+    inputs.home-manager.nixosModules.default
     ../../nixos/modules/env.nix
-    ../../nixos/modules/home-manager.nix
     ../../nixos/modules/nh.nix
     ../../nixos/modules/nix.nix
     ../../nixos/modules/user.nix
@@ -26,7 +27,7 @@
     };
     interop.register = true;
     docker-desktop.enable = true;
-    defaultUser = specialArgs.user;   
+    defaultUser = user;   
     startMenuLaunchers = true;
   };
   
@@ -37,15 +38,13 @@
   home-manager = {
     extraSpecialArgs = {
       inherit inputs;
+      pkgs = import inputs.nixpkgs {
+        config.allowUnfree = true;
+      };
     };
 
     users = {
       "ds2" = import ./home.nix;
-    };
-
-    pkgs = import nixpkgs {
-      inherit system;
-      config.allowUnfree = true;
     };
   };
 }
