@@ -47,7 +47,6 @@
         ];
       };
     };
-
     users = {
       "ds2" = import ./ds2.nix;
     };
