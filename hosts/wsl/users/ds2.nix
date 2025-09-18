@@ -25,6 +25,5 @@
   ghostty.use      = false;
   tmux.use         = false;
   qt.use           = false;
-# stylix.use       = false;
   vscode-server.use = true;
 }
