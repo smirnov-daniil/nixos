@@ -12,10 +12,17 @@
     programs.helix = {
       enable = true;
       settings = {
-        editor.cursor-shape = {
-          normal = "block";
-          insert = "bar";
-          select = "underline";
+        editor = {
+          line-number = "relative";
+          mouse = false;
+          auto-completion = true;
+          auto-format = true;
+          auto-info = true;
+          cursor-shape = {
+            normal = "block";
+            insert = "bar";
+            select = "underline";
+          };
         };
       };
       languages.language = [
@@ -24,6 +31,11 @@
           scope = "source.nix";
           file-types = ["nix"];
           auto-format = true;
+          comment-token = "#";
+          block-comment-tokens = {
+            start = "/*";
+            end = "*/";
+          };
           formatter = {
             command = "${pkgs.alejandra}/bin/alejandra";
             args = ["--quiet"];
