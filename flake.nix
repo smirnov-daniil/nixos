@@ -6,6 +6,8 @@
 
     nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
 
+    nix-minecraft.url = "github:Infinidoge/nix-minecraft";
+
     vscode-server.url = "github:nix-community/nixos-vscode-server";
 
     zen-browser = {
@@ -43,6 +45,10 @@
       }
       {
         hostname = "wsl";
+        stateVersion = "25.05";
+      }
+      {
+        hostname = "msi";
         stateVersion = "25.05";
       }
     ];
