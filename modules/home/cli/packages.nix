@@ -12,7 +12,6 @@
   config = lib.mkMerge [
     (lib.mkIf config.cli.tools.use {
       home.packages = with pkgs; [
-        helix
         bat # dispplay file content
         bottom # performance monitor
         microfetch # system info

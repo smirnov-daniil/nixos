@@ -22,21 +22,15 @@
             type = "prompt";
             segments = [
               {
-                foreground = "cyan";
+                foreground = "magenta";
                 style = "plain";
-                template = "{{ if not .Env.IN_NIX_SHELL }}❯{{ end }}";
-                type = "text";
-              }
-              {
-                foreground = "green";
-                style = "plain";
-                template = "{{ if .Env.IN_NIX_SHELL }}❯{{ end }}";
+                template = "~> ";
                 type = "text";
               }
               {
                 foreground = "blue";
                 style = "plain";
-                template = " {{ .Path }} ";
+                template = "{{ .Path }}";
                 type = "path";
                 properties = {
                   style = "folder";
@@ -53,12 +47,6 @@
                   fetch_status = true;
                 };
               }
-              # {
-              #   foreground = "red";
-              #   style = "plain";
-              #   template = " ✗";
-              #   type = "status";
-              # }
             ];
           }
           {
@@ -68,19 +56,24 @@
               {
                 foreground = "yellow";
                 style = "plain";
-                template = "{{ .FormattedMs }}";
+                template = "{{ .FormattedMs }} ";
                 type = "executiontime";
                 properties = {
                   threshold = 5000;
                 };
               }
-            ];
+              {
+                foreground = "darkGray";
+                style = "plain";
+                template = " ";
+                type = "nix-shell";
+              }            ];
           }
         ];
         secondary_prompt = {
           background = "transparent";
-          foreground = "cyan";
-          template = "❯❯ ";
+          foreground = "magenta";
+          template = "~~>";
         };
         transient_prompt = {
           background = "transparent";
@@ -89,7 +82,7 @@
             "{{if gt .Code 0}}red{{end}}"
             "{{if eq .Code 0}}magenta{{end}}"
           ];
-          template = "❯ ";
+          template = "~> ";
         };
       };
     };

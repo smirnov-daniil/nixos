@@ -13,6 +13,7 @@
     inputs.home-manager.nixosModules.default
     ../../modules/nixos/system
     ./modules
+    ./local-packages.nix
   ];
 
   main-user = {

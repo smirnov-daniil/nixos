@@ -3,6 +3,7 @@
     ./eza.nix
     ./fzf.nix
     ./git.nix
+    ./helix.nix
     ./packages.nix
     ./ranger.nix
     ./zoxide.nix
@@ -15,4 +16,5 @@
   git.use = lib.mkDefault true;
   ranger.use = lib.mkDefault true;
   zoxide.use = lib.mkDefault true;
+  helix.use = lib.mkDefault true;
 }

@@ -32,14 +32,14 @@
       };
 
       history.size = 10000;
-      history.path = "${config.xdg.dataHome}/zsh/history";
+#     history.path = "${config.xdg.dataHome}/zsh/history";
 
-      initContent = ''
-        # Start UWSM
-        if uwsm check may-start > /dev/null && uwsm select; then
-          exec systemd-cat -t uwsm-start uwsm start default
-        fi
-      '';
+#     initContent = ''
+#       # Start UWSM
+#       if uwsm check may-start > /dev/null && uwsm select; then
+#         exec systemd-cat -t uwsm-start uwsm start default
+#       fi
+#     '';
 
       oh-my-zsh = {
         enable = true;
