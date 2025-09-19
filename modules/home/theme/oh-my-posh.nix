@@ -67,7 +67,8 @@
                 style = "plain";
                 template = " ";
                 type = "nix-shell";
-              }            ];
+              }
+            ];
           }
         ];
         secondary_prompt = {

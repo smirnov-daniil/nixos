@@ -1,4 +1,4 @@
-{lib, ...}:{
+{lib, ...}: {
   imports = [
     ./audio.nix
     ./bluetooth.nix

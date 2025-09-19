@@ -1,4 +1,4 @@
-{lib, ...}:{
+{lib, ...}: {
   imports = [
     ./env.nix
     ./nh.nix

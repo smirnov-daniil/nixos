@@ -4,10 +4,10 @@
   hostname,
   inputs,
   ...
-}: let 
-    user = "ds2";
-    system = "x86_64-linux";
-  in{
+}: let
+  user = "ds2";
+  system = "x86_64-linux";
+in {
   imports = [
     inputs.nixos-wsl.nixosModules.default
     inputs.home-manager.nixosModules.default
@@ -31,10 +31,10 @@
     };
     interop.register = true;
     docker-desktop.enable = true;
-    defaultUser = user;   
+    defaultUser = user;
     startMenuLaunchers = true;
   };
-  
+
   nixpkgs.config.allowUnfree = true;
 
   environment.systemPackages = [pkgs.home-manager];
