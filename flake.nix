@@ -60,15 +60,19 @@
     system = "x86_64-linux";
     hosts = [
       {
-        hostname = "fx51";
+        hostname = "gru";
         stateVersion = "25.05";
       }
       {
-        hostname = "wsl";
+        hostname = "aku";
         stateVersion = "25.05";
       }
       {
-        hostname = "msi";
+        hostname = "lich";
+        stateVersion = "25.05";
+      }
+      {
+        hostname = "tai-lung";
         stateVersion = "25.05";
       }
     ];
