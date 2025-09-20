@@ -15,7 +15,7 @@
   wofi.use = false;
   waybar.use = false;
   swaync.use = false;
-  vscode.use = false;
+  gui.vscode.use = false;
   media.use = false;
   browser.use = false;
   idea.use = false;

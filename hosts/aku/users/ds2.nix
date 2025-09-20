@@ -15,7 +15,7 @@
   desktop.wofi.enable = false;
   desktop.waybar.enable = false;
   desktop.swaync.enable = false;
-  vscode.enable = false;
+  gui.vscode.enable = false;
   gui.media.enable = false;
   gui.browser.enable = false;
   gui.idea.enable = false;
