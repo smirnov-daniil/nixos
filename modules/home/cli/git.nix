@@ -4,10 +4,10 @@
   ...
 }: {
   options = {
-    git.enable = lib.mkEnableOption "enables git";
+    cli.git.enable = lib.mkEnableOption "enables git";
   };
 
-  config = lib.mkIf config.git.enable {
+  config = lib.mkIf config.cli.git.enable {
     programs.git = {
       enable = true;
       userName = "Daniil Smirnov";

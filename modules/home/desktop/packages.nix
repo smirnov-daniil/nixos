@@ -5,7 +5,7 @@
   ...
 }: {
   config = lib.mkMerge [
-    (lib.mkIf config.hyprland.enable {
+    (lib.mkIf config.desktop.hyprland.enable {
       home.packages = with pkgs; [
         libsForQt5.xwaylandvideobridge # impove vide in wayland QT apps
         xdg-desktop-portal-gtk # gtk basef portal for desktop integration in sandboxed apps

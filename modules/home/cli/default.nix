@@ -11,10 +11,10 @@
 
   cli.tools.enable = lib.mkDefault true;
   cli.utils.enable = lib.mkDefault true;
-  eza.enable = lib.mkDefault true;
-  fzf.enable = lib.mkDefault true;
-  git.enable = lib.mkDefault true;
-  ranger.enable = lib.mkDefault true;
-  zoxide.enable = lib.mkDefault true;
-  helix.enable = lib.mkDefault true;
+  cli.eza.enable = lib.mkDefault true;
+  cli.fzf.enable = lib.mkDefault true;
+  cli.git.enable = lib.mkDefault true;
+  cli.ranger.enable = lib.mkDefault false;
+  cli.zoxide.enable = lib.mkDefault true;
+  cli.helix.enable = lib.mkDefault true;
 }

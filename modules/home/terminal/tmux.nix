@@ -4,10 +4,10 @@
   ...
 }: {
   options = {
-    tmux.enable = lib.mkEnableOption "enables tmux";
+    terminal.tmux.enable = lib.mkEnableOption "enables tmux";
   };
 
-  config = lib.mkIf config.tmux.enable {
+  config = lib.mkIf config.terminal.tmux.enable {
     programs.tmux = {
       enable = true;
       baseIndex = 1;

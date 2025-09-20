@@ -4,10 +4,10 @@
   ...
 }: {
   options = {
-    waybar.enable = lib.mkEnableOption "enables waybar";
+    desktop.waybar.enable = lib.mkEnableOption "enables waybar";
   };
 
-  config = lib.mkIf config.waybar.enable {
+  config = lib.mkIf config.desktop.waybar.enable {
     programs.waybar = {
       enable = true;
       settings = {

@@ -8,9 +8,9 @@
     ./hyprland
   ];
 
-  hyprland.enable = lib.mkDefault true;
-  gbar.enable = lib.mkDefault true;
-  wofi.enable = lib.mkDefault true;
-  waybar.enable = lib.mkDefault false;
-  swaync.enable = lib.mkDefault false;
+  desktop.hyprland.enable = lib.mkDefault true;
+  desktop.gbar.enable = lib.mkDefault true;
+  desktop.wofi.enable = lib.mkDefault true;
+  desktop.waybar.enable = lib.mkDefault false;
+  desktop.swaync.enable = lib.mkDefault false;
 }

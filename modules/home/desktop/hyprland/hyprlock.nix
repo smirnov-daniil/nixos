@@ -3,7 +3,7 @@
   config,
   ...
 }: {
-  config = lib.mkIf config.hyprland.enable {
+  config = lib.mkIf config.desktop.hyprland.enable {
     programs.hyprlock = {
       enable = true;
       settings = {

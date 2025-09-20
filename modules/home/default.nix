@@ -3,7 +3,7 @@
     ./cli
     ./desktop
     ./gui
-    ./other
+    ./misc
     ./terminal
     ./theme
   ];

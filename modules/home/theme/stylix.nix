@@ -8,15 +8,17 @@
   imports = [inputs.stylix.homeModules.stylix];
 
   options = {
-    stylix.enable = lib.mkEnableOption "enables stylix";
-    stylix.theme = lib.mkOption {
-      #     type = lib.types.str;
-      default = "porple";
-      description = "theme";
+    theme.stylix = {
+      enable = lib.mkEnableOption "enables stylix";
+      theme = lib.mkOption {
+        #     type = lib.types.str;
+        default = "porple";
+        description = "theme";
+      };
     };
   };
 
-  config = lib.mkIf config.stylix.enable {
+  config = lib.mkIf config.theme.stylix.enable {
     home.packages = with pkgs; [
       jetbrains-mono
       noto-fonts
@@ -30,7 +32,7 @@
       enable = true;
       autoEnable = true;
       polarity = "dark";
-      base16Scheme = "${pkgs.base16-schemes}/share/themes/${config.stylix.theme}.yaml"; #precious-dark-fifteen #helios #framer #eighties # chalk
+      base16Scheme = "${pkgs.base16-schemes}/share/themes/${config.theme.stylix.theme}.yaml"; #precious-dark-fifteen #helios #framer #eighties # chalk
 
       opacity = {
         applications = 0.85;

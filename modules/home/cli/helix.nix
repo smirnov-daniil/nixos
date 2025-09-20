@@ -5,10 +5,10 @@
   ...
 }: {
   options = {
-    helix.enable = lib.mkEnableOption "enables helix";
+    cli.helix.enable = lib.mkEnableOption "enables helix";
   };
 
-  config = lib.mkIf config.helix.enable {
+  config = lib.mkIf config.cli.helix.enable {
     programs.helix = {
       enable = true;
       settings = {

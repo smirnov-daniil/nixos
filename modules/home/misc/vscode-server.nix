@@ -8,10 +8,10 @@
     inputs.vscode-server.homeModules.default
   ];
   options = {
-    vscode-server.enable = lib.mkEnableOption "enables vscode-server";
+    misc.vscode-server.enable = lib.mkEnableOption "enables vscode-server";
   };
 
-  config = lib.mkIf config.vscode-server.enable {
+  config = lib.mkIf config.misc.vscode-server.enable {
     services.vscode-server.enable = true;
   };
 }

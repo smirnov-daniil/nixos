@@ -4,10 +4,10 @@
   ...
 }: {
   options = {
-    fzf.enable = lib.mkEnableOption "enables fzf";
+    cli.fzf.enable = lib.mkEnableOption "enables fzf";
   };
 
-  config = lib.mkIf config.fzf.enable {
+  config = lib.mkIf config.cli.fzf.enable {
     programs.fzf = {
       enable = true;
       enableZshIntegration = true;

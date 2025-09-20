@@ -10,20 +10,20 @@
     stateVersion = "25.05";
   };
 
-  hyprland.enable = false;
-  gbar.enable = false;
-  wofi.enable = false;
-  waybar.enable = false;
-  swaync.enable = false;
+  desktop.hyprland.enable = false;
+  desktop.gbar.enable = false;
+  desktop.wofi.enable = false;
+  desktop.waybar.enable = false;
+  desktop.swaync.enable = false;
   vscode.enable = false;
-  media.enable = false;
-  browser.enable = false;
-  idea.enable = false;
-  obs.enable = false;
-  telegram.enable = false;
-  localsend.enable = false;
-  ghostty.enable = false;
-  tmux.enable = false;
-  qt.enable = false;
-  vscode-server.enable = true;
+  gui.media.enable = false;
+  gui.browser.enable = false;
+  gui.idea.enable = false;
+  gui.obs.enable = false;
+  gui.telegram.enable = false;
+  gui.localsend.enable = false;
+  terminal.ghostty.enable = false;
+  terminal.tmux.enable = false;
+  theme.qt.enable = false;
+  misc.vscode-server.enable = true;
 }

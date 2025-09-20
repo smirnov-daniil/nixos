@@ -3,7 +3,7 @@
   config,
   ...
 }: {
-  config = lib.mkIf config.hyprland.enable {
+  config = lib.mkIf config.desktop.hyprland.enable {
     wayland.windowManager.hyprland.settings = {
       bind = [
         "$mainMod SHIFT, Return, exec, $terminal"

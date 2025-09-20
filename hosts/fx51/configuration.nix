@@ -2,10 +2,14 @@
   pkgs,
   stateVersion,
   hostname,
+  inputs,
   ...
-}: {
+}: let
+user = "ds2";
+system = "x86_64-linux";
+in
+{
   imports = [
-    inputs.stylix.nixosModules.stylix
     inputs.home-manager.nixosModules.default
     ./hardware-configuration.nix
     ./local-packages.nix
@@ -36,9 +40,11 @@
   };
 
   home-manager = {
+#   sharedModules = [{inputs.stylix.targets.xyz.enable = false;}];
     extraSpecialArgs = {
       inherit inputs;
-      pkgs = import nixpkgs {
+      pkgs = import inputs.nixpkgs {
+      inherit system;
         config.allowUnfree = true;
         overlays = [
           (final: prev: {
@@ -48,7 +54,7 @@
       };
     };
     users = {
-      "ds2" = import ./ds2.nix;
+      "ds2" = import ./users/ds2.nix;
     };
   };
 }

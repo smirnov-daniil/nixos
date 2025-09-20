@@ -3,5 +3,5 @@
     ./vscode-server.nix
   ];
 
-  vscode-server.enable = lib.mkDefault false;
+  misc.vscode-server.enable = lib.mkDefault false;
 }

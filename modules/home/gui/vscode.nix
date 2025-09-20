@@ -5,10 +5,10 @@
   ...
 }: {
   options = {
-    vscode.enable = lib.mkEnableOption "enables vscode";
+    gui.vscode.enable = lib.mkEnableOption "enables vscode";
   };
 
-  config = lib.mkIf config.vscode.enable {
+  config = lib.mkIf config.gui.vscode.enable {
     programs.vscode = {
       enable = true;
 
