@@ -3,6 +3,5 @@
     ./desktop
     ./hardware
     ./system
-    ./theme
   ];
 }
