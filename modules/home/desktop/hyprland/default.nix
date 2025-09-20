@@ -8,6 +8,6 @@
   ];
 
   options = {
-    hyprland.use = lib.mkEnableOption "enables Hyprland and stuff.";
+    hyprland.enable = lib.mkEnableOption "enables Hyprland and stuff.";
   };
 }

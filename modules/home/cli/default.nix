@@ -9,12 +9,12 @@
     ./zoxide.nix
   ];
 
-  cli.tools.use = lib.mkDefault true;
-  cli.utils.use = lib.mkDefault true;
-  eza.use = lib.mkDefault true;
-  fzf.use = lib.mkDefault true;
-  git.use = lib.mkDefault true;
-  ranger.use = lib.mkDefault true;
-  zoxide.use = lib.mkDefault true;
-  helix.use = lib.mkDefault true;
+  cli.tools.enable = lib.mkDefault true;
+  cli.utils.enable = lib.mkDefault true;
+  eza.enable = lib.mkDefault true;
+  fzf.enable = lib.mkDefault true;
+  git.enable = lib.mkDefault true;
+  ranger.enable = lib.mkDefault true;
+  zoxide.enable = lib.mkDefault true;
+  helix.enable = lib.mkDefault true;
 }

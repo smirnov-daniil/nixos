@@ -4,10 +4,10 @@
   ...
 }: {
   options = {
-    oh-my-posh.use = lib.mkEnableOption "enables oh-my-posh";
+    oh-my-posh.enable = lib.mkEnableOption "enables oh-my-posh";
   };
 
-  config = lib.mkIf config.oh-my-posh.use {
+  config = lib.mkIf config.oh-my-posh.enable {
     programs.oh-my-posh = {
       enable = true;
       enableZshIntegration = true;

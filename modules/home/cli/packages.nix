@@ -5,12 +5,12 @@
   ...
 }: {
   options.cli = {
-    tools.use = lib.mkEnableOption "enables cli tools";
-    utils.use = lib.mkEnableOption "enables cli utils";
+    tools.enable = lib.mkEnableOption "enables cli tools";
+    utils.enable = lib.mkEnableOption "enables cli utils";
   };
 
   config = lib.mkMerge [
-    (lib.mkIf config.cli.tools.use {
+    (lib.mkIf config.cli.tools.enable {
       home.packages = with pkgs; [
         bat # dispplay file content
         bottom # performance monitor
@@ -22,7 +22,7 @@
         ffmpeg # multimedia converter
       ];
     })
-    (lib.mkIf config.cli.utils.use {
+    (lib.mkIf config.cli.utils.enable {
       home.packages = with pkgs; [
         brightnessctl # cl screan brightness control
         cliphist # cl clipboard history

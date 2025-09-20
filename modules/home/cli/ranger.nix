@@ -4,10 +4,10 @@
   ...
 }: {
   options = {
-    ranger.use = lib.mkEnableOption "enables ranger";
+    ranger.enable = lib.mkEnableOption "enables ranger";
   };
 
-  config = lib.mkIf config.ranger.use {
+  config = lib.mkIf config.ranger.enable {
     programs.ranger = {
       enable = true;
       mappings = {

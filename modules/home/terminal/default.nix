@@ -5,7 +5,7 @@
     ./zsh.nix
   ];
 
-  ghostty.use = lib.mkDefault true;
-  tmux.use = lib.mkDefault false;
-  zsh.use = lib.mkDefault true;
+  ghostty.enable = lib.mkDefault true;
+  tmux.enable = lib.mkDefault false;
+  zsh.enable = lib.mkDefault true;
 }

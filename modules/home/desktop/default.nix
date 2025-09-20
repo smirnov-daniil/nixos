@@ -8,9 +8,9 @@
     ./hyprland
   ];
 
-  hyprland.use = lib.mkDefault true;
-  gbar.use = lib.mkDefault true;
-  wofi.use = lib.mkDefault true;
-  waybar.use = lib.mkDefault false;
-  swaync.use = lib.mkDefault false;
+  hyprland.enable = lib.mkDefault true;
+  gbar.enable = lib.mkDefault true;
+  wofi.enable = lib.mkDefault true;
+  waybar.enable = lib.mkDefault false;
+  swaync.enable = lib.mkDefault false;
 }

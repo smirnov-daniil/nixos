@@ -5,7 +5,7 @@
     ./stylix.nix
   ];
 
-  oh-my-posh.use = lib.mkDefault true;
-  qt.use = lib.mkDefault true;
-  stylix.use = lib.mkDefault true;
+  oh-my-posh.enable = lib.mkDefault true;
+  qt.enable = lib.mkDefault true;
+  stylix.enable = lib.mkDefault true;
 }

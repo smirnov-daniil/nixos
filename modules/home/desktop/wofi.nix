@@ -4,10 +4,10 @@
   ...
 }: {
   options = {
-    wofi.use = lib.mkEnableOption "enables wofi";
+    wofi.enable = lib.mkEnableOption "enables wofi";
   };
 
-  config = lib.mkIf config.wofi.use {
+  config = lib.mkIf config.wofi.enable {
     programs.wofi = {
       enable = true;
       settings = {

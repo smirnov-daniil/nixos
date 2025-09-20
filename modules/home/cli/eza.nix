@@ -4,10 +4,10 @@
   ...
 }: {
   options = {
-    eza.use = lib.mkEnableOption "enables eza";
+    eza.enable = lib.mkEnableOption "enables eza";
   };
 
-  config = lib.mkIf config.eza.use {
+  config = lib.mkIf config.eza.enable {
     programs.eza = {
       enable = true;
       enableZshIntegration = true;

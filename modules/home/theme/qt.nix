@@ -5,10 +5,10 @@
   ...
 }: {
   options = {
-    qt.use = lib.mkEnableOption "enables qt themes";
+    qt.enable = lib.mkEnableOption "enables qt themes";
   };
 
-  config = lib.mkIf config.qt.use {
+  config = lib.mkIf config.qt.enable {
     home.packages = with pkgs; [
       papirus-icon-theme
       pcmanfm-qt

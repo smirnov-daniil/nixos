@@ -8,7 +8,7 @@
   imports = [inputs.stylix.homeModules.stylix];
 
   options = {
-    stylix.use = lib.mkEnableOption "enables stylix";
+    stylix.enable = lib.mkEnableOption "enables stylix";
     stylix.theme = lib.mkOption {
       #     type = lib.types.str;
       default = "porple";
@@ -16,7 +16,7 @@
     };
   };
 
-  config = lib.mkIf config.stylix.use {
+  config = lib.mkIf config.stylix.enable {
     home.packages = with pkgs; [
       jetbrains-mono
       noto-fonts

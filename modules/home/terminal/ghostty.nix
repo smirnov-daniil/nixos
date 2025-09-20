@@ -4,10 +4,10 @@
   ...
 }: {
   options = {
-    ghostty.use = lib.mkEnableOption "enables ghostty";
+    ghostty.enable = lib.mkEnableOption "enables ghostty";
   };
 
-  config = lib.mkIf config.ghostty.use {
+  config = lib.mkIf config.ghostty.enable {
     programs.ghostty = {
       enable = true;
       settings = {

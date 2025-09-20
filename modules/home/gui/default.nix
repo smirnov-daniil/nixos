@@ -4,11 +4,11 @@
     ./packages.nix
   ];
 
-  vscode.use = lib.mkDefault true;
-  media.use = lib.mkDefault true;
-  browser.use = lib.mkDefault true;
-  idea.use = lib.mkDefault false;
-  obs.use = lib.mkDefault true;
-  telegram.use = lib.mkDefault true;
-  localsend.use = lib.mkDefault true;
+  vscode.enable = lib.mkDefault true;
+  media.enable = lib.mkDefault true;
+  browser.enable = lib.mkDefault true;
+  idea.enable = lib.mkDefault false;
+  obs.enable = lib.mkDefault true;
+  telegram.enable = lib.mkDefault true;
+  localsend.enable = lib.mkDefault true;
 }

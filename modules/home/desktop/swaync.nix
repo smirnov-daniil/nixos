@@ -4,10 +4,10 @@
   ...
 }: {
   options = {
-    swaync.use = lib.mkEnableOption "enables swaync";
+    swaync.enable = lib.mkEnableOption "enables swaync";
   };
 
-  config = lib.mkIf config.swaync.use {
+  config = lib.mkIf config.swaync.enable {
     services.swaync = {
       enable = true;
       settings = {

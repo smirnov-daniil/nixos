@@ -10,20 +10,20 @@
     stateVersion = "25.05";
   };
 
-  hyprland.use = false;
-  gbar.use = false;
-  wofi.use = false;
-  waybar.use = false;
-  swaync.use = false;
-  vscode.use = false;
-  media.use = false;
-  browser.use = false;
-  idea.use = false;
-  obs.use = false;
-  telegram.use = false;
-  localsend.use = false;
-  ghostty.use = false;
-  tmux.use = false;
-  qt.use = false;
-  vscode-server.use = true;
+  hyprland.enable = false;
+  gbar.enable = false;
+  wofi.enable = false;
+  waybar.enable = false;
+  swaync.enable = false;
+  vscode.enable = false;
+  media.enable = false;
+  browser.enable = false;
+  idea.enable = false;
+  obs.enable = false;
+  telegram.enable = false;
+  localsend.enable = false;
+  ghostty.enable = false;
+  tmux.enable = false;
+  qt.enable = false;
+  vscode-server.enable = true;
 }
