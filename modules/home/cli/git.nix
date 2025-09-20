@@ -16,6 +16,10 @@
       aliases = {
         ci = "commit";
         st = "status";
+        co = "checkout";
+        br = "branch";
+        sw = "switch";
+        lg = "log --oneline --graph --decorate --all";
       };
 
       extraConfig = {
