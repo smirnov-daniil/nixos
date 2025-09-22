@@ -12,7 +12,6 @@ in {
     inputs.nixos-wsl.nixosModules.default
     inputs.home-manager.nixosModules.default
     ../../modules/nixos/system
-    ./modules
     ./local-packages.nix
   ];
 
