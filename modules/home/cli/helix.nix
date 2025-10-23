@@ -42,51 +42,53 @@
         };
       };
 
-      languages.language = [
-        {
-          name = "nix";
-          language-servers = ["nixd"];
-          auto-format = true;
-          formatter = {
-            command = "${pkgs.alejandra}/bin/alejandra";
-            args = ["--quiet"];
-          };
-        }
-        {
-          name = "rust";
-          language-servers = ["rust-analyzer"];
-          auto-format = true;
-          formatter = {
-            command = "rustfmt";
-          };
-        }
-        {
-          name = "haskell";
-          language-servers = ["haskell-language-server"];
-          auto-format = true;
-          formatter = {
-            command = "stylish-haskell";
-          };
-        }
-      ];
+      languages = {
+        language = [
+          {
+            name = "nix";
+            language-servers = ["nixd"];
+            auto-format = true;
+            formatter = {
+              command = "${pkgs.alejandra}/bin/alejandra";
+              args = ["--quiet"];
+            };
+          }
+          {
+            name = "rust";
+            language-servers = ["rust-analyzer"];
+            auto-format = true;
+            formatter = {
+              command = "rustfmt";
+            };
+          }
+          {
+            name = "haskell";
+            language-servers = ["haskell-language-server"];
+            auto-format = true;
+            formatter = {
+              command = "stylish-haskell";
+            };
+          }
+        ];
 
-      language-server = {
-        rust-analyzer = {
-          command = "rust-analyzer";
-          config.check = {
-            command = "clippy";
+        language-server = {
+          rust-analyzer = {
+            command = "rust-analyzer";
+            config.check = {
+              command = "clippy";
+            };
           };
-        };
-        nixd = {
-          command = "${pkgs.nixd}/bin/nixd";
-        };
-        haskell-language-server = {
-          command = "haskell-language-server";
-          args = ["--lsp"];
-          config = {
-            haskell = {
-              formattingProvider = "stylish-haskell";
-              checkProject = true;
+          nixd = {
+            command = "${pkgs.nixd}/bin/nixd";
+          };
+          haskell-language-server = {
+            command = "haskell-language-server";
+            args = ["--lsp"];
+            config = {
+              haskell = {
+                formattingProvider = "stylish-haskell";
+                checkProject = true;
+              };
             };
           };
         };
