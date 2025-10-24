@@ -10,6 +10,7 @@
     ../../modules/nixos/system
     ../../modules/nixos/hardware
     ./modules
+    ../../modules/sanctum
   ];
 
   nixpkgs.config.allowUnfree = true;
@@ -21,5 +22,11 @@
   main-user = {
     enable = true;
     username = "server";
+  };
+
+  sanctum.services.nginx = {
+    enable = true;
+    domain = "your-domain.com";
+    acmeEmail = "your-email@example.com";
   };
 }
