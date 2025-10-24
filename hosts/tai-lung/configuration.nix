@@ -1,6 +1,8 @@
 {
   pkgs,
+  inputs,
   stateVersion,
+  config,
   hostname,
   ...
 }: {
@@ -11,6 +13,7 @@
     ../../modules/nixos/hardware
     ./modules
     ../../modules/sanctum
+    inputs.sops-nix.nixosModules.default
   ];
 
   nixpkgs.config.allowUnfree = true;
@@ -24,9 +27,19 @@
     username = "server";
   };
 
+  sops = {
+    defaultSopsFile = ./secrets/secrets.yaml;
+    defaultSopsFormat = "yaml";
+    age.keyFile = "/home/${config.main-user.username}/.config/sops/age/keys.txt";
+  };
+
   sanctum.services.nginx = {
     enable = true;
-    domain = "your-domain.com";
-    acmeEmail = "your-email@example.com";
+    domain = "ds-2.duckdns.org";
+    # acmeEmail = "your-email@example.com";
+  };
+
+  sanctum.services.vaultwarden = {
+    enable = true;
   };
 }

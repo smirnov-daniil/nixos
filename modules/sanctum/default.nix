@@ -1,3 +1,6 @@
 {
-  imports = [./nginx];
+  imports = [
+    ./nginx
+    ./vaultwarden
+  ];
 }
