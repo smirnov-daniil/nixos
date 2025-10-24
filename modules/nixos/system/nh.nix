@@ -1,6 +1,6 @@
-{user, ...}: {
+{config, ...}: {
   programs.nh = {
     enable = true;
-    flake = "/home/ds2/flake";
+    flake = "/home/${config.main-user.username}/flake";
   };
 }
