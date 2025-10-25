@@ -50,5 +50,9 @@
       enable = true;
       title = "My Sanctum Dashboard";
     };
+
+    microbin = {
+      enable = true;
+    };
   };
 }

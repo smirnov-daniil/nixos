@@ -4,6 +4,7 @@
   lib,
   ...
 }:
+with lib;
 let
   service = "microbin";
   cfg = config.sanctum."${service}";
@@ -11,22 +12,26 @@ let
 in
 {
   options.sanctum."${service}" = {
-    enable = lib.mkEnableOption {
+    enable = mkEnableOption {
       description = "Enable ${service}";
+    };
+    port = mkOption {
+      type = types.port;
+      default = 8069;
+      description = "${service} port";
     };
   };
 
-  config = lib.mkIf cfg.enable {
+  config = mkIf cfg.enable {
     sanctum.services."${service}" = {
       enable = true;
       domain = "bin.${sanctum.domain}";
-      port = config.services.microbin.settings.MICROBIN_PORT;
-      description = "Pastebin & File Sharing";
+      port = cfg.port;
+      description = "Minimal paste bin service.";
       homepage = {
-        category = "Services";
-        name = "${service}";
+        enable = true;
         icon = "${service}.png";
-        description = "A minimal pastebin";
+        category = "Services";
       };
     };
 
@@ -35,9 +40,9 @@ in
       settings = {
         MICROBIN_WIDE = true;
         MICROBIN_MAX_FILE_SIZE_UNENCRYPTED_MB = 2048;
-        MICROBIN_PUBLIC_PATH = "https://${sanctum.services."${service}"}/";
+        MICROBIN_PUBLIC_PATH = "https://${sanctum.services."${service}".domain}/";
         MICROBIN_BIND = "127.0.0.1";
-        MICROBIN_PORT = 8069;
+        MICROBIN_PORT = cfg.port;
         MICROBIN_HIDE_LOGO = true;
         MICROBIN_HIGHLIGHTSYNTAX = true;
         MICROBIN_HIDE_HEADER = true;

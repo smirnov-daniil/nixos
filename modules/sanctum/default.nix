@@ -9,6 +9,7 @@ with lib; {
     ./nginx
     ./vaultwarden
     ./homepage
+    ./microbin
   ];
 
   options.sanctum = {
