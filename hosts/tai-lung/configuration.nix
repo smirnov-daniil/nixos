@@ -36,27 +36,19 @@
   sanctum = {
     domain = "ds-2.duckdns.org";
     ip = "178.66.51.192";
-    
+
     nginx = {
       enable = true;
       acmeEmail = "dan0gun@yandex.com";
     };
-    
+
     vaultwarden = {
       enable = true;
     };
-    
-    # nextcloud = {
-    #   enable = true;
-    # };
-    
+
     homepage = {
       enable = true;
       title = "My Sanctum Dashboard";
     };
-    
-    # telegram-notify = {
-    #   enable = true;
-    # };
   };
 }

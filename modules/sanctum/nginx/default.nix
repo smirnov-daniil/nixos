@@ -1,31 +1,29 @@
-{ config, pkgs, lib, ... }:
-
-with lib;
-
-let
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
+with lib; let
   cfg = config.sanctum.nginx;
   sanctumCfg = config.sanctum;
 
-  # Функция для создания nginx virtualHost для сервиса
   makeServiceVirtualHost = serviceName: serviceCfg:
-    if serviceCfg.enable && serviceCfg ? port && serviceCfg ? domain then
-      {
-        "${serviceCfg.domain}" = {
-          forceSSL = true;
-          enableACME = true;
-          locations."/" = {
-            proxyPass = "http://127.0.0.1:${toString serviceCfg.port}";
-            proxyWebsockets = true;
-          };
+    if serviceCfg.enable && serviceCfg ? port && serviceCfg ? domain
+    then {
+      "${serviceCfg.domain}" = {
+        forceSSL = true;
+        enableACME = true;
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:${toString serviceCfg.port}";
+          proxyWebsockets = true;
         };
-      }
-    else
-      {};
+      };
+    }
+    else {};
 
-  # Собираем все virtualHosts для включенных сервисов
   serviceVirtualHosts = concatMapAttrs makeServiceVirtualHost sanctumCfg.services;
 
-  # Основной virtualHost
   mainVirtualHost = {
     "${sanctumCfg.domain}" = {
       forceSSL = true;
@@ -43,9 +41,7 @@ let
     };
   };
 
-  # Объединяем все virtualHosts
   allVirtualHosts = mainVirtualHost // serviceVirtualHosts;
-
 in {
   options.sanctum.nginx = {
     enable = mkEnableOption "nginx web server";
@@ -70,7 +66,7 @@ in {
   };
 
   config = mkIf cfg.enable {
-    networking.firewall.allowedTCPPorts = [ cfg.httpPort cfg.httpsPort ];
+    networking.firewall.allowedTCPPorts = [cfg.httpPort cfg.httpsPort];
 
     services.nginx = {
       enable = true;

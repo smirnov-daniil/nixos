@@ -2,69 +2,72 @@
   config,
   lib,
   ...
-}:
-let
+}: let
   service = "homepage";
   cfg = config.sanctum."${service}";
   sanctum = config.sanctum;
-  
-  collectServices = 
-    let
-      servicesByCategory =
-        let
-          sanctumServices = lib.attrsets.filterAttrs (
-              _name: value: value ? homepage
-            ) sanctum.services;
-        in
-        lib.lists.foldl (acc: serviceName: 
-        let
+
+  collectServices = let
+    servicesByCategory = let
+      sanctumServices =
+        lib.attrsets.filterAttrs (
+          _name: value: value ? homepage
+        )
+        sanctum.services;
+    in
+      lib.lists.foldl (
+        acc: serviceName: let
           serviceCfg = sanctum.services.${serviceName};
           category = serviceCfg."${service}".category or "Services";
         in
-        if serviceCfg.enable && serviceName != "${service}" then
-          acc // {
-            ${category} = (acc.${category} or []) ++ [{
-              "${serviceCfg."${service}".name or serviceCfg.description}" = {
-                icon = serviceCfg."${service}".icon or "${serviceName}.svg";
-                description = serviceCfg."${service}".description or serviceCfg.description;
-                href = "https://${serviceCfg.domain}";
-                siteMonitor = "https://${serviceCfg.domain}";
-              };
-            }];
-          }
-        else
-          acc
+          if serviceCfg.enable && serviceName != "${service}"
+          then
+            acc
+            // {
+              ${category} =
+                (acc.${category} or [])
+                ++ [
+                  {
+                    "${serviceCfg."${service}".name or serviceCfg.description}" = {
+                      icon = serviceCfg."${service}".icon or "${serviceName}.svg";
+                      description = serviceCfg."${service}".description or serviceCfg.description;
+                      href = "https://${serviceCfg.domain}";
+                      siteMonitor = "https://${serviceCfg.domain}";
+                    };
+                  }
+                ];
+            }
+          else acc
       ) {} (lib.attrNames sanctumServices);
-      
-      # Преобразуем в формат homepage
-      homepageServices = lib.attrsets.mapAttrs (category: services: {
-        ${category} = services;
-      }) servicesByCategory;
-      
-    in
-    lib.attrsets.attrValues homepageServices;
 
-in
-{
+    # Преобразуем в формат homepage
+    homepageServices =
+      lib.attrsets.mapAttrs (category: services: {
+        ${category} = services;
+      })
+      servicesByCategory;
+  in
+    lib.attrsets.attrValues homepageServices;
+in {
   options.sanctum."${service}" = {
     enable = lib.mkEnableOption {
       description = "Enable homepage dashboard";
     };
-    
+
     port = lib.mkOption {
       type = lib.types.port;
       default = 8080;
       description = "Port for homepage";
     };
-    
+
     title = lib.mkOption {
       type = lib.types.str;
       default = "Sanctum Dashboard";
       description = "Dashboard title";
     };
-    
+
     misc = lib.mkOption {
-      default = [ ];
+      default = [];
       type = lib.types.listOf (
         lib.types.attrsOf (
           lib.types.submodule {
@@ -99,12 +102,12 @@ in
 
     # Включаем glances для мониторинга системы
     services.glances.enable = true;
-    
+
     services.homepage-dashboard = {
       enable = true;
 
       listenPort = cfg.port;
-      
+
       allowedHosts = "home.${sanctum.domain}";
       # Кастомный CSS (как в оригинале)
       customCSS = ''
@@ -131,7 +134,7 @@ in
           padding-bottom: 3rem;
         };
       '';
-      
+
       settings = {
         layout = [
           {
@@ -170,61 +173,60 @@ in
         statusStyle = "dot";
         hideVersion = "true";
       };
-      
-      services = collectServices 
-        ++ [ { Misc = cfg.misc; } ]
+
+      services =
+        collectServices
+        ++ [{Misc = cfg.misc;}]
         ++ [
           {
-            Glances =
-              let
-                port = toString config.services.glances.port;
-              in
-              [
-                {
-                  Info = {
-                    widget = {
-                      type = "glances";
-                      url = "http://localhost:${port}";
-                      metric = "info";
-                      chart = false;
-                      version = 4;
-                    };
+            Glances = let
+              port = toString config.services.glances.port;
+            in [
+              {
+                Info = {
+                  widget = {
+                    type = "glances";
+                    url = "http://localhost:${port}";
+                    metric = "info";
+                    chart = false;
+                    version = 4;
                   };
-                }
-                {
-                  "CPU Temp" = {
-                    widget = {
-                      type = "glances";
-                      url = "http://localhost:${port}";
-                      metric = "sensor:Package id 0";
-                      chart = false;
-                      version = 4;
-                    };
+                };
+              }
+              {
+                "CPU Temp" = {
+                  widget = {
+                    type = "glances";
+                    url = "http://localhost:${port}";
+                    metric = "sensor:Package id 0";
+                    chart = false;
+                    version = 4;
                   };
-                }
-                {
-                  Processes = {
-                    widget = {
-                      type = "glances";
-                      url = "http://localhost:${port}";
-                      metric = "process";
-                      chart = false;
-                      version = 4;
-                    };
+                };
+              }
+              {
+                Processes = {
+                  widget = {
+                    type = "glances";
+                    url = "http://localhost:${port}";
+                    metric = "process";
+                    chart = false;
+                    version = 4;
                   };
-                }
-                {
-                  Network = {
-                    widget = {
-                      type = "glances";
-                      url = "http://localhost:${port}";
-                      metric = "network:enp2s0";
-                      chart = false;
-                      version = 4;
-                    };
+                };
+              }
+              {
+                Network = {
+                  widget = {
+                    type = "glances";
+                    url = "http://localhost:${port}";
+                    metric = "network:enp2s0";
+                    chart = false;
+                    version = 4;
                   };
-                }
-              ];
+                };
+              }
+            ];
           }
         ];
     };

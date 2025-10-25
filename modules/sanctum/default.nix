@@ -1,8 +1,10 @@
-{ config, pkgs, lib, ... }:
-
-with lib;
-
 {
+  config,
+  pkgs,
+  lib,
+  ...
+}:
+with lib; {
   imports = [
     ./nginx
     ./vaultwarden
@@ -23,7 +25,7 @@ with lib;
     };
 
     services = mkOption {
-      type = types.attrsOf (types.submodule ({ name, ... }: {
+      type = types.attrsOf (types.submodule ({name, ...}: {
         options = {
           enable = mkEnableOption "Enable ${name} service";
           domain = mkOption {
@@ -40,7 +42,6 @@ with lib;
             default = name;
             description = "Description for ${name}";
           };
-          # Новые опции для homepage
           homepage = {
             category = mkOption {
               type = types.str;
