@@ -1,26 +1,54 @@
-{
-  config,
-  pkgs,
-  lib,
-  ...
-}:
-with lib; let
-  cfg = config.sanctum.services.nginx;
+{ config, pkgs, lib, ... }:
+
+with lib;
+
+let
+  cfg = config.sanctum.nginx;
+  sanctumCfg = config.sanctum;
+
+  # Функция для создания nginx virtualHost для сервиса
+  makeServiceVirtualHost = serviceName: serviceCfg:
+    if serviceCfg.enable && serviceCfg.port != null && serviceName != "nginx" then
+      {
+        "${serviceCfg.domain}" = {
+          forceSSL = true;
+          enableACME = true;
+          locations."/" = {
+            proxyPass = "http://127.0.0.1:${toString serviceCfg.port}";
+            proxyWebsockets = true;
+          };
+        };
+      }
+    else
+      {};
+
+  # Собираем все virtualHosts для включенных сервисов
+  serviceVirtualHosts = concatMapAttrs makeServiceVirtualHost sanctumCfg.services;
+
+  # Основной virtualHost
+  mainVirtualHost = {
+    "${sanctumCfg.domain}" = {
+      forceSSL = true;
+      enableACME = true;
+      default = true;
+      locations."/" = {
+        root = pkgs.writeTextDir "index.html" ''
+          <html>
+            <body>
+              <h1>Server Ready!</h1>
+            </body>
+          </html>
+        '';
+      };
+    };
+  };
+
+  # Объединяем все virtualHosts
+  allVirtualHosts = mainVirtualHost // serviceVirtualHosts;
+
 in {
-  options.sanctum.services.nginx = {
+  options.sanctum.nginx = {
     enable = mkEnableOption "nginx web server";
-
-    domain = mkOption {
-      type = types.str;
-      default = "localhost";
-      description = "Основной домен сервера";
-    };
-
-    ip = mkOption {
-      type = types.str;
-      default = "0.0.0.0";
-      description = "IP адрес для привязки";
-    };
 
     httpPort = mkOption {
       type = types.port;
@@ -42,10 +70,15 @@ in {
   };
 
   config = mkIf cfg.enable {
-    # Настройка firewall
-    networking.firewall.allowedTCPPorts = [cfg.httpPort cfg.httpsPort];
+    # Добавляем метаданные в sanctum.services
+    sanctum.services.nginx = {
+      enable = true;
+      domain = sanctumCfg.domain;
+      description = "Web Server";
+    };
 
-    # Настройка nginx
+    networking.firewall.allowedTCPPorts = [ cfg.httpPort cfg.httpsPort 8082 ];
+
     services.nginx = {
       enable = true;
       recommendedProxySettings = true;
@@ -53,24 +86,9 @@ in {
       recommendedOptimisation = true;
       recommendedGzipSettings = true;
 
-      virtualHosts."${cfg.domain}" = {
-        forceSSL = true;
-        enableACME = true;
-        default = true;
-        locations."/" = {
-          root = pkgs.writeTextDir "index.html" ''
-            <html>
-              <body>
-                <h1>NixOS Server Ready!</h1>
-                <p>Домен: ${cfg.domain}</p>
-              </body>
-            </html>
-          '';
-        };
-      };
+      virtualHosts = allVirtualHosts;
     };
 
-    # Настройка Let's Encrypt
     security.acme = {
       acceptTerms = true;
       defaults.email = cfg.acmeEmail;

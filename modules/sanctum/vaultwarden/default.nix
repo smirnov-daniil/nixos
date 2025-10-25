@@ -3,31 +3,34 @@
 with lib;
 
 let
-  cfg = config.sanctum.services.vaultwarden;
+  cfg = config.sanctum.vaultwarden;
+  sanctumCfg = config.sanctum;
 in {
-  options.sanctum.services.vaultwarden = {
+  options.sanctum.vaultwarden = {
     enable = mkEnableOption "Vaultwarden password manager";
-    
-    domain = mkOption {
-      type = types.str;
-      default = "vault.${config.sanctum.services.nginx.domain}";
-      description = "Vaultwarden domen";
-    };
-    
+
     port = mkOption {
       type = types.port;
       default = 8222;
-      description = "Vaultwarden port";
+      description = "Порт Vaultwarden";
     };
-    
+
     enableAdmin = mkOption {
       type = types.bool;
       default = true;
-      description = "Enable admin panel";
+      description = "Включить админ панель";
     };
   };
 
   config = mkIf cfg.enable {
+    # Добавляем метаданные в sanctum.services
+    sanctum.services.vaultwarden = {
+      enable = true;
+      domain = "vault.${sanctumCfg.domain}";
+      port = cfg.port;
+      description = "Password Manager";
+    };
+
     sops.secrets.vaultwarden = {
       owner = "vaultwarden";
     };
@@ -36,22 +39,12 @@ in {
       enable = true;
       dbBackend = "sqlite";
       config = {
-        DOMAIN = "https://${cfg.domain}";
+        DOMAIN = "https://vault.${sanctumCfg.domain}";
         ROCKET_PORT = cfg.port;
         SIGNUPS_ALLOWED = false;
         ROCKET_ADDRESS = "127.0.0.1";
-        
       };
-      environmentFile = "${config.sops.secrets.vaultwarden.path}";
-    };
-
-    services.nginx.virtualHosts.${cfg.domain} = {
-      forceSSL = true;
-      enableACME = true;
-      locations."/" = {
-        proxyPass = "http://127.0.0.1:${toString cfg.port}";
-        proxyWebsockets = true;
-      };
+      environmentFile = config.sops.secrets.vaultwarden.path;
     };
   };
 }

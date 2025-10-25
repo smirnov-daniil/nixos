@@ -33,13 +33,30 @@
     age.keyFile = "/home/${config.main-user.username}/.config/sops/age/keys.txt";
   };
 
-  sanctum.services.nginx = {
-    enable = true;
+  sanctum = {
     domain = "ds-2.duckdns.org";
-    # acmeEmail = "your-email@example.com";
-  };
-
-  sanctum.services.vaultwarden = {
-    enable = true;
+    ip = "178.66.51.192";
+    
+    nginx = {
+      enable = true;
+      # acmeEmail = "admin@your-domain.com";
+    };
+    
+    vaultwarden = {
+      enable = true;
+    };
+    
+    # nextcloud = {
+    #   enable = true;
+    # };
+    
+    homepage = {
+      enable = true;
+      title = "My Sanctum Dashboard";
+    };
+    
+    # telegram-notify = {
+    #   enable = true;
+    # };
   };
 }
