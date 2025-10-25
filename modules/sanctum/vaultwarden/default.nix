@@ -8,13 +8,11 @@ let
 in {
   options.sanctum.vaultwarden = {
     enable = mkEnableOption "Vaultwarden password manager";
-
     port = mkOption {
       type = types.port;
       default = 8222;
       description = "Порт Vaultwarden";
     };
-
     enableAdmin = mkOption {
       type = types.bool;
       default = true;
@@ -23,12 +21,17 @@ in {
   };
 
   config = mkIf cfg.enable {
-    # Добавляем метаданные в sanctum.services
     sanctum.services.vaultwarden = {
       enable = true;
       domain = "vault.${sanctumCfg.domain}";
       port = cfg.port;
       description = "Password Manager";
+      homepage = {
+        category = "Services";
+        name = "Vaultwarden";
+        icon = "vaultwarden.svg";
+        description = "Password Manager";
+      };
     };
 
     sops.secrets.vaultwarden = {

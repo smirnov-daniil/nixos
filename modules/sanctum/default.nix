@@ -22,7 +22,6 @@ with lib;
       description = "IP адрес сервера";
     };
 
-    # Определяем sanctum.services как свободный attrset
     services = mkOption {
       type = types.attrsOf (types.submodule ({ name, ... }: {
         options = {
@@ -41,10 +40,35 @@ with lib;
             default = name;
             description = "Description for ${name}";
           };
+          # Новые опции для homepage
+          homepage = {
+            category = mkOption {
+              type = types.str;
+              default = "Services";
+              description = "Category for homepage";
+            };
+            name = mkOption {
+              type = types.str;
+              default = name;
+              description = "Display name in homepage";
+            };
+            icon = mkOption {
+              type = types.str;
+              default = "${name}.svg";
+              description = "Icon for homepage";
+            };
+            description = mkOption {
+              type = types.str;
+              default = name;
+              description = "Description for homepage";
+            };
+          };
         };
       }));
       default = {};
       description = "Sanctum services configuration";
     };
   };
+
+  config.sanctum.services = {};
 }

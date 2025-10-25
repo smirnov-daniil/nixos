@@ -8,7 +8,7 @@ let
 
   # Функция для создания nginx virtualHost для сервиса
   makeServiceVirtualHost = serviceName: serviceCfg:
-    if serviceCfg.enable && serviceCfg.port != null && serviceName != "nginx" then
+    if serviceCfg.enable && serviceCfg ? port && serviceCfg ? domain then
       {
         "${serviceCfg.domain}" = {
           forceSSL = true;
@@ -70,14 +70,7 @@ in {
   };
 
   config = mkIf cfg.enable {
-    # Добавляем метаданные в sanctum.services
-    sanctum.services.nginx = {
-      enable = true;
-      domain = sanctumCfg.domain;
-      description = "Web Server";
-    };
-
-    networking.firewall.allowedTCPPorts = [ cfg.httpPort cfg.httpsPort 8082 ];
+    networking.firewall.allowedTCPPorts = [ cfg.httpPort cfg.httpsPort ];
 
     services.nginx = {
       enable = true;

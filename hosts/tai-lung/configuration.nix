@@ -39,7 +39,7 @@
     
     nginx = {
       enable = true;
-      # acmeEmail = "admin@your-domain.com";
+      acmeEmail = "dan0gun@yandex.com";
     };
     
     vaultwarden = {
