@@ -35,6 +35,8 @@ in
       };
     };
 
+    sops.secrets."${service}" = {};
+
     services."${service}" = {
       enable = true;
       settings = {
@@ -48,6 +50,7 @@ in
         MICROBIN_HIDE_HEADER = true;
         MICROBIN_HIDE_FOOTER = true;
       };
+      passwordFile = config.sops.secrets."${service}".path;
     };
   };
 }
