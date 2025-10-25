@@ -11,7 +11,7 @@
     servicesByCategory = let
       sanctumServices =
         lib.attrsets.filterAttrs (
-          _name: value: value ? homepage && value.homepage.enable
+          _name: value: value ? "${service}" && value."${service}".enable
         )
         sanctum.services;
     in
@@ -50,13 +50,13 @@
 in {
   options.sanctum."${service}" = {
     enable = lib.mkEnableOption {
-      description = "Enable homepage dashboard";
+      description = "Enable ${service} dashboard";
     };
 
     port = lib.mkOption {
       type = lib.types.port;
       default = 8080;
-      description = "Port for homepage";
+      description = "Port for ${service}";
     };
 
     title = lib.mkOption {
