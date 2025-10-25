@@ -15,13 +15,13 @@ with lib; {
     domain = mkOption {
       type = types.str;
       default = "localhost";
-      description = "Основной домен сервера";
+      description = "Base domain";
     };
 
     ip = mkOption {
       type = types.str;
       default = "0.0.0.0";
-      description = "IP адрес сервера";
+      description = "IP address";
     };
 
     services = mkOption {
@@ -43,6 +43,8 @@ with lib; {
             description = "Description for ${name}";
           };
           homepage = {
+            enable = mkEnableOption "Enable homepage for service";
+
             category = mkOption {
               type = types.str;
               default = "Services";

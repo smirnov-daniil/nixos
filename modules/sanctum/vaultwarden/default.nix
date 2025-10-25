@@ -29,6 +29,7 @@ in {
       port = cfg.port;
       description = "Password Manager";
       homepage = {
+        enable = true;
         category = "Services";
         name = "Vaultwarden";
         icon = "vaultwarden.svg";

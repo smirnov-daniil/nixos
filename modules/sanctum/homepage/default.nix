@@ -11,16 +11,16 @@
     servicesByCategory = let
       sanctumServices =
         lib.attrsets.filterAttrs (
-          _name: value: value ? homepage
+          _name: value: value ? homepage && value.homepage.enable
         )
         sanctum.services;
     in
       lib.lists.foldl (
         acc: serviceName: let
           serviceCfg = sanctum.services.${serviceName};
-          category = serviceCfg."${service}".category or "Services";
+          category = serviceCfg."${service}".category;
         in
-          if serviceCfg.enable && serviceName != "${service}"
+          if serviceCfg.enable
           then
             acc
             // {
@@ -40,7 +40,6 @@
           else acc
       ) {} (lib.attrNames sanctumServices);
 
-    # Преобразуем в формат homepage
     homepageServices =
       lib.attrsets.mapAttrs (category: services: {
         ${category} = services;
@@ -92,7 +91,6 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    # Добавляем метаданные homepage в sanctum
     sanctum.services."${service}" = {
       enable = true;
       domain = "home.${sanctum.domain}";
@@ -100,7 +98,6 @@ in {
       description = "Dashboard";
     };
 
-    # Включаем glances для мониторинга системы
     services.glances.enable = true;
 
     services.homepage-dashboard = {
@@ -109,7 +106,7 @@ in {
       listenPort = cfg.port;
 
       allowedHosts = "home.${sanctum.domain}";
-      # Кастомный CSS (как в оригинале)
+
       customCSS = ''
         body, html {
           font-family: SF Pro Display, Helvetica, Arial, sans-serif !important;
@@ -220,7 +217,7 @@ in {
                   widget = {
                     type = "glances";
                     url = "http://localhost:${port}";
-                    metric = "network:enp2s0";
+                    metric = "network:enp3s0";
                     chart = false;
                     version = 4;
                   };

@@ -6,11 +6,16 @@
 }:
 with lib; let
   cfg = config.sanctum.nginx;
-  sanctumCfg = config.sanctum;
+  sanctum = config.sanctum;
+
+  sanctumServices =
+    lib.attrsets.filterAttrs (
+      _name: value: value.enable
+    )
+    sanctum.services;
 
   makeServiceVirtualHost = serviceName: serviceCfg:
-    if serviceCfg.enable && serviceCfg ? port && serviceCfg ? domain
-    then {
+    {
       "${serviceCfg.domain}" = {
         forceSSL = true;
         enableACME = true;
@@ -19,13 +24,12 @@ with lib; let
           proxyWebsockets = true;
         };
       };
-    }
-    else {};
+    };
 
-  serviceVirtualHosts = concatMapAttrs makeServiceVirtualHost sanctumCfg.services;
+  serviceVirtualHosts = concatMapAttrs makeServiceVirtualHost sanctumServices;
 
   mainVirtualHost = {
-    "${sanctumCfg.domain}" = {
+    "${sanctum.domain}" = {
       forceSSL = true;
       enableACME = true;
       default = true;
