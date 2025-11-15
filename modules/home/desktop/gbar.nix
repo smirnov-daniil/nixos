@@ -14,9 +14,13 @@
     programs.gBar = {
       enable = true;
       config = {
-        Location = "L"; # B = bottom
+        Location = "R"; # B = bottom
         UseHyprlandIPC = true; # hyprland workspaces support
         EnableSNI = true;
+        SNIIconSize = {
+          Discord = 26;
+          OBS = 23;
+        };
         NumWorkspaces = 5;
       };
     };
