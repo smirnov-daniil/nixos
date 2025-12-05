@@ -21,7 +21,7 @@
 
         "$mainMod" = "SUPER";
         "$terminal" = "ghostty";
-        "$fileManager" = "$terminal -e sh -c 'ranger'";
+        #       "$fileManager" = "$terminal -e sh -c 'ranger'";
         "$menu" = "wofi";
 
         exec-once = [
@@ -31,7 +31,9 @@
           "wl-paste --type text --watch cliphist store"
           "wl-paste --type image --watch cliphist store"
           "$terminal"
-          "gBar bar eDP-1"
+          "uwsm app -- quickshell"
+          # "caelestia-shell -d"
+          # "gBar bar eDP-1"
         ];
 
         xwayland.force_zero_scaling = true;
@@ -50,7 +52,6 @@
 
         decoration = {
           rounding = 0;
-
           shadow = {
             enabled = false;
           };
@@ -86,31 +87,6 @@
           force_default_wallpaper = 0;
           disable_hyprland_logo = true;
         };
-
-        windowrulev2 = [
-          "bordersize 0, floating:0, onworkspace:w[t1]"
-
-          "float,class:(mpv)|(imv)|(showmethekey-gtk)"
-          "move 990 60,size 900 170,pin,noinitialfocus,class:(showmethekey-gtk)"
-          "noborder,nofocus,class:(showmethekey-gtk)"
-
-          "workspace 1,class:(zen)"
-          "workspace 2,class:(tty)"
-          "workspace 3,class:(telegram-desktop)"
-          "workspace 4,class:(code)"
-          "workspace 4,class:(idea)"
-          "workspace 5,class:(com.obsproject.Studio)"
-
-          "suppressevent maximize, class:.*"
-          "nofocus,class:^$,title:^$,xwayland:1,floating:1,fullscreen:0,pinned:0"
-
-          "opacity 0.0 override, class:^(xwaylandvideobridge)$"
-          "noanim, class:^(xwaylandvideobridge)$"
-          "noinitialfocus, class:^(xwaylandvideobridge)$"
-          "maxsize 1 1, class:^(xwaylandvideobridge)$"
-          "noblur, class:^(xwaylandvideobridge)$"
-          "nofocus, class:^(xwaylandvideobridge)$"
-        ];
 
         workspace = [
           "w[tv1], gapsout:0, gapsin:0"

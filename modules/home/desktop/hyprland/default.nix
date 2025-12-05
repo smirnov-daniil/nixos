@@ -5,6 +5,7 @@
     ./hyprlock.nix
     ./kanshi.nix
     ./main.nix
+    ./windowrules.nix
   ];
 
   options = {

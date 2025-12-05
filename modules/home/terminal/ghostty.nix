@@ -21,8 +21,8 @@
           "performable:ctrl+c=copy_to_clipboard"
           "performable:ctrl+v=paste_from_clipboard"
 
-          "ctrl+equal=increase_font_size:1"
-          "ctrl+minus=decrease_font_size:1"
+          "alt+equal=increase_font_size:1"
+          "alt+minus=decrease_font_size:1"
 
           "alt+h=goto_split:left"
           "alt+j=goto_split:down"
@@ -41,8 +41,8 @@
           "alt+0=goto_tab:10"
 
           "alt+enter=new_tab"
-          "ctrl+n=next_tab"
-          "ctrl+p=previous_tab"
+          "alt+n=next_tab"
+          "alt+p=previous_tab"
 
           "alt+v=new_split:right"
           "alt+s=new_split:down"

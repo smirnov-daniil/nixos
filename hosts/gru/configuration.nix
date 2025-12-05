@@ -3,14 +3,15 @@
   stateVersion,
   hostname,
   inputs,
+  config,
   ...
 }: let
-user = "ds2";
-system = "x86_64-linux";
-in
-{
+  user = "ds2";
+  system = "x86_64-linux";
+in {
   imports = [
     inputs.home-manager.nixosModules.default
+    inputs.sops-nix.nixosModules.default
     ./hardware-configuration.nix
     ./local-packages.nix
     ../../modules/nixos
@@ -30,6 +31,12 @@ in
     };
   };
 
+  sops = {
+    defaultSopsFile = ./secrets/secrets.yaml;
+    defaultSopsFormat = "yaml";
+    age.keyFile = "/home/${config.main-user.username}/.config/sops/age/keys.txt";
+  };
+
   networking.hostName = hostname;
 
   system.stateVersion = stateVersion;
@@ -40,17 +47,21 @@ in
   };
 
   home-manager = {
-#   sharedModules = [{inputs.stylix.targets.xyz.enable = false;}];
+    #   sharedModules = [{inputs.stylix.targets.xyz.enable = false;}];
     extraSpecialArgs = {
       inherit inputs;
       pkgs = import inputs.nixpkgs {
-      inherit system;
+        inherit system;
         config.allowUnfree = true;
         overlays = [
           (final: prev: {
             zen-browser = inputs.zen-browser.packages.${system}.default;
           })
         ];
+      };
+      pkgs-unstable = import inputs.nixpkgs-unstable {
+        inherit system;
+        config.allowUnfree = true;
       };
     };
     users = {
