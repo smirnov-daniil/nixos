@@ -22,7 +22,7 @@
     home.packages = with pkgs; [
       jetbrains-mono
       noto-fonts
-      noto-fonts-emoji
+      noto-fonts-color-emoji
       font-awesome
       powerline-fonts
       powerline-symbols
