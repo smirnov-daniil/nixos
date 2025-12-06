@@ -16,7 +16,7 @@
           email = "dsmirnov.ds2+github@yandex.com";
         };
 
-        aliases = {
+        alias = {
           ci = "commit";
           st = "status --short --branch";
           co = "checkout";
