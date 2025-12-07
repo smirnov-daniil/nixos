@@ -10,7 +10,7 @@
         "$mainMod SHIFT, C, killactive,"
         "$mainMod SHIFT, Q, exec, uwsm stop"
         "$mainMod,       E, exec, $fileManager"
-        "$mainMod,   SPACE, exec, $menu --show drun"
+        "$mainMod,   SPACE, exec, $menu"
         "$mainMod,       P, pseudo,"
         "$mainMod,       J, togglesplit,"
         "$mainMod,       V, exec, cliphist list | $menu --dmenu | cliphist decode | wl-copy"

@@ -3,6 +3,8 @@
     ./binds.nix
     ./hypridle.nix
     ./hyprlock.nix
+    ./hyprlauncher.nix
+    ./hyprplugins.nix
     ./kanshi.nix
     ./main.nix
     ./windowrules.nix

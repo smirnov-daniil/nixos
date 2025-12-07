@@ -22,16 +22,16 @@
         "$mainMod" = "SUPER";
         "$terminal" = "ghostty";
         #       "$fileManager" = "$terminal -e sh -c 'ranger'";
-        "$menu" = "wofi";
+        "$menu" = "hyprlauncher";
 
         exec-once = [
           "uwsm app -- systemctl --user enable --now hyprpaper.service"
           "uwsm app -- systemctl --user enable --now hypridle.service"
+          "uwsm app -- quickshell"
           "kanshi"
           "wl-paste --type text --watch cliphist store"
           "wl-paste --type image --watch cliphist store"
           "$terminal"
-          "uwsm app -- quickshell"
           # "caelestia-shell -d"
           # "gBar bar eDP-1"
         ];
