@@ -12,8 +12,11 @@
     home.packages = with pkgs-unstable; [
       quickshell
     ];
-    home.file."${config.xdg.configHome}/quickshell/shell.qml" = {
-      source = ./config.qml;
+    home.file = {
+      "${config.xdg.configHome}/quickshell" = {
+        source = ./config;
+        recursive = true;
+      };
     };
   };
 }

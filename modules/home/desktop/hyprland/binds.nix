@@ -15,7 +15,7 @@
         "$mainMod,       J, togglesplit,"
         "$mainMod,       V, exec, cliphist list | $menu --dmenu | cliphist decode | wl-copy"
         "$mainMod,       B, exec, hyprpanel toggleWindow bar-0"
-        "$mainMod,       L, exec, loginctl lock-session"
+        "$mainMod,       L, exec, quickshell -p $XDG_CONFIG_HOME/quickshell/logout/shell.qml"
 
         # Configuration files
         ", Print, exec, grimblast --notify --freeze copysave area"
