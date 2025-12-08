@@ -18,5 +18,14 @@
         recursive = true;
       };
     };
+    wayland.windowManager.hyprland = {
+      enable = true;
+      systemd.enable = false;
+      settings = {
+        env = [
+          "QML_XHR_ALLOW_FILE_READ,1"
+        ];
+      };
+    };
   };
 }
