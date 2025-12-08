@@ -4,27 +4,10 @@ import Quickshell.Io
 import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Layouts
+import "components" as Components
 
 ShellRoot {
     id: root
-
-    // Theme colors
-    property color base00: "#292c36"
-    property color base01: "#333344"
-    property color base02: "#474160"
-    property color base03: "#65568a"
-    property color base04: "#b8b8b8"
-    property color base05: "#d8d8d8"
-    property color base06: "#e8e8e8"
-    property color base07: "#f8f8f8"
-    property color base08: "#f84547"
-    property color base09: "#d28e5d"
-    property color base0A: "#efa16b"
-    property color base0B: "#95c76f"
-    property color base0C: "#64878f"
-    property color base0D: "#8485ce"
-    property color base0E: "#b74989"
-    property color base0F: "#986841"
 
     // Font
     property string fontFamily: "JetBrainsMono Nerd Font"
@@ -32,52 +15,29 @@ ShellRoot {
 
     // System info properties
     property int batteryCapacity: 0
+    property string xdgConfigHome: ""
 
     // Battery
     Process {
         id: batteryProc
         command: ["sh", "-c", "cat /sys/class/power_supply/BAT1/capacity 2>/dev/null || echo 0"]
         stdout: SplitParser {
-            onRead: data => {
-                batteryCapacity = parseInt(data) || 0
-            }
+            onRead: data => batteryCapacity = parseInt(data) || 0
         }
         Component.onCompleted: running = true
     }
 
-    function loadColorPalette() {
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET", "$XDG_CONFIG_HOME/stylix/palette.json");
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                try {
-                    var palette = JSON.parse(xhr.responseText);
-                    base00 = palette.base00;
-                    base01 = palette.base01;
-                    base02 = palette.base02;
-                    base03 = palette.base03;
-                    base04 = palette.base04;
-                    base05 = palette.base05;
-                    base06 = palette.base06;
-                    base07 = palette.base07;
-                    base08 = palette.base08;
-                    base09 = palette.base09;
-                    base0A = palette.base0A;
-                    base0B = palette.base0B;
-                    base0C = palette.base0C;
-                    base0D = palette.base0D;
-                    base0E = palette.base0E;
-                    base0F = palette.base0F;
-                    console.log("Palette loaded:", colorData.scheme);
-                } catch(e) {
-                    console.error("Failed to parse palette.json:", e);
-                }
+    Process {
+        id: xdgProc
+        command: ["sh", "-c", "echo -n $XDG_CONFIG_HOME"]
+        stdout: SplitParser {
+            onRead: data => {
+                xdgConfigHome = data
+                Components.AppPalette.load(xdgConfigHome + "/stylix/palette.json")
             }
         }
-        xhr.send();
+        Component.onCompleted: running = true
     }
-
-    Component.onCompleted: loadColorPalette()
 
     // Slow timer for system stats
     Timer {
@@ -103,7 +63,7 @@ ShellRoot {
             }
 
             implicitWidth: 24
-            color: root.base00
+            color: Components.AppPalette.base00
 
             margins {
                 top: 0
@@ -114,7 +74,7 @@ ShellRoot {
 
             Rectangle {
                 anchors.fill: parent
-                color: root.base00
+                color: Components.AppPalette.base00
 
                 ColumnLayout {
                     anchors.fill: parent
@@ -149,12 +109,12 @@ ShellRoot {
                                         width: 20
                                         height: 20
                                         radius: 10
-                                        color: parent.isActive ? root.base0C : (parent.hasWindows ? root.base02 : "transparent")
+                                        color: parent.isActive ? Components.AppPalette.base0C : (parent.hasWindows ? Components.AppPalette.base02 : "transparent")
                                         anchors.centerIn: parent
 
                                         Text {
                                             text: index + 1
-                                            color: parent.parent.isActive ? root.base00 : root.base0C
+                                            color: parent.parent.isActive ? Components.AppPalette.base00 : Components.AppPalette.base0C
                                             font.pixelSize: 14
                                             font.family: root.fontFamily
                                             font.bold: true
@@ -191,7 +151,7 @@ ShellRoot {
 
                             Text {
                                 text: batteryCapacity
-                                color: root.base0D
+                                color: Components.AppPalette.base0D
                                 font.pixelSize: 10
                                 font.family: root.fontFamily
                                 font.bold: true
@@ -200,7 +160,7 @@ ShellRoot {
 
                             Text {
                                 text: "B"
-                                color: root.base0D
+                                color: Components.AppPalette.base0D
                                 font.pixelSize: 10
                                 font.family: root.fontFamily
                                 anchors {
@@ -220,7 +180,7 @@ ShellRoot {
                             Text {
                                 id: clockHour
                                 text: Qt.formatDateTime(new Date(), "HH")
-                                color: root.base0C
+                                color: Components.AppPalette.base0C
                                 font.pixelSize: 10
                                 font.family: root.fontFamily
                                 font.bold: true
@@ -230,7 +190,7 @@ ShellRoot {
                             Text {
                                 id: clockDate
                                 text: Qt.formatDateTime(new Date(), "dd")
-                                color: root.base0C
+                                color: Components.AppPalette.base0C
                                 font.pixelSize: 10
                                 font.family: root.fontFamily
                                 anchors {
