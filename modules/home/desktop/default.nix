@@ -5,7 +5,7 @@
     ./packages.nix
     ./swaync.nix
     ./gbar.nix
-    ./hyprland
+    ./hypr
     ./quickshell
   ];
 

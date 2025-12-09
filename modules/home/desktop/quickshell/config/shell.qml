@@ -4,7 +4,7 @@ import Quickshell.Io
 import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Layouts
-import "components" as Components
+import "components"
 
 ShellRoot {
     id: root
@@ -15,7 +15,53 @@ ShellRoot {
 
     // System info properties
     property int batteryCapacity: 0
-    property string xdgConfigHome: ""
+
+    // Logout widget
+    LogoutWidget {
+        id: logoutWidget
+
+        LogoutButton {
+            command: "loginctl lock-session"
+            keybind: Qt.Key_K
+            text: "Lock"
+            icon: "lock"
+        }
+
+        LogoutButton {
+            command: "loginctl terminate-user $USER"
+            keybind: Qt.Key_E
+            text: "Logout"
+            icon: "logout"
+        }
+
+        LogoutButton {
+            command: "systemctl suspend"
+            keybind: Qt.Key_U
+            text: "Suspend"
+            icon: "suspend"
+        }
+
+        LogoutButton {
+            command: "systemctl hibernate"
+            keybind: Qt.Key_H
+            text: "Hibernate"
+            icon: "hibernate"
+        }
+
+        LogoutButton {
+            command: "systemctl poweroff"
+            keybind: Qt.Key_S
+            text: "Shutdown"
+            icon: "shutdown"
+        }
+
+        LogoutButton {
+            command: "systemctl reboot"
+            keybind: Qt.Key_R
+            text: "Reboot"
+            icon: "reboot"
+        }
+    }
 
     // Battery
     Process {
@@ -27,17 +73,22 @@ ShellRoot {
         Component.onCompleted: running = true
     }
 
-    Process {
-        id: xdgProc
-        command: ["sh", "-c", "echo -n $XDG_CONFIG_HOME"]
-        stdout: SplitParser {
-            onRead: data => {
-                xdgConfigHome = data
-                Components.AppPalette.load(xdgConfigHome + "/stylix/palette.json")
-            }
-        }
-        Component.onCompleted: running = true
-    }
+    // Process {
+    //     id: xdgProc
+    //     command: ["sh", "-c", "echo -n $XDG_CONFIG_HOME"]
+    //     stdout: SplitParser {
+    //         onRead: data => {
+    //             xdgConfigHome = data
+    //             if (xdgConfigHome) {
+    //                 AppPalette.load("file://" + xdgConfigHome + "/stylix/palette.json")
+    //             } else {
+    //                 // Fallback to default colors
+    //                 console.log("No XDG_CONFIG_HOME found, using default palette")
+    //             }
+    //         }
+    //     }
+    //     Component.onCompleted: running = true
+    // }
 
     // Slow timer for system stats
     Timer {
@@ -63,7 +114,7 @@ ShellRoot {
             }
 
             implicitWidth: 24
-            color: Components.AppPalette.base00
+            color: AppPalette.base00
 
             margins {
                 top: 0
@@ -74,7 +125,7 @@ ShellRoot {
 
             Rectangle {
                 anchors.fill: parent
-                color: Components.AppPalette.base00
+                color: AppPalette.base00
 
                 ColumnLayout {
                     anchors.fill: parent
@@ -109,12 +160,12 @@ ShellRoot {
                                         width: 20
                                         height: 20
                                         radius: 10
-                                        color: parent.isActive ? Components.AppPalette.base0C : (parent.hasWindows ? Components.AppPalette.base02 : "transparent")
+                                        color: parent.isActive ? AppPalette.base0C : (parent.hasWindows ? AppPalette.base02 : "transparent")
                                         anchors.centerIn: parent
 
                                         Text {
                                             text: index + 1
-                                            color: parent.parent.isActive ? Components.AppPalette.base00 : Components.AppPalette.base0C
+                                            color: parent.parent.isActive ? AppPalette.base00 : AppPalette.base0C
                                             font.pixelSize: 14
                                             font.family: root.fontFamily
                                             font.bold: true
@@ -139,9 +190,9 @@ ShellRoot {
                     // Bottom section - System Info (tight)
                     ColumnLayout {
                         Layout.alignment: Qt.AlignBottom
-                        Layout.bottomMargin: 16
+                        Layout.bottomMargin: 4
                         Layout.fillWidth: true
-                        spacing: 8
+                        spacing: 14
 
                         // Battery
                         Item {
@@ -151,7 +202,7 @@ ShellRoot {
 
                             Text {
                                 text: batteryCapacity
-                                color: Components.AppPalette.base0D
+                                color: AppPalette.base0D
                                 font.pixelSize: 10
                                 font.family: root.fontFamily
                                 font.bold: true
@@ -160,7 +211,7 @@ ShellRoot {
 
                             Text {
                                 text: "B"
-                                color: Components.AppPalette.base0D
+                                color: AppPalette.base0D
                                 font.pixelSize: 10
                                 font.family: root.fontFamily
                                 anchors {
@@ -180,7 +231,7 @@ ShellRoot {
                             Text {
                                 id: clockHour
                                 text: Qt.formatDateTime(new Date(), "HH")
-                                color: Components.AppPalette.base0C
+                                color: AppPalette.base0C
                                 font.pixelSize: 10
                                 font.family: root.fontFamily
                                 font.bold: true
@@ -190,7 +241,7 @@ ShellRoot {
                             Text {
                                 id: clockDate
                                 text: Qt.formatDateTime(new Date(), "dd")
-                                color: Components.AppPalette.base0C
+                                color: AppPalette.base0C
                                 font.pixelSize: 10
                                 font.family: root.fontFamily
                                 anchors {
@@ -208,6 +259,27 @@ ShellRoot {
                                     clockHour.text = Qt.formatDateTime(new Date(), "HH")
                                     clockDate.text = Qt.formatDateTime(new Date(), "dd")
                                 }
+                            }
+                        }
+
+                        // Logout Button
+                        Item {
+                            Layout.preferredWidth: 24
+                            Layout.preferredHeight: 20
+                            Layout.alignment: Qt.AlignHCenter
+
+                            Image {
+								anchors.centerIn: parent
+								source: `components/icons/shutdown.png`
+								width: 14
+								height: 14
+							}
+
+                            MouseArea {
+                                id: logoutButtonMa
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                onClicked: logoutWidget.toggle()
                             }
                         }
                     }
