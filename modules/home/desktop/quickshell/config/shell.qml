@@ -5,4 +5,5 @@ ShellRoot {
     id: root
 
     Bar {}
+    Sound {}
 }
