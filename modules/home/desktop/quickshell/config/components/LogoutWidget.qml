@@ -50,7 +50,7 @@ Variants {
         }
 
         Rectangle {
-            color: AppPalette.base00
+            color: Theme.base00
             opacity: 0.95
             anchors.fill: parent
 
@@ -77,9 +77,9 @@ Variants {
                             Layout.fillHeight: true
 
                             radius: 10
-                            color: ma.containsMouse ? AppPalette.base0D : AppPalette.base01
+                            color: ma.containsMouse ? Theme.base0D : Theme.base01
                             border.width: 2
-                            border.color: ma.containsMouse ? AppPalette.base0C : AppPalette.base02
+                            border.color: ma.containsMouse ? Theme.base0C : Theme.base02
 
                             MouseArea {
                                 id: ma
@@ -103,7 +103,7 @@ Variants {
                                 text: modelData.text
                                 font.pixelSize: 16
                                 font.bold: true
-                                color: AppPalette.base05
+                                color: Theme.base05
                                 anchors {
 									top: icon.bottom
 									topMargin: 20

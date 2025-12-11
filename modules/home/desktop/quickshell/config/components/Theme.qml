@@ -1,10 +1,14 @@
 pragma Singleton
 import Quickshell
-import QtQml 2.15
-import QtQuick 2.15
+import QtQml
+import QtQuick
 
 QtObject {
-    id: appPalette
+    id: theme
+
+    // Font
+    property string fontFamily: "JetBrainsMono Nerd Font"
+    property int fontSize: 14
 
     // Default Porple theme colors
     property color base00: "#292c36"
@@ -34,7 +38,6 @@ QtObject {
     property color danger: base08
 
     function load(path) {
-        console.log("AppPalette.load() path:", path)
         var xhr = new XMLHttpRequest()
         xhr.open("GET", path)
         xhr.onreadystatechange = function() {
@@ -43,7 +46,7 @@ QtObject {
                     try {
                         var p = JSON.parse(xhr.responseText)
                         for (var k in p) {
-                            if (p.hasOwnProperty(k) && appPalette.hasOwnProperty(k)) {
+                            if (p.hasOwnProperty(k) && theme.hasOwnProperty(k)) {
                                 // Ensure proper hex format
                                 var hexValue = p[k]
                                 if (typeof hexValue === 'string') {
@@ -54,7 +57,7 @@ QtObject {
                                         // Use Qt.rgba to validate color
                                         var colorObj = Qt.color(colorValue)
                                         if (colorObj) {
-                                            appPalette[k] = colorValue
+                                            theme[k] = colorValue
                                         }
                                     } catch(e) {
                                         console.warn("Invalid color format for", k, ":", hexValue)
@@ -62,12 +65,12 @@ QtObject {
                                 }
                             }
                         }
-                        console.log("AppPalette: palette loaded from", path)
+                        console.log("Theme: palette loaded from", path)
                     } catch(e) {
-                        console.error("AppPalette: JSON parse failed:", e)
+                        console.error("Theme: JSON parse failed:", e)
                     }
                 } else {
-                    console.warn("AppPalette: failed to load", path, "status:", xhr.status)
+                    console.warn("Theme: failed to load", path, "status:", xhr.status)
                 }
             }
         }
@@ -75,6 +78,6 @@ QtObject {
     }
 
     Component.onCompleted: {
-        appPalette.load(Quickshell.env("XDG_CONFIG_HOME") + "/stylix/palette.json")
+        theme.load(Quickshell.env("XDG_CONFIG_HOME") + "/stylix/palette.json")
     }
 }
