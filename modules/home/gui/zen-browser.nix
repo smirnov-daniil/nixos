@@ -31,6 +31,7 @@
             "zen.view.compact.animate-sidebar" = false;
             "zen.welcome-screen.seen" = true;
             "zen.urlbar.behavior" = "float";
+            "zen.tabs.vertical.right-side" = true;
           };
 
           pinsForce = true;

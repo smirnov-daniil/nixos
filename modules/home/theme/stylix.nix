@@ -24,8 +24,6 @@
       noto-fonts
       noto-fonts-color-emoji
       font-awesome
-      powerline-fonts
-      powerline-symbols
     ];
 
     stylix = {
