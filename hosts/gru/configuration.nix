@@ -53,11 +53,6 @@ in {
       pkgs = import inputs.nixpkgs {
         inherit system;
         config.allowUnfree = true;
-        overlays = [
-          (final: prev: {
-            zen-browser = inputs.zen-browser.packages.${system}.default;
-          })
-        ];
       };
       pkgs-unstable = import inputs.nixpkgs-unstable {
         inherit system;

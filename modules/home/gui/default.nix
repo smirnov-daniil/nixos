@@ -1,6 +1,7 @@
 {lib, ...}: {
   imports = [
     ./vscode.nix
+    ./zen-browser.nix
     ./packages.nix
   ];
 

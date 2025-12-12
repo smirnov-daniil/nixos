@@ -43,8 +43,12 @@
 
       targets = {
         hyprlock.enable = false;
-        wofi.enable = true;
-        neovim.enable = true;
+        qt.enable = true;
+        ghostty.enable = true;
+        helix.enable = true;
+        hyprland.enable = true;
+        mpv.enable = true;
+        zen-browser.enable = true;
       };
 
       cursor = {
