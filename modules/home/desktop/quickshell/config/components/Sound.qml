@@ -4,7 +4,7 @@ import Quickshell
 import Quickshell.Services.Pipewire
 import Quickshell.Widgets
 
-OSD {
+Osd {
 	readonly property bool isMuted: Pipewire.defaultAudioSink?.audio.muted || null
 	value: Pipewire.defaultAudioSink?.audio.volume || 0.0
 

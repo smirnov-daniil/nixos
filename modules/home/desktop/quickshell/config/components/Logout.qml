@@ -58,9 +58,9 @@ Item {
 
     Image {
 		anchors.centerIn: parent
-		source: Quickshell.iconPath("system-shutdown")
-		width: 20
-		height: 20
+		source: "icons/shutdown.png"
+		width: 14
+		height: 14
 	}
 
     MouseArea {

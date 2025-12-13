@@ -10,8 +10,8 @@
 
   config = lib.mkIf config.theme.qt.enable {
     home.packages = with pkgs; [
-      papirus-icon-theme
-      pcmanfm-qt
+      # papirus-icon-theme
+      # pcmanfm-qt
     ];
     qt = {
       enable = true;

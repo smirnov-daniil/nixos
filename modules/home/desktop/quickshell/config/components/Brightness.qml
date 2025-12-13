@@ -4,7 +4,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Widgets
 
-OSD {
+Osd {
 	value: currentBrightness / maxBrightness
 
 	property int maxBrightness
