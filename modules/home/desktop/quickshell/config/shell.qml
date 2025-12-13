@@ -6,4 +6,5 @@ ShellRoot {
 
     Bar {}
     Sound {}
+    Brightness {}
 }
