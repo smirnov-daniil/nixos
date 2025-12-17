@@ -52,7 +52,7 @@ Variants {
 
         Rectangle {
             color: Theme.base00
-            opacity: 0.95
+            opacity: 0.85
             anchors.fill: parent
 
             MouseArea {
@@ -62,12 +62,11 @@ Variants {
                 GridLayout {
                     anchors.centerIn: parent
 
-                    width: Math.min(parent.width * 0.75, 800)
-                    height: Math.min(parent.height * 0.75, 600)
+                    width: Math.min(parent.width * 0.75, 1000)
+                    height: Math.min(parent.height * 0.75, 160)
 
-                    columns: 3
+                    rows: 1
                     columnSpacing: 10
-                    rowSpacing: 10
 
                     Repeater {
                         model: buttons
@@ -96,18 +95,18 @@ Variants {
 								id: icon
 								anchors.centerIn: parent
 								source: `../../assets/icons/${modelData.icon}.png`
-								width: parent.width * 0.25
-								height: parent.width * 0.25
+								width: parent.width * 0.35
+								height: parent.width * 0.35
 							}
 
                             Text {
                                 text: modelData.text
                                 font.pixelSize: 16
                                 font.bold: true
-                                color: Theme.base05
+                                color: Theme.base0D
                                 anchors {
 									top: icon.bottom
-									topMargin: 20
+									topMargin: 15
 									horizontalCenter: parent.horizontalCenter
 								}
 		                    }

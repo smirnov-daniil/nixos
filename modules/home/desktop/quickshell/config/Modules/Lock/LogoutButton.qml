@@ -16,6 +16,5 @@ QtObject {
 
     function exec() {
         process.startDetached()
-        // Don't quit the entire shell, just hide the logout widget
     }
 }

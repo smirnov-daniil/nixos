@@ -16,7 +16,7 @@ Item {
 
         LogoutButton {
             command: "loginctl lock-session"
-            keybind: Qt.Key_K
+            keybind: Qt.Key_L
             text: "Lock"
             icon: "lock"
         }
