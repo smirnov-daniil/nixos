@@ -12,6 +12,7 @@ Scope {
     property bool active: false
     property int timeout: 1000
     property string _icon: ""
+    property real brightness: 0
     property var iconUpdater: function() { return "" }
 
     function show() {
@@ -53,9 +54,12 @@ Scope {
 						rightMargin: 15
 					}
 
-					IconImage {
-						implicitSize: 30
-						source: _icon
+					ColoredIcon {
+					    width: 30
+					    height: 30
+				        source: _icon
+				        brightness: osd.brightness
+				        color: Theme.base0C
 					}
 
 					Rectangle {

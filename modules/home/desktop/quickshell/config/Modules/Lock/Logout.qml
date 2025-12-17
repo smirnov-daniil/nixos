@@ -3,6 +3,7 @@ import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
 import qs.Common
+import qs.Widgets
 
 // Logout Button
 Item {
@@ -18,50 +19,50 @@ Item {
             command: "loginctl lock-session"
             keybind: Qt.Key_L
             text: "Lock"
-            icon: "lock"
+            icon: Quickshell.iconPath("system-lock-screen")
         }
 
         LogoutButton {
             command: "loginctl terminate-user $USER"
             keybind: Qt.Key_E
             text: "Logout"
-            icon: "logout"
+            icon: Quickshell.iconPath("system-log-out")
         }
 
         LogoutButton {
             command: "systemctl suspend"
             keybind: Qt.Key_U
             text: "Suspend"
-            icon: "suspend"
+            icon: Quickshell.iconPath("system-suspend")
         }
 
         LogoutButton {
             command: "systemctl hibernate"
             keybind: Qt.Key_H
             text: "Hibernate"
-            icon: "hibernate"
+            icon: Quickshell.iconPath("system-suspend-hibernate")
         }
 
         LogoutButton {
             command: "systemctl poweroff"
             keybind: Qt.Key_S
             text: "Shutdown"
-            icon: "shutdown"
+            icon: Quickshell.iconPath("system-shutdown")
         }
 
         LogoutButton {
             command: "systemctl reboot"
             keybind: Qt.Key_R
             text: "Reboot"
-            icon: "reboot"
+            icon: Quickshell.iconPath("system-reboot")
         }
     }
 
-    Image {
-		anchors.centerIn: parent
-		source: "../../assets/icons/shutdown.png"
-		width: 14
-		height: 14
+	ColoredIcon {
+	    width: 24
+	    height: 24
+        source: Quickshell.iconPath("system-shutdown")
+        color: Theme.base0D
 	}
 
     MouseArea {

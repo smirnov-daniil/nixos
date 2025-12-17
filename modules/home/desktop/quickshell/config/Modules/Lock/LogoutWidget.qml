@@ -4,6 +4,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import qs.Common
+import qs.Widgets
 
 Variants {
     id: root
@@ -77,9 +78,9 @@ Variants {
                             Layout.fillHeight: true
 
                             radius: 10
-                            color: ma.containsMouse ? Theme.base0D : Theme.base01
-                            border.width: 2
-                            border.color: ma.containsMouse ? Theme.base0C : Theme.base02
+                            color: ma.containsMouse ? Theme.base0D : Theme.base00
+                            // border.width: 2
+                            // border.color: ma.containsMouse ? Theme.base0C : Theme.base02
 
                             MouseArea {
                                 id: ma
@@ -91,21 +92,23 @@ Variants {
                                 }
                             }
 
-                            Image {
-								id: icon
+                            ColoredIcon {
+                        	    id: pic
+                        	    width: parent.width * 0.5
+                        	    height: parent.width * 0.5
 								anchors.centerIn: parent
-								source: `../../assets/icons/${modelData.icon}.png`
-								width: parent.width * 0.35
-								height: parent.width * 0.35
-							}
+
+                    	        source: modelData.icon
+                    	        color: Theme.base0D
+                        	}
 
                             Text {
                                 text: modelData.text
                                 font.pixelSize: 16
                                 font.bold: true
-                                color: Theme.base0D
+                                color: Theme.base04
                                 anchors {
-									top: icon.bottom
+									top: pic.bottom
 									topMargin: 15
 									horizontalCenter: parent.horizontalCenter
 								}

@@ -8,6 +8,7 @@ import qs.Common
 
 Osd {
 	value: currentBrightness / maxBrightness
+	brightness: 0.7
 
 	property int maxBrightness
 	property int currentBrightness
@@ -17,15 +18,14 @@ Osd {
 	iconUpdater: function () {
 		switch (Math.round(value / (1 / 3)) * (1 / 3)) {
 			case 0:
-				return Quickshell.iconPath("display-brightness-off");
 			case 1 / 3:
-				return Quickshell.iconPath("display-brightness-low");
+				return Quickshell.iconPath("brightness-low-symbolic");
 			case 2 / 3:
-				return Quickshell.iconPath("display-brightness-medium");
+				return Quickshell.iconPath("brightness-medium-symbolic");
 			case 1.0:
-				return Quickshell.iconPath("display-brightness-high");
+				return Quickshell.iconPath("brightness-high-symbolic");
 			default:
-				return Quickshell.iconPath("display-brightness");
+				return Quickshell.iconPath("brightness-symbolic");
 		}
 	}
 
