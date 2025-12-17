@@ -1,6 +1,8 @@
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
+import qs.Modules.Lock
+import qs.Common
 
 Variants {
     model: Quickshell.screens

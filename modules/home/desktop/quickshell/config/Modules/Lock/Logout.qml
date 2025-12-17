@@ -2,6 +2,7 @@ import Quickshell
 import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
+import qs.Common
 
 // Logout Button
 Item {
@@ -58,7 +59,7 @@ Item {
 
     Image {
 		anchors.centerIn: parent
-		source: "icons/shutdown.png"
+		source: "../../assets/icons/shutdown.png"
 		width: 14
 		height: 14
 	}

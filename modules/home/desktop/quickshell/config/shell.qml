@@ -1,5 +1,6 @@
 import Quickshell
-import "components"
+import qs.Modules.Bar
+import qs.Modules.OSD
 
 ShellRoot {
     id: root

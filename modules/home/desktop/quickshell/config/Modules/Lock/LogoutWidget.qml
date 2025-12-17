@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
+import qs.Common
 
 Variants {
     id: root
@@ -94,7 +95,7 @@ Variants {
                             Image {
 								id: icon
 								anchors.centerIn: parent
-								source: `icons/${modelData.icon}.png`
+								source: `../../assets/icons/${modelData.icon}.png`
 								width: parent.width * 0.25
 								height: parent.width * 0.25
 							}

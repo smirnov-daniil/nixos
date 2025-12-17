@@ -3,6 +3,8 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Services.Pipewire
 import Quickshell.Widgets
+import qs.Widgets
+import qs.Common
 
 Osd {
 	readonly property bool isMuted: Pipewire.defaultAudioSink?.audio.muted || null

@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell.Io
+import qs.Common
 
 QtObject {
     required property string command
