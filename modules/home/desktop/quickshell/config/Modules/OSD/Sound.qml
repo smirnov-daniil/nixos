@@ -9,6 +9,7 @@ import qs.Common
 Osd {
 	readonly property bool isMuted: Pipewire.defaultAudioSink?.audio.muted || null
 	value: Pipewire.defaultAudioSink?.audio.volume || 0.0
+	brightness: 0.2
 
 	PwObjectTracker { objects: [Pipewire.defaultAudioSink, Pipewire.defaultAudioSource, ...Pipewire.nodes.values.filter(n => n.isStream)]; }
 
