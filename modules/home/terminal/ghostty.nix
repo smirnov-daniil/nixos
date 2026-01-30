@@ -13,7 +13,12 @@
       settings = {
         gtk-titlebar = false;
         mouse-hide-while-typing = true;
-        window-decoration = true;
+        window-show-tab-bar = "never";
+        # window-decoration = false;
+        #
+        quick-terminal-position = "center";
+        quick-terminal-size = "25%";
+
         keybind = [
           "performable:ctrl+c=copy_to_clipboard"
           "performable:ctrl+v=paste_from_clipboard"
@@ -43,6 +48,8 @@
 
           "alt+v=new_split:right"
           "alt+s=new_split:down"
+
+          "alt+t=toggle_quick_terminal"
 
           "alt+c=close_surface"
           "alt+q=close_tab"
