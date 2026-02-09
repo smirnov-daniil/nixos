@@ -14,12 +14,15 @@
       home.packages = with pkgs; [
         bat # dispplay file content
         bottom # performance monitor
+        ffmpeg # multimedia converter
+        impala # networks manager
         microfetch # system info
         ripgrep # cl search
-        wget # cl web downloader
+        serie # git commits viewer
         unzip # extract files from zip
+        wget # cl web downloader
+        wiremix # audio manager
         zip # zip files
-        ffmpeg # multimedia converter
       ];
     })
     (lib.mkIf config.cli.utils.enable {
