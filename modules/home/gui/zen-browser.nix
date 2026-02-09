@@ -139,7 +139,7 @@
       policies = {
         Proxy = {
           Mode = "manual";
-          Locked = true;
+          Locked = false;
           HTTPProxy = "localhost:1080";
           UseHTTPProxyForAllProtocols = true;
           SOCKSVersion = 5;
