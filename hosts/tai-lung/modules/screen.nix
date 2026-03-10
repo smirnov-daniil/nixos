@@ -1,13 +1,11 @@
 { config, pkgs, ... }: {
-  services.logind = {
-    lidSwitch = "ignore";
-    lidSwitchDocked = "ignore";
-    lidSwitchExternalPower = "ignore";
-    extraConfig = ''
-      HandlePowerKey=ignore
-      HandleSuspendKey=ignore
-      IdleAction=ignore
-    '';
+  services.logind.settings.Login = {
+    HandleLidSwitch = "ignore";
+    HandleLidSwitchDocked = "ignore";
+    HandleLidSwitchExternalPower = "ignore";
+    HandlePowerKey = "ignore";
+    HandleSuspendKey = "ignore";
+    IdleAction = "ignore";
   };
 
   systemd.sleep.extraConfig = ''
