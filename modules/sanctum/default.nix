@@ -10,6 +10,13 @@ with lib; {
     ./vaultwarden
     ./homepage
     ./microbin
+    ./arr/radarr
+    ./arr/lidarr
+    ./arr/prowlarr
+    ./arr/jellyseerr
+    ./arr/bazarr
+    ./arr/sonarr
+    ./jellyfin
   ];
 
   options.sanctum = {

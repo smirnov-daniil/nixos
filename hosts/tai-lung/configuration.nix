@@ -34,12 +34,12 @@
   };
 
   sanctum = {
-    domain = "ds-2.duckdns.org";
+    domain = "ssmirnovd.online";
     ip = "178.66.51.192";
 
     nginx = {
       enable = true;
-      acmeEmail = "dan0gun@yandex.com";
+      acmeEmail = "ssmirnovd@bk.ru";
     };
 
     vaultwarden = {
@@ -54,5 +54,13 @@
     microbin = {
       enable = true;
     };
+
+    bazarr.enable = false;
+    jellyseerr.enable = false;
+    lidarr.enable = false;
+    prowlarr.enable = false;
+    radarr.enable = false;
+    sonarr.enable = false;
+    jellyfin.enable = false;
   };
 }
