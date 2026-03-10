@@ -42,6 +42,10 @@
       acmeEmail = "ssmirnovd@bk.ru";
     };
 
+    croc = {
+      enable = true;
+    };
+
     vaultwarden = {
       enable = true;
     };

@@ -10,6 +10,7 @@ with lib; {
     ./vaultwarden
     ./homepage
     ./microbin
+    ./croc
     ./arr/radarr
     ./arr/lidarr
     ./arr/prowlarr
