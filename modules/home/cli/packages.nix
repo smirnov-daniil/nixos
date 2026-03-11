@@ -14,6 +14,7 @@
       home.packages = with pkgs; [
         bat # dispplay file content
         bottom # performance monitor
+        fd # files search
         ffmpeg # multimedia converter
         impala # networks manager
         microfetch # system info

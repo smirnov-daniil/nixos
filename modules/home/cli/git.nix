@@ -23,6 +23,8 @@
           br = "branch";
           sw = "switch";
           lg = "log --oneline --graph --decorate --all";
+          dw = "diff --color-words";
+          sh = "show --color-words";
 
           delim = "^";
           log0 = "log --all --graph --abbrev-commit --color --decorate --format=format:'^%C(bold blue)%h%C(reset)^%C(bold green)%<(15,trunc)%ar%C(reset)^%C(dim white)%<(22,trunc)%an^%C(auto)%<(15,trunc)%d^%C(white)%s%C(reset)'";
@@ -34,6 +36,7 @@
         branch.sort = "-committerdate";
         column.ui = "auto";
         pull.rebase = true;
+        push.autoSetupRemote = true;
         diff = {
           algorithm = "histogram";
           colorMoved = "plain";
