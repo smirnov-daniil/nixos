@@ -16,7 +16,9 @@
         bottom # performance monitor
         fd # files search
         ffmpeg # multimedia converter
+        grex # regex generator
         impala # networks manager
+        jrnl # Thoughts journal
         microfetch # system info
         ripgrep # cl search
         serie # git commits viewer
