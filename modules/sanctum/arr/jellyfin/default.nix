@@ -9,29 +9,26 @@ in
     enable = lib.mkEnableOption {
       description = "Enable ${service}";
     };
-    configDir = lib.mkOption {
-      type = lib.types.str;
-      default = "/var/lib/${service}";
-    };
+
     port = lib.mkOption {
       type = lib.types.port;
       default = 8096;
+      description = "Jellyfin HTTP port";
     };
   };
 
   config = lib.mkIf cfg.enable {
-    # Добавляем в sanctum.services для автоматического обнаружения
     sanctum.services."${service}" = {
       enable = true;
       domain = "${service}.${sanctum.domain}";
       port = cfg.port;
-      description = "The Free Software Media System";
+      description = "Self-hosted media server";
       homepage = {
         enable = true;
         category = "Media";
         name = "${service}";
         icon = "${service}.svg";
-        description = "The Free Software Media System";
+        description = "Self-hosted media server";
       };
     };
 
@@ -57,11 +54,16 @@ in
 
     services."${service}" = {
       enable = true;
-      # user и group можно настроить при необходимости
-      # user = "bazarr";
-      # group = "media";
-    };
+      openFirewall = false;
+      user = "${service}";
+      group = "media";
 
-    # Nginx virtualHost создастся автоматически через sanctum.services
+      dataDir = "/srv/${service}/data";
+      configDir = "/srv/${service}/config";
+      cacheDir = "/srv/${service}/cache";
+
+      # Optional, but usually a good idea to keep explicit:
+      # package = pkgs.jellyfin;
+    };
   };
 }

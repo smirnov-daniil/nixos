@@ -1,9 +1,10 @@
 {
   imports = [ 
-    ./ssh.nix
-    ./net.nix
+    ./fs.nix
     ./minecraft
-    ./screen.nix
+    ./net.nix
     ./nvidia.nix
+    ./screen.nix
+    ./ssh.nix
   ];
 }

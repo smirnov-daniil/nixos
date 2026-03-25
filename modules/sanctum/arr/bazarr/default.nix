@@ -9,14 +9,9 @@ in
     enable = lib.mkEnableOption {
       description = "Enable ${service}";
     };
-    configDir = lib.mkOption {
-      type = lib.types.str;
-      default = "/var/lib/${service}";
-    };
   };
 
   config = lib.mkIf cfg.enable {
-    # Добавляем в sanctum.services для автоматического обнаружения
     sanctum.services."${service}" = {
       enable = true;
       domain = "${service}.${sanctum.domain}";
@@ -33,11 +28,9 @@ in
 
     services."${service}" = {
       enable = true;
-      # user и group можно настроить при необходимости
-      # user = "bazarr";
-      # group = "media";
+      user = "${service}";
+      group = "media";
+      dataDir = "/srv/${service}";
     };
-
-    # Nginx virtualHost создастся автоматически через sanctum.services
   };
 }

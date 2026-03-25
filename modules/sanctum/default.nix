@@ -6,18 +6,19 @@
 }:
 with lib; {
   imports = [
-    ./nginx
-    ./vaultwarden
-    ./homepage
-    ./microbin
-    ./croc
-    ./arr/radarr
+    ./arr/bazarr
+    ./arr/jellyfin
+    ./arr/jellyseerr
     ./arr/lidarr
     ./arr/prowlarr
-    ./arr/jellyseerr
-    ./arr/bazarr
+    ./arr/radarr
     ./arr/sonarr
-    ./jellyfin
+    ./croc
+    ./homepage
+    ./microbin
+    ./nginx
+    ./vaultwarden
+    ./qbittorrent
   ];
 
   options.sanctum = {

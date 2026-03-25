@@ -59,12 +59,13 @@
       enable = true;
     };
 
-    bazarr.enable = false;
+    bazarr.enable = true;
     jellyseerr.enable = false;
-    lidarr.enable = false;
-    prowlarr.enable = false;
-    radarr.enable = false;
-    sonarr.enable = false;
-    jellyfin.enable = false;
+    lidarr.enable = true;
+    prowlarr.enable = true;
+    radarr.enable = true;
+    sonarr.enable = true;
+    jellyfin.enable = true;
+    qbittorrent.enable = true;
   };
 }

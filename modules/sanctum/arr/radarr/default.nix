@@ -9,10 +9,6 @@ in
     enable = lib.mkEnableOption {
       description = "Enable ${service}";
     };
-    configDir = lib.mkOption {
-      type = lib.types.str;
-      default = "/var/lib/${service}";
-    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -32,6 +28,10 @@ in
 
     services."${service}" = {
       enable = true;
+      dataDir = "/srv/${service}";
+      openFirewall = false;
+      user = "${service}";
+      group = "media";
     };
   };
 }

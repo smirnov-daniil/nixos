@@ -17,4 +17,5 @@
       wlan0.useDHCP = false;
     };
   };
+  networking.firewall.allowedTCPPorts = [1234];
 }
