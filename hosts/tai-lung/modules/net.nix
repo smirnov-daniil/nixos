@@ -1,5 +1,4 @@
-{... }:
-{
+{...}: {
   networking = {
     firewall = {
       enable = true;
@@ -13,7 +12,7 @@
       '';
     };
     interfaces = {
-      enp3s0.useDHCP= true;
+      enp3s0.useDHCP = true;
       wlan0.useDHCP = false;
     };
   };
