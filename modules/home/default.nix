@@ -7,4 +7,8 @@
     ./terminal
     ./theme
   ];
+  programs.opencode = {
+    enable = true;
+    settings = {};
+  };
 }

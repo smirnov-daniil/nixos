@@ -20,6 +20,8 @@
     };
   };
 
+  nftables.enable = true;
+
   environment.systemPackages = [pkgs.networkmanager-l2tp];
 
   # for VPN

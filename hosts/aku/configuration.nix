@@ -45,10 +45,18 @@ in {
         inherit system;
         config.allowUnfree = true;
       };
+      pkgs-unstable = import inputs.nixpkgs-unstable {
+        inherit system;
+        config.allowUnfree = true;
+      };
     };
 
     users = {
       "${user}" = import ./users/ds2.nix;
     };
   };
+
+  virtualisation.incus.enable = true;
+  networking.nftables.enable = true;
+  users.users."${user}".extraGroups = ["incus-admin"];
 }
