@@ -1,54 +1,19 @@
 {
-  pkgs,
-  stateVersion,
-  hostname,
   inputs,
+  self,
   ...
-}: let
-  user = "ds2";
-  system = "x86_64-linux";
-in {
-  imports = [
-    inputs.nixos-wsl.nixosModules.default
-    inputs.home-manager.nixosModules.default
-    ../../modules/nixos/system
-    ./local-packages.nix
-  ];
-
-  main-user = {
-    enable = true;
-    username = user;
-  };
-
-  system.stateVersion = stateVersion;
-  wsl = {
-    enable = true;
-    wslConf = {
-      network = {
-        hostname = hostname;
-      };
+}: {
+  flake.nixosModules.lich = {
+    pkgs,
+    lib,
+    ...
+  }: {
+    imports = [self.nixosModules.wsl self.nixosModules.base self.nixosModules.general];
+    system.stateVersion = "25.11";
+    networking = {
+      hostName = "lich";
+      networkmanager.enable = true;
     };
-    interop.register = true;
-    docker-desktop.enable = true;
-    defaultUser = user;
-    startMenuLaunchers = true;
-  };
-
-  nixpkgs.config.allowUnfree = true;
-
-  environment.systemPackages = [pkgs.home-manager];
-
-  home-manager = {
-    extraSpecialArgs = {
-      inherit inputs;
-      pkgs = import inputs.nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
-      };
-    };
-
-    users = {
-      "${user}" = import ./users/ds2.nix;
-    };
+    preferences.user.email = "dan.smirnov@yadro.com";
   };
 }
