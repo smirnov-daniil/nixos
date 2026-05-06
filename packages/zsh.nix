@@ -30,6 +30,10 @@
             extraCompletions = true;
             colors = true;
             fuzzySearch = true;
+            init = lib.mkForce ''
+              fpath=(${self'.packages.completions} $fpath)
+              autoload -U compinit && compinit -u
+            '';
           };
           autoSuggestions = {
             enable = true;

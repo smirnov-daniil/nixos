@@ -8,7 +8,67 @@
     pkgs,
     self',
     ...
-  }: {
+  }: let
+    myTools = [
+      # nix
+      pkgs.nil
+      pkgs.nixd
+      pkgs.statix
+      pkgs.alejandra
+      pkgs.manix
+      pkgs.nix-inspect
+      self'.packages.nh
+
+      # other
+      pkgs.file
+      pkgs.unzip
+      pkgs.zip
+      pkgs.p7zip
+      pkgs.wget
+      pkgs.killall
+      pkgs.sshfs
+      pkgs.fzf
+      pkgs.htop
+      pkgs.btop
+      pkgs.eza
+      pkgs.fd
+      pkgs.zoxide
+      # pkgs.dust
+      pkgs.ripgrep
+      pkgs.microfetch
+      pkgs.tree-sitter
+      pkgs.imagemagick
+      pkgs.imv
+      pkgs.ffmpeg-full
+      # pkgs.yt-dlp
+      pkgs.serie
+
+      # wrapped
+      self'.packages.omp
+      # self'.packages.neovimDynamic
+      # self'.packages.qalc
+      # self'.packages.lf
+      self'.packages.git
+      # self'.packages.jujutsu
+      # self'.packages.jjui
+      self'.packages.nix-check-bin
+    ];
+    combinedCompletions =
+      pkgs.runCommand "env-completions"
+      {
+        dirs = lib.concatMapStringsSep " " (p: "${lib.getOutput "out" p}/share/zsh/site-functions") myTools;
+      }
+      ''
+        mkdir -p $out
+        for dir in $dirs; do
+          if [ -d "$dir" ]; then
+            for f in "$dir"/*; do
+              ln -s "$f" $out/
+            done
+          fi
+        done
+      '';
+  in {
     # My whole desktop in one package, includes kityy terminal
     # packages.desktop = inputs.wrapper-modules.wrappers.niri.wrap {
     #   inherit pkgs;
@@ -31,54 +91,13 @@
     packages.environment = inputs.wrappers.lib.wrapPackage {
       inherit pkgs;
       package = self'.packages.zsh;
-      runtimeInputs = [
-        # nix
-        pkgs.nil
-        pkgs.nixd
-        pkgs.statix
-        pkgs.alejandra
-        pkgs.manix
-        pkgs.nix-inspect
-        self'.packages.nh
-
-        # other
-        pkgs.file
-        pkgs.unzip
-        pkgs.zip
-        pkgs.p7zip
-        pkgs.wget
-        pkgs.killall
-        pkgs.sshfs
-        pkgs.fzf
-        pkgs.htop
-        pkgs.btop
-        pkgs.eza
-        pkgs.fd
-        pkgs.zoxide
-        # pkgs.dust
-        pkgs.ripgrep
-        pkgs.microfetch
-        pkgs.tree-sitter
-        pkgs.imagemagick
-        pkgs.imv
-        pkgs.ffmpeg-full
-        # pkgs.yt-dlp
-        pkgs.serie
-
-        # wrapped
-        self'.packages.omp
-        # self'.packages.neovimDynamic
-        # self'.packages.qalc
-        # self'.packages.lf
-        self'.packages.git
-        # self'.packages.jujutsu
-        # self'.packages.jjui
-        self'.packages.nix-check-bin
-      ];
+      runtimeInputs = myTools;
       env = {
         EDITOR = lib.getExe self'.packages.helix;
       };
     };
+
+    packages.completions = combinedCompletions;
 
     packages.nix-check-bin = pkgs.writeShellApplication {
       name = "nix-check-bin";
