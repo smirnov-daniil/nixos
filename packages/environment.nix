@@ -70,22 +70,17 @@
       '';
   in {
     # My whole desktop in one package, includes kityy terminal
-    # packages.desktop = inputs.wrapper-modules.wrappers.niri.wrap {
-    #   inherit pkgs;
-    #   # imports = [self.wrappersModules.niri];
-    #   # terminal = lib.getExe self'.packages.terminal;
-    #   # env = {
-    #   #   EDITOR = lib.getExe self'.packages.helix;
-    #   # };
-    # };
+    packages.desktop = inputs.wrapper-modules.wrappers.niri.wrap {
+      inherit pkgs;
+      imports = [self.wrappersModules.niri];
+      terminal = lib.getExe self'.packages.terminal;
+      env = {
+        EDITOR = lib.getExe self'.packages.helix;
+      };
+    };
 
     # My primary flake terminal
-    # packages.terminal =
-    #   (inputs.wrappers.wrapperModules.kitty.apply {
-    #     inherit pkgs;
-    #     imports = [self.wrappersModules.kitty];
-    #     shell = lib.getExe self'.packages.environment;
-    #   }).wrapper;
+    packages.terminal = self'.packages.ghostty;
 
     # My primary flake shell with all of it's packages
     packages.environment = inputs.wrappers.lib.wrapPackage {

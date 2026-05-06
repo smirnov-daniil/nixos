@@ -1,0 +1,87 @@
+{
+  inputs,
+  self,
+  lib,
+  ...
+}: {
+  perSystem = {
+    pkgs,
+    self',
+    ...
+  }: {
+    packages.ghostty =
+      (inputs.wrappers.wrapperModules.ghostty.apply {
+        inherit pkgs;
+        settings = {
+          gtk-titlebar = false;
+          mouse-hide-while-typing = true;
+          window-show-tab-bar = "never";
+          # window-decoration = false;
+          #
+          quick-terminal-position = "center";
+          quick-terminal-size = "25%";
+
+          palette = [
+            "0=${self.theme.base00}"
+            "1=${self.theme.base08}"
+            "2=${self.theme.base0B}"
+            "3=${self.theme.base0A}"
+            "4=${self.theme.base0D}"
+            "5=${self.theme.base0E}"
+            "6=${self.theme.base0C}"
+            "7=${self.theme.base05}"
+            "8=${self.theme.base03}"
+            "9=${self.theme.base08}"
+            "10=${self.theme.base0B}"
+            "11=${self.theme.base0A}"
+            "12=${self.theme.base0D}"
+            "13=${self.theme.base0E}"
+            "14=${self.theme.base0C}"
+            "15=${self.theme.base07}"
+          ];
+
+          background = self.themeNoHash.base00;
+          cursor-color = self.themeNoHash.base05;
+          foreground = self.themeNoHash.base05;
+          selection-background = self.themeNoHash.base02;
+          selection-foreground = self.themeNoHash.base05;
+
+          keybind = [
+            "performable:ctrl+c=copy_to_clipboard"
+            "performable:ctrl+v=paste_from_clipboard"
+
+            "alt+equal=increase_font_size:1"
+            "alt+minus=decrease_font_size:1"
+
+            "alt+h=goto_split:left"
+            "alt+j=goto_split:down"
+            "alt+k=goto_split:top"
+            "alt+l=goto_split:right"
+
+            "alt+1=goto_tab:1"
+            "alt+2=goto_tab:2"
+            "alt+3=goto_tab:3"
+            "alt+4=goto_tab:4"
+            "alt+5=goto_tab:5"
+            "alt+6=goto_tab:6"
+            "alt+7=goto_tab:7"
+            "alt+8=goto_tab:8"
+            "alt+9=goto_tab:9"
+            "alt+0=goto_tab:10"
+
+            "alt+enter=new_tab"
+            "alt+n=next_tab"
+            "alt+p=previous_tab"
+
+            "alt+v=new_split:right"
+            "alt+s=new_split:down"
+
+            "alt+t=toggle_quick_terminal"
+
+            "alt+c=close_surface"
+            "alt+q=close_tab"
+          ];
+        };
+      }).wrapper;
+  };
+}

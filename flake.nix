@@ -2,13 +2,16 @@
   description = "A very basic flake";
 
   inputs = {
-    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
-    nixpkgs.url = "github:NixOS/nixpkgs?ref=nixos-25.11";
     flake-parts.url = "github:hercules-ci/flake-parts";
     import-tree.url = "github:vic/import-tree";
     nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
-    wrappers.url = "github:Lassulus/wrappers";
+    nixpkgs-stable.url = "github:NixOS/nixpkgs?ref=nixos-25.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    sops-nix.url = "github:Mic92/sops-nix";
     wrapper-modules.url = "github:BirdeeHub/nix-wrapper-modules";
+    wrappers.url = "github:Lassulus/wrappers";
+    zen-browser.url = "github:0xc000022070/zen-browser-flake/beta";
+
     nix-index-database = {
       url = "github:Mic92/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
