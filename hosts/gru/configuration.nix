@@ -12,10 +12,12 @@ in {
   imports = [
     inputs.home-manager.nixosModules.default
     inputs.sops-nix.nixosModules.default
+    inputs.jovian.nixosModules.default
     ./hardware-configuration.nix
     ./local-packages.nix
     ../../modules/nixos
     ./modules
+    # ../../modules/games
   ];
 
   nixpkgs.config.allowUnfree = true;
