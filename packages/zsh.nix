@@ -39,6 +39,10 @@
             enable = true;
             highlight = "fg=${self.theme.base03}";
           };
+          history = {
+            share = true;
+            ignoreSpace = true;
+          };
         };
         extraRC = "source ${pkgs.zsh-syntax-highlighting}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh";
       }).wrapper;

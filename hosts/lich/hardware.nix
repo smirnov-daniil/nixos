@@ -29,7 +29,7 @@
     };
 
     fileSystems."/" = {
-      device = "/dev/disk/by-uuid/bafbf1b6-0b43-4f06-ab9f-1a0aaafe9cb1";
+      device = "/dev/disk/by-uuid/e744ca5c-2d3c-4290-a361-4056c7ddc96c";
       fsType = "ext4";
     };
 
@@ -49,15 +49,15 @@
       fsType = "overlay";
     };
 
+    fileSystems."/mnt/wslg/doc" = {
+      device = "none";
+      fsType = "overlay";
+    };
+
     fileSystems."/tmp/.X11-unix" = {
       device = "/mnt/wslg/.X11-unix";
       fsType = "none";
       options = ["bind"];
-    };
-
-    fileSystems."/mnt/wslg/doc" = {
-      device = "none";
-      fsType = "overlay";
     };
 
     fileSystems."/mnt/c" = {
@@ -65,33 +65,19 @@
       fsType = "9p";
     };
 
-    fileSystems."/mnt/d" = {
-      device = "D:\134";
-      fsType = "9p";
-    };
-
-    fileSystems."/mnt/e" = {
-      device = "E:\134";
-      fsType = "9p";
-    };
-
-    fileSystems."/mnt/h" = {
-      device = "H:\134";
-      fsType = "9p";
-    };
-
     fileSystems."/mnt/z" = {
-      device = "Z:\134";
-      fsType = "9p";
+      device = "/dev/disk/by-uuid/2602ef6c-b358-4ad1-9614-a3b3bb75ee58";
+      fsType = "ext4";
     };
 
-    fileSystems."/mnt/wslg/run/user/1001" = {
-      device = "tmpfs";
-      fsType = "tmpfs";
+    fileSystems."/workspace" = {
+      device = "/mnt/z/workspace";
+      fsType = "none";
+      options = ["bind"];
     };
 
     swapDevices = [
-      {device = "/dev/disk/by-uuid/d59ef311-4fcf-44e5-82cf-cbfd77e6b4a9";}
+      {device = "/dev/disk/by-uuid/51d7fee0-114e-4695-9521-eae1f44f73af";}
     ];
 
     nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";

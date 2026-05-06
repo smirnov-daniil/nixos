@@ -27,6 +27,11 @@
             log1 = "log --all --graph --abbrev-commit --color --decorate --format=format:'^%C(bold blue)%h%C(reset)  >^%C(bold cyan)%<(30,trunc)%aD%C(reset)^%C(bold green)%<(22,trunc)(%ar)%C(reset)^%C(auto)%D%C(reset)%n^%<(7,trunc)%x20^%C(dim white)%<(30,trunc)%ae^%<(22,trunc)(%an)%C(reset)  <^%C(white)%s%C(reset)'";
             log2 = "log --all --graph --date='format:%Y-%m-%d %H:%M:%S' --color --decorate=short --pretty=format:'^%C(bold dim white)%ad%C(reset)^%C(bold dim cyan)%<(19,trunc)%an%C(reset)^%C(bold cyan)%h%C(reset)^%C(auto)%D%C(reset)%n^%C(dim white)%<(19,trunc)%ar%C(reset)^%C(dim cyan)%<(19,trunc)%ae%C(reset)^%C(bold white)Commit:%C(reset)^%C(white)%s%C(reset)%n'";
             tab = "!bash -c '{ git $@; echo; } | column -t -s $(git config alias.delim); ' \"git-tab\"";
+
+            l = "!f() { git $@ | column -t -s $(git config alias.delim) | less -SRF; }; f";
+            l0 = "l log0";
+            l1 = "l log1";
+            l2 = "l log2";
           };
 
           branch.sort = "-committerdate";
