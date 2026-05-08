@@ -10,7 +10,10 @@
     sops-nix.url = "github:Mic92/sops-nix";
     wrapper-modules.url = "github:BirdeeHub/nix-wrapper-modules";
     wrappers.url = "github:Lassulus/wrappers";
-    zen-browser.url = "github:0xc000022070/zen-browser-flake/beta";
+    zen-browser = {
+      url = "github:youwen5/zen-browser-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     nix-index-database = {
       url = "github:Mic92/nix-index-database";

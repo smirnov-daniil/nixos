@@ -18,14 +18,14 @@
         # startNoctaliaExe = lib.getExe self.packages.${config.pkgs.stdenv.hostPlatform.system}.start-noctalia-shell;
         noctaliaExe = lib.getExe self.packages.${config.pkgs.stdenv.hostPlatform.system}.noctalia-shell;
       in {
-        prefer-no-csd = null;
+        prefer-no-csd = {};
 
         input = {
-          focus-follows-mouse = null;
+          focus-follows-mouse = {};
 
           keyboard = {
             xkb = {
-              layout = "us,ru,ua";
+              layout = "us,ru";
               options = "grp:alt_shift_toggle,caps:escape";
             };
             repeat-rate = 40;
@@ -33,8 +33,8 @@
           };
 
           touchpad = {
-            natural-scroll = null;
-            tap = null;
+            natural-scroll = {};
+            tap = {};
           };
 
           mouse = {
@@ -45,26 +45,26 @@
         binds = {
           "Mod+Return".spawn = config.terminal;
 
-          "Mod+Q".close-window = null;
-          "Mod+F".maximize-column = null;
-          "Mod+G".fullscreen-window = null;
-          "Mod+Shift+F".toggle-window-floating = null;
-          "Mod+C".center-column = null;
+          "Mod+Q".close-window = {};
+          "Mod+F".maximize-column = {};
+          "Mod+G".fullscreen-window = {};
+          "Mod+Shift+F".toggle-window-floating = {};
+          "Mod+C".center-column = {};
 
-          "Mod+H".focus-column-left = null;
-          "Mod+L".focus-column-right = null;
-          "Mod+K".focus-window-up = null;
-          "Mod+J".focus-window-down = null;
+          "Mod+H".focus-column-left = {};
+          "Mod+L".focus-column-right = {};
+          "Mod+K".focus-window-up = {};
+          "Mod+J".focus-window-down = {};
 
-          "Mod+Left".focus-column-left = null;
-          "Mod+Right".focus-column-right = null;
-          "Mod+Up".focus-window-up = null;
-          "Mod+Down".focus-window-down = null;
+          "Mod+Left".focus-column-left = {};
+          "Mod+Right".focus-column-right = {};
+          "Mod+Up".focus-window-up = {};
+          "Mod+Down".focus-window-down = {};
 
-          "Mod+Shift+H".move-column-left = null;
-          "Mod+Shift+L".move-column-right = null;
-          "Mod+Shift+K".move-window-up = null;
-          "Mod+Shift+J".move-window-down = null;
+          "Mod+Shift+H".move-column-left = {};
+          "Mod+Shift+L".move-column-right = {};
+          "Mod+Shift+K".move-window-up = {};
+          "Mod+Shift+J".move-window-down = {};
 
           "Mod+1".focus-workspace = "w0";
           "Mod+2".focus-workspace = "w1";
@@ -99,10 +99,10 @@
           "Mod+Ctrl+J".set-window-height = "-5%";
           "Mod+Ctrl+K".set-window-height = "+5%";
 
-          "Mod+WheelScrollDown".focus-column-left = null;
-          "Mod+WheelScrollUp".focus-column-right = null;
-          "Mod+Ctrl+WheelScrollDown".focus-workspace-down = null;
-          "Mod+Ctrl+WheelScrollUp".focus-workspace-up = null;
+          "Mod+WheelScrollDown".focus-column-left = {};
+          "Mod+WheelScrollUp".focus-column-right = {};
+          "Mod+Ctrl+WheelScrollDown".focus-workspace-down = {};
+          "Mod+Ctrl+WheelScrollUp".focus-workspace-up = {};
 
           "Mod+Ctrl+S".spawn-sh = ''${lib.getExe config.pkgs.grim} -l 0 - | ${config.pkgs.wl-clipboard}/bin/wl-copy'';
 
@@ -116,43 +116,43 @@
             '';
           });
 
-          # "Mod+d".spawn-sh = self.mkWhichKeyExe config.pkgs [
-          #   {
-          #     key = "b";
-          #     desc = "Bluetooth";
-          #     cmd = "${noctaliaExe} ipc call bluetooth togglePanel";
-          #   }
-          #   {
-          #     key = "w";
-          #     desc = "Wifi";
-          #     cmd = "${noctaliaExe} ipc call wifi togglePanel";
-          #   }
-          #   {
-          #     key = "f";
-          #     desc = "Firefox";
-          #     cmd = "firefox";
-          #   }
-          #   {
-          #     key = "t";
-          #     desc = "Telegram";
-          #     cmd = "Telegram";
-          #   }
-          #   {
-          #     key = "d";
-          #     desc = "Discord";
-          #     cmd = "vesktop";
-          #   }
-          #   {
-          #     key = "m";
-          #     desc = "Youtube Music";
-          #     cmd = "pear-desktop";
-          #   }
-          #   {
-          #     key = "s";
-          #     desc = "Pavucontrol";
-          #     cmd = "${lib.getExe pkgs.pavucontrol}";
-          #   }
-          # ];
+          "Mod+d".spawn-sh = self.mkWhichKeyExe config.pkgs [
+            {
+              key = "b";
+              desc = "Bluetooth";
+              cmd = "${noctaliaExe} ipc call bluetooth togglePanel";
+            }
+            {
+              key = "w";
+              desc = "Wifi";
+              cmd = "${noctaliaExe} ipc call wifi togglePanel";
+            }
+            {
+              key = "f";
+              desc = "Firefox";
+              cmd = "firefox";
+            }
+            {
+              key = "t";
+              desc = "Telegram";
+              cmd = "Telegram";
+            }
+            {
+              key = "d";
+              desc = "Discord";
+              cmd = "vesktop";
+            }
+            {
+              key = "m";
+              desc = "Youtube Music";
+              cmd = "pear-desktop";
+            }
+            {
+              key = "s";
+              desc = "Pavucontrol";
+              cmd = "${lib.getExe pkgs.pavucontrol}";
+            }
+          ];
         };
 
         layout = {

@@ -3,12 +3,11 @@
     selfpkgs = self.packages."${pkgs.stdenv.hostPlatform.system}";
   in {
     imports = [
-      # self.nixosModules.gtk
+      self.nixosModules.gtk
 
       self.nixosModules.pipewire
       self.nixosModules.net
-      # self.nixosModules.firefox
-      # self.nixosModules.chromium
+      self.nixosModules.zen-browser
     ];
 
     programs.niri.enable = true;
