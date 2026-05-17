@@ -14,6 +14,7 @@
       url = "github:youwen5/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    pi.url = "github:lukasl-dev/pi.nix";
 
     nix-index-database = {
       url = "github:Mic92/nix-index-database";
