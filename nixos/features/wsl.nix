@@ -12,5 +12,7 @@
       defaultUser = "${config.preferences.user.name}";
       startMenuLaunchers = true;
     };
+
+    preferences.monitors.enable = false;
   };
 }
