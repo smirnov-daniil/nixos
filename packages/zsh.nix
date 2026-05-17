@@ -41,6 +41,9 @@
           };
           history = {
             share = true;
+            append = true;
+            findNoDups = true;
+            ignoreAllDups = true;
             ignoreSpace = true;
           };
         };
