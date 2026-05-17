@@ -24,6 +24,7 @@
           shellAliases = {
             ".." = "cd ..";
             "x" = "eza --group-directories-first --icons=always --git --color=always";
+            "c" = "cat";
           };
           completion = {
             enable = true;

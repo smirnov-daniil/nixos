@@ -24,7 +24,7 @@
       # skills = [ ./skills/my-skill ];
 
       # extra extensions
-      # extensions = [ ./extensions/my-extension.ts ];
+      extensions = [./extensions/prefer-rg.ts];
 
       # extra themes
       # themes = [ ./themes/catppuccin-mocha.json ];
@@ -33,7 +33,7 @@
       # promptTemplates = [ ./prompts ./prompt-templates/review.md ];
 
       # ~/.pi/agent/models.json
-      # models = ./models.json;
+      models = ./models.json;
 
       # extra raw CLI flags
       # extraFlags = [ "--provider" "openai" "--model" "gpt-5" ];

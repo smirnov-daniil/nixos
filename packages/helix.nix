@@ -8,32 +8,32 @@
       (inputs.wrappers.wrapperModules.helix.apply {
         inherit pkgs;
         settings = {
-        editor = {
-          line-number = "relative";
-          mouse = false;
-          auto-completion = true;
-          auto-format = true;
-          auto-info = true;
-          idle-timeout = 0;
-          cursor-shape = {
-            normal = "block";
-            insert = "bar";
-            select = "underline";
+          editor = {
+            line-number = "relative";
+            mouse = false;
+            auto-completion = true;
+            auto-format = true;
+            auto-info = true;
+            idle-timeout = 0;
+            cursor-shape = {
+              normal = "block";
+              insert = "bar";
+              select = "underline";
+            };
+            lsp = {
+              display-inlay-hints = true;
+              display-messages = true;
+            };
+            indent-guides = {
+              render = true;
+            };
           };
-          lsp = {
-            display-inlay-hints = true;
-            display-messages = true;
-          };
-          indent-guides = {
-            render = true;
+          keys.normal = {
+            space.space = "file_picker";
+            space.w = ":w";
+            space.q = ":q";
           };
         };
-        keys.normal = {
-          space.space = "file_picker";
-          space.w = ":w";
-          space.q = ":q";
-        };
-      };
         languages = {
           language = [
             {
@@ -85,7 +85,6 @@
             };
           };
         };
-
       }).wrapper;
   };
 }

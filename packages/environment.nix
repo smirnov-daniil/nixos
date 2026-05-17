@@ -45,6 +45,7 @@
 
       # wrapped
       self'.packages.omp
+      self'.packages.helix
       # self'.packages.neovimDynamic
       # self'.packages.qalc
       # self'.packages.lf
