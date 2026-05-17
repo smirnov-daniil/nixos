@@ -24,7 +24,10 @@
       # skills = [ ./skills/my-skill ];
 
       # extra extensions
-      extensions = [./extensions/prefer-rg.ts];
+      extensions = [
+        ./extensions/prefer-rg.ts
+        ./extensions/prefer-fd.ts
+      ];
 
       # extra themes
       # themes = [ ./themes/catppuccin-mocha.json ];

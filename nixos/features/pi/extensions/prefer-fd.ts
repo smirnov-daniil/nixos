@@ -2,14 +2,14 @@
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { isToolCallEventType } from "@mariozechner/pi-coding-agent";
 
-type PreferRgState = {
+type PreferFdState = {
 	enabled: boolean;
 	enforce: boolean;
 };
 
-const STATE_TYPE = "prefer-rg-state";
+const STATE_TYPE = "prefer-fd-state";
 
-export default function preferRgExtension(pi: ExtensionAPI) {
+export default function preferFdExtension(pi: ExtensionAPI) {
 	let enabled = true;
 	let enforce = true;
 
@@ -17,7 +17,7 @@ export default function preferRgExtension(pi: ExtensionAPI) {
 		pi.appendEntry(STATE_TYPE, {
 			enabled,
 			enforce,
-		} satisfies PreferRgState);
+		} satisfies PreferFdState);
 	};
 
 	pi.on("session_start", async (_event, ctx) => {
@@ -28,7 +28,7 @@ export default function preferRgExtension(pi: ExtensionAPI) {
 				entry.data &&
 				typeof entry.data === "object"
 			) {
-				const data = entry.data as Partial<PreferRgState>;
+				const data = entry.data as Partial<PreferFdState>;
 				enabled = data.enabled ?? true;
 				enforce = data.enforce ?? false;
 				return;
@@ -36,42 +36,42 @@ export default function preferRgExtension(pi: ExtensionAPI) {
 		}
 	});
 
-	pi.registerCommand("prefer-rg", {
+	pi.registerCommand("prefer-fd", {
 		description:
-			"Configure ripgrep preference: /prefer-rg [on|off|enforce-on|enforce-off|status]",
+			"Configure fd preference: /prefer-fd [on|off|enforce-on|enforce-off|status]",
 		handler: async (args, ctx) => {
 			switch ((args || "status").trim()) {
 				case "on":
 					enabled = true;
 					persistState();
-					ctx.ui.notify("prefer-rg enabled", "info");
+					ctx.ui.notify("prefer-fd enabled", "info");
 					return;
 				case "off":
 					enabled = false;
 					persistState();
-					ctx.ui.notify("prefer-rg disabled", "info");
+					ctx.ui.notify("prefer-fd disabled", "info");
 					return;
 				case "enforce-on":
 					enabled = true;
 					enforce = true;
 					persistState();
-					ctx.ui.notify("prefer-rg enabled with bash enforcement", "info");
+					ctx.ui.notify("prefer-fd enabled with bash enforcement", "info");
 					return;
 				case "enforce-off":
 					enforce = false;
 					persistState();
-					ctx.ui.notify("prefer-rg enforcement disabled", "info");
+					ctx.ui.notify("prefer-fd enforcement disabled", "info");
 					return;
 				case "status":
 				case "":
 					ctx.ui.notify(
-						`prefer-rg: ${enabled ? "on" : "off"}, enforcement: ${enforce ? "on" : "off"}`,
+						`prefer-fd: ${enabled ? "on" : "off"}, enforcement: ${enforce ? "on" : "off"}`,
 						"info",
 					);
 					return;
 				default:
 					ctx.ui.notify(
-						"Usage: /prefer-rg [on|off|enforce-on|enforce-off|status]",
+						"Usage: /prefer-fd [on|off|enforce-on|enforce-off|status]",
 						"warning",
 					);
 			}
@@ -87,10 +87,10 @@ export default function preferRgExtension(pi: ExtensionAPI) {
 				`
 
 IMPORTANT:
-- When using shell search commands, prefer ripgrep (\`rg\`) over grep.
-- Use \`rg\` by default for recursive text and code search.
-- Only use \`grep\` if the user explicitly asks for grep or grep-specific behavior is required.
-- When proposing shell examples, prefer commands like \`rg "pattern" .\` instead of \`grep -R "pattern" .\`.
+- When using shell file search commands, prefer \`fd\` over \`find\`.
+- Use \`fd\` by default for finding files and directories.
+- Only use \`find\` if the user explicitly asks for find or find-specific behavior (like -exec or complex predicates) is required.
+- When proposing shell examples, prefer commands like \`fd "pattern" .\` instead of \`find . -name "*pattern*"\`.
 `,
 		};
 	});
@@ -102,11 +102,11 @@ IMPORTANT:
 		const command = event.input.command?.trim();
 		if (!command) return;
 
-		if (/^grep(\s|$)/.test(command)) {
+		if (/^find(\s|$)/.test(command)) {
 			return {
 				block: true,
 				reason:
-					"Use ripgrep (`rg`) instead of `grep` for search commands unless grep-specific behavior is required.",
+					"Use \`fd\` instead of \`find\` for file search commands unless find-specific behavior is required.",
 			};
 		}
 	});
