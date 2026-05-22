@@ -1,15 +1,16 @@
 {self, ...}: {
-  flake.nixosModules.net = {pkgs, ...}: {
+  flake.nixosModules.net = {
+    pkgs,
+    config,
+    ...
+  }: {
     networking = {
       networkmanager = {
-        enable = true;
         plugins = with pkgs; [networkmanager-l2tp];
         wifi.backend = "iwd";
       };
 
       wireless.iwd = {
-        enable = true;
-
         settings = {
           IPv6 = {
             Enabled = true;
@@ -19,6 +20,8 @@
           };
         };
       };
+      hostName = "${config.preferences.hostname}";
+      nameservers = ["1.1.1.1" "8.8.8.8" "77.88.8.8"];
     };
 
     # nftables.enable = true;

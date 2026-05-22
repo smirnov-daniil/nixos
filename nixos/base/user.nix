@@ -1,6 +1,10 @@
 {
   flake.nixosModules.base = {lib, ...}: {
     options.preferences = {
+      hostname = lib.mkOption {
+        type = lib.types.str;
+        default = "nixos";
+      };
       user = {
         name = lib.mkOption {
           type = lib.types.str;

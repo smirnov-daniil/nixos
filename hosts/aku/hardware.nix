@@ -6,14 +6,12 @@
     modulesPath,
     ...
   }: {
-    imports = [];
-
-    boot.initrd.availableKernelModules = [];
+    boot.initrd.availableKernelModules = ["virtio_pci"];
     boot.initrd.kernelModules = [];
     boot.kernelModules = ["kvm-amd"];
     boot.extraModulePackages = [];
 
-    fileSystems."/lib/modules/6.6.87.2-microsoft-standard-WSL2" = {
+    fileSystems."/lib/modules/6.6.114.1-microsoft-standard-WSL2" = {
       device = "none";
       fsType = "overlay";
     };
@@ -38,11 +36,11 @@
       fsType = "tmpfs";
     };
 
-    # fileSystems."/mnt/wslg/distro" = {
-    #   device = "";
-    #   fsType = "none";
-    #   options = ["bind"];
-    # };
+    fileSystems."/mnt/wslg/distro" = {
+      device = "none";
+      fsType = "none";
+      options = ["bind"];
+    };
 
     fileSystems."/usr/lib/wsl/lib" = {
       device = "none";
@@ -91,7 +89,7 @@
     };
 
     swapDevices = [
-      {device = "/dev/disk/by-uuid/d59ef311-4fcf-44e5-82cf-cbfd77e6b4a9";}
+      {device = "/dev/disk/by-uuid/78ee9002-9743-4fc8-bcab-f42490941120";}
     ];
 
     nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";

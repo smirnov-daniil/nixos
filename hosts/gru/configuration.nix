@@ -17,8 +17,8 @@
       inputs.sops-nix.nixosModules.default
     ];
     system.stateVersion = "25.11";
+    preferences.hostname = "gru";
     networking = {
-      hostName = "gru";
       networkmanager.enable = true;
     };
     sops = {

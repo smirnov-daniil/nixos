@@ -6,9 +6,13 @@
       self.nixosModules.gtk
 
       self.nixosModules.pipewire
-      self.nixosModules.net
       self.nixosModules.zen-browser
     ];
+
+    networking = {
+      networkmanager.enable = true;
+      wireless.enable = true;
+    };
 
     programs.niri.enable = true;
     programs.niri.package = selfpkgs.niri;

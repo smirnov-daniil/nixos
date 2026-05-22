@@ -6,7 +6,13 @@
       "apiKey": "ollama",
       "models": [
         {
-          "id": "deepseek-r1:14b"
+          "id": "llama3.1"
+        },
+        {
+          "id": "gemma4:latest" 
+        },
+        {
+          "id": "gemma4:26b" 
         }
       ]
     }

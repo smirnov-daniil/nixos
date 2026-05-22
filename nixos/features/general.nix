@@ -6,6 +6,7 @@
   }: {
     imports = [
       self.nixosModules.nix
+      self.nixosModules.net
     ];
 
     users.users.${config.preferences.user.name} = {
