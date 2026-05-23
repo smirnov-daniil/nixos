@@ -13,10 +13,18 @@
       startMenuLaunchers = true;
       wslConf = {
         boot.systemd = true;
-        wsl2 = {
-          networkingMode = "mirrored";
-          bestEffortDnsParsing = true;
-        };
+        # wsl2 = {
+        #   networkingMode = "mirrored";
+        #   processors = 10;
+        #   autoProxy = true;
+        #   dnsTunneling = true;
+        #   localhostForwarding = true;
+        # };
+        # experimental = {
+        #   autoMemoryReclaim = "gradual";
+        #   firewall = true;
+        #   bestEffortDnsParsing = true;
+        # };
         network = {
           generateResolvConf = false;
           hostname = "${config.preferences.hostname}";

@@ -22,9 +22,9 @@
       };
       hostName = "${config.preferences.hostname}";
       nameservers = ["1.1.1.1" "8.8.8.8" "77.88.8.8"];
-    };
 
-    # nftables.enable = true;
+      nftables.enable = true;
+    };
 
     environment.systemPackages = [pkgs.networkmanager-l2tp];
   };

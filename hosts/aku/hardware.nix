@@ -83,7 +83,7 @@
       fsType = "9p";
     };
 
-    fileSystems."/mnt/wslg/run/user/1001" = {
+    fileSystems."/mnt/wslg/run/user/1000" = {
       device = "tmpfs";
       fsType = "tmpfs";
     };
