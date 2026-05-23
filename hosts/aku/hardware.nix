@@ -86,6 +86,10 @@
     fileSystems."/mnt/wslg/run/user/1000" = {
       device = "tmpfs";
       fsType = "tmpfs";
+      options = [
+        "uid=1000" # Change 1000 to your user's specific UID
+        "gid=100" # Change 100 to your user's primary GID (usually 'users' or 'wheel')
+      ];
     };
 
     swapDevices = [

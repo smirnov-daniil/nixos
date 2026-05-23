@@ -78,7 +78,7 @@
             style = 'plain'
       '';
   in {
-    packages.omp = inputs.wrappers.lib.wrapPackage {
+    packages.oh-my-posh = inputs.wrappers.lib.wrapPackage {
       inherit pkgs;
       package = pkgs.oh-my-posh;
       flags = {

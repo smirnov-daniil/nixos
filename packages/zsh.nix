@@ -17,7 +17,7 @@
             fzf.enable = true;
             oh-my-posh = {
               enable = true;
-              package = self'.packages.omp;
+              package = self'.packages.oh-my-posh;
             };
             zoxide.enable = true;
           };

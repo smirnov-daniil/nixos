@@ -44,7 +44,7 @@
       pkgs.serie
 
       # wrapped
-      self'.packages.omp
+      self'.packages.oh-my-posh
       self'.packages.helix
       # self'.packages.neovimDynamic
       # self'.packages.qalc
