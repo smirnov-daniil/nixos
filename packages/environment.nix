@@ -54,21 +54,11 @@
       # self'.packages.jjui
       self'.packages.nix-check-bin
     ];
-    combinedCompletions =
-      pkgs.runCommand "env-completions"
-      {
-        dirs = lib.concatMapStringsSep " " (p: "${lib.getOutput "out" p}/share/zsh/site-functions") myTools;
-      }
-      ''
-        mkdir -p $out
-        for dir in $dirs; do
-          if [ -d "$dir" ]; then
-            for f in "$dir"/*; do
-              ln -s "$f" $out/
-            done
-          fi
-        done
-      '';
+    combinedCompletions = pkgs.buildEnv {
+      name = "env-completions";
+      paths = myTools;
+      pathsToLink = ["/share/zsh/site-functions"];
+    };
   in {
     # My whole desktop in one package, includes kityy terminal
     packages.desktop = inputs.wrapper-modules.wrappers.niri.wrap {

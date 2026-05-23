@@ -32,7 +32,7 @@
             colors = true;
             fuzzySearch = true;
             init = lib.mkForce ''
-              fpath=(${self'.packages.completions} $fpath)
+              fpath+=(${self'.packages.completions}/share/zsh/site-functions)
               autoload -U compinit && compinit -u
             '';
           };
@@ -48,7 +48,7 @@
             ignoreSpace = true;
           };
         };
-        extraRC = "source ${pkgs.zsh-syntax-highlighting}/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh";
+        extraRC = "source ${pkgs.zsh-fast-syntax-highlighting}/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh";
       }).wrapper;
   };
 }
