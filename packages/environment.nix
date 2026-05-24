@@ -27,7 +27,6 @@
       pkgs.wget
       pkgs.killall
       pkgs.sshfs
-      self'.packages.fzf
       pkgs.htop
       pkgs.btop
       pkgs.eza
@@ -45,14 +44,14 @@
       pkgs.serie
 
       # wrapped
+      self'.packages.fzf
       self'.packages.oh-my-posh
       self'.packages.helix
-      # self'.packages.neovimDynamic
       # self'.packages.qalc
       # self'.packages.lf
       self'.packages.git
-      # self'.packages.jujutsu
-      # self'.packages.jjui
+      self'.packages.jujutsu
+      self'.packages.jjui
       self'.packages.zellij
       self'.packages.nix-check-bin
     ];
