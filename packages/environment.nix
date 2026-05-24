@@ -27,11 +27,12 @@
       pkgs.wget
       pkgs.killall
       pkgs.sshfs
-      pkgs.fzf
+      self'.packages.fzf
       pkgs.htop
       pkgs.btop
       pkgs.eza
       pkgs.fd
+      pkgs.bat
       pkgs.zoxide
       # pkgs.dust
       pkgs.ripgrep

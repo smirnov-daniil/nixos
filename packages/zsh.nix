@@ -14,7 +14,10 @@
         inherit pkgs;
         settings = {
           integrations = {
-            fzf.enable = true;
+            fzf = {
+              enable = true;
+              package = self'.packages.fzf-history;
+            };
             oh-my-posh = {
               enable = true;
               package = self'.packages.oh-my-posh;
@@ -25,6 +28,7 @@
             ".." = "cd ..";
             "x" = "eza --group-directories-first --icons=always --git --color=always";
             "c" = "cat";
+            "f" = "${self'.packages.fzf-files}/bin/fzf";
           };
           completion = {
             enable = true;
