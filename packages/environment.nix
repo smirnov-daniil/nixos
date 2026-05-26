@@ -11,49 +11,46 @@
   }: let
     myTools = [
       # nix
-      pkgs.nil
-      pkgs.nixd
-      pkgs.statix
       pkgs.alejandra
       pkgs.manix
+      pkgs.nil
+      pkgs.nixd
       pkgs.nix-inspect
+      pkgs.statix
       self'.packages.nh
 
       # other
-      pkgs.file
-      pkgs.unzip
-      pkgs.zip
-      pkgs.p7zip
-      pkgs.wget
-      pkgs.killall
-      pkgs.sshfs
-      pkgs.htop
+      pkgs.bat
       pkgs.btop
       pkgs.eza
       pkgs.fd
-      pkgs.bat
-      pkgs.zoxide
-      # pkgs.dust
-      pkgs.ripgrep
-      pkgs.microfetch
-      pkgs.tree-sitter
+      pkgs.ffmpeg-full
+      pkgs.file
+      pkgs.glow
+      pkgs.htop
       pkgs.imagemagick
       pkgs.imv
-      pkgs.ffmpeg-full
-      # pkgs.yt-dlp
+      pkgs.killall
+      pkgs.microfetch
+      pkgs.p7zip
+      pkgs.ripgrep
       pkgs.serie
+      pkgs.sshfs
+      pkgs.tree-sitter
+      pkgs.unzip
+      pkgs.wget
+      pkgs.zip
+      pkgs.zoxide
 
       # wrapped
       self'.packages.fzf
-      self'.packages.oh-my-posh
-      self'.packages.helix
-      # self'.packages.qalc
-      # self'.packages.lf
       self'.packages.git
-      self'.packages.jujutsu
+      self'.packages.helix
       self'.packages.jjui
-      self'.packages.zellij
+      self'.packages.jujutsu
       self'.packages.nix-check-bin
+      self'.packages.oh-my-posh
+      self'.packages.zellij
     ];
     combinedCompletions = pkgs.buildEnv {
       name = "env-completions";
