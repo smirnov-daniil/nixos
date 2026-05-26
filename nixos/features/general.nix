@@ -24,7 +24,7 @@
       "GIT_COMMITTER_NAME" = "${config.preferences.user.fullname}";
       "GIT_COMMITTER_EMAIL" = "${config.preferences.user.email}";
       "JJ_USER" = "${config.preferences.user.fullname}";
-      "jj_EMAIL" = "${config.preferences.user.email}";
+      "JJ_EMAIL" = "${config.preferences.user.email}";
     };
   };
 }
