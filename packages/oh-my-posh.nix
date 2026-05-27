@@ -48,15 +48,28 @@
               style = 'folder'
 
           [[blocks.segments]]
-            template = ' {{ .HEAD }}{{ if or (.Working.Changed) (.Staging.Changed) }}*{{ end }} <cyan>{{ if gt .Behind 0 }}⇣{{ end }}{{ if gt .Ahead 0 }}⇡{{ end }}</>'
+            type = "jujutsu"
+            template = " \uf1fa{{.ChangeID}}{{if .Working.Changed}} \uf044 {{ .Working.String }}{{ end }}"
+            style = "plain"
             foreground = 'darkGray'
-            type = 'git'
-            style = 'plain'
 
-            [blocks.segments.properties]
-              branch_icon = ""
-              commit_icon = '@'
-              fetch_status = true
+            [options]
+            fetch_status = true
+            ignore_working_copy = false
+            fetch_ahead_counter = true
+            ahead_icon = "⇡"
+            foreground = 'cyan'
+
+          # [[blocks.segments]]
+          #   template = ' {{ .HEAD }}{{ if or (.Working.Changed) (.Staging.Changed) }}*{{ end }} <cyan>{{ if gt .Behind 0 }}⇣{{ end }}{{ if gt .Ahead 0 }}⇡{{ end }}</>'
+          #   foreground = 'darkGray'
+          #   type = 'git'
+          #   style = 'plain'
+
+          #   [blocks.segments.properties]
+          #     branch_icon = ""
+          #     commit_icon = '@'
+          #     fetch_status = true
 
         [[blocks]]
           type = 'rprompt'
