@@ -49,7 +49,7 @@
 
           [[blocks.segments]]
             type = "jujutsu"
-            template = " \uf1fa{{.ChangeID}}{{if .Working.Changed}} \uf044 {{ .Working.String }}{{ end }}"
+            template = " {{.ClosestBookmarks}} {{if .Working.Changed}}\uf044 {{ .Working.String }}{{ end }}"
             style = "plain"
             foreground = 'darkGray'
 
