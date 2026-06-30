@@ -9,8 +9,10 @@
     self',
     ...
   }: {
-    packages.ghostty =
-      (inputs.wrappers.wrapperModules.ghostty.apply {
+    packages.ghostty = let
+      nixglhost = inputs.nix-gl-host.packages.${pkgs.system}.default;
+      ghosttyWrapped =
+        (inputs.wrappers.wrapperModules.ghostty.apply {
         inherit pkgs;
         settings = {
           gtk-titlebar = false;
@@ -83,5 +85,30 @@
           ];
         };
       }).wrapper;
+    in
+      # Launch ghostty through nixglhost so it picks up the host's NVIDIA
+      # OpenGL drivers on non-NixOS. symlinkJoin keeps the wrapper's desktop
+      # file, terminfo and shell integration; only the entrypoint is replaced.
+      pkgs.symlinkJoin {
+        name = "ghostty-nixglhost";
+        paths = [ghosttyWrapped];
+        nativeBuildInputs = [pkgs.makeWrapper];
+        postBuild = ''
+          rm $out/bin/ghostty
+          makeWrapper ${nixglhost}/bin/nixglhost $out/bin/ghostty \
+            --add-flags "-- ${ghosttyWrapped}/bin/ghostty"
+
+          # Repoint the desktop launcher at the nixglhost entrypoint so menu
+          # launches also pick up the host OpenGL drivers (the upstream
+          # desktop file hardcodes the raw ghostty binary path).
+          desktop=$out/share/applications/com.mitchellh.ghostty.desktop
+          if [ -e "$desktop" ]; then
+            src=$(readlink -f "$desktop")
+            rm -f "$desktop"
+            sed "s|^Exec=[^ ]*/bin/ghostty|Exec=$out/bin/ghostty|" "$src" > "$desktop"
+          fi
+        '';
+        meta = (ghosttyWrapped.meta or {}) // {mainProgram = "ghostty";};
+      };
   };
 }

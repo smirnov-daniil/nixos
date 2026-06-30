@@ -20,6 +20,14 @@
       url = "github:Mic92/nix-index-database";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Runtime OpenGL/CUDA driver bridge for running Nix GUI apps on non-NixOS
+    # (Ubuntu). Injects the host's installed NVIDIA libs at runtime, so it
+    # works even when the host driver is newer than anything in nixpkgs.
+    nix-gl-host = {
+      url = "github:numtide/nix-gl-host";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs: let
