@@ -1,37 +1,51 @@
-import Quickshell
-import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Layouts
 import qs.Common
+import qs.Services
 
-// Workspaces - tighter layout
+// niri workspaces for this bar's output. Empty workspaces are hidden
+// unless active or urgent, so the column stays short.
 Repeater {
-    property var number: 6
+    id: root
 
-    model: number
+    required property string output
+
+    model: Niri.workspacesOn(output).filter(
+        ws => ws.active_window_id !== null || ws.is_active || ws.is_urgent)
 
     Item {
+        id: entry
+
+        required property var modelData
+
         Layout.fillWidth: true
         Layout.preferredHeight: width
         Layout.alignment: Qt.AlignCenter
 
-        property var workspace: Hyprland.workspaces.values.find(ws => ws.id === index + 1) ?? null
-        property bool isActive: Hyprland.focusedWorkspace?.id === (index + 1)
-        property bool hasWindows: workspace !== null
+        // Named workspaces w0..w9 map to keys Mod+1..Mod+0.
+        readonly property string label: {
+            const name = entry.modelData.name;
+            if (name !== null && /^w\d$/.test(name))
+                return String((parseInt(name.slice(1)) + 1) % 10);
+            return name !== null && name !== "" ? name[0] : String(entry.modelData.idx);
+        }
 
         Rectangle {
             width: parent.width * 0.8
             height: width
             radius: width / 2
-            Layout.alignment: Qt.AlignCenter
-
-            color: parent.isActive ? Theme.base0C : (parent.hasWindows ? Theme.base02 : "transparent")
             anchors.centerIn: parent
 
+            color: entry.modelData.is_urgent
+                ? Theme.danger
+                : entry.modelData.is_active
+                    ? Theme.accent
+                    : Theme.highlight
+
             Text {
-                text: index + 1
-                color: parent.parent.isActive ? Theme.base00 : Theme.base0C
-                font.pixelSize: Theme.fontSize
+                text: entry.label
+                color: entry.modelData.is_active ? Theme.background : Theme.foreground
+                font.pixelSize: 11
                 font.family: Theme.fontFamily
                 font.bold: true
                 anchors.centerIn: parent
@@ -40,7 +54,7 @@ Repeater {
 
         MouseArea {
             anchors.fill: parent
-            onClicked: Hyprland.dispatch("workspace " + (index + 1))
+            onClicked: Niri.focusWorkspace(entry.modelData)
         }
     }
 }

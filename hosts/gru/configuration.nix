@@ -18,9 +18,6 @@
     ];
     system.stateVersion = "25.11";
     preferences.hostname = "gru";
-    networking = {
-      networkmanager.enable = true;
-    };
     sops = {
       defaultSopsFile = ./secrets/secrets.yaml;
       defaultSopsFormat = "yaml";
@@ -66,7 +63,5 @@
 
     xdg.portal.extraPortals = [pkgs.xdg-desktop-portal-gtk];
     xdg.portal.enable = true;
-
-    programs.niri.enable = true;
   };
 }

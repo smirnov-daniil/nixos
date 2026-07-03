@@ -11,33 +11,78 @@
       "ui.background" = {bg = "base00";};
       "ui.text" = {fg = "base05";};
       "ui.text.focus" = {fg = "base06";};
-      "ui.menu" = {fg = "base05"; bg = "base01";};
-      "ui.menu.selected" = {fg = "base01"; bg = "base04";};
-      "ui.menu.scroll" = {fg = "base04"; bg = "base01";};
+      "ui.menu" = {
+        fg = "base05";
+        bg = "base01";
+      };
+      "ui.menu.selected" = {
+        fg = "base01";
+        bg = "base04";
+      };
+      "ui.menu.scroll" = {
+        fg = "base04";
+        bg = "base01";
+      };
       "ui.linenr" = {fg = "base03";};
       "ui.linenr.selected" = {fg = "base05";};
-      "ui.popup" = {fg = "base05"; bg = "base01";};
-      "ui.popup.info" = {fg = "base05"; bg = "base01";};
+      "ui.popup" = {
+        fg = "base05";
+        bg = "base01";
+      };
+      "ui.popup.info" = {
+        fg = "base05";
+        bg = "base01";
+      };
       "ui.window" = {fg = "base03";};
       "ui.selection" = {bg = "base02";};
       "ui.selection.primary" = {bg = "base02";};
-      "ui.cursor" = {fg = "base05"; modifiers = ["reversed"];};
-      "ui.cursor.primary" = {fg = "base05"; modifiers = ["reversed"];};
-      "ui.cursor.match" = {fg = "base0A"; modifiers = ["underlined"];};
+      "ui.cursor" = {
+        fg = "base05";
+        modifiers = ["reversed"];
+      };
+      "ui.cursor.primary" = {
+        fg = "base05";
+        modifiers = ["reversed"];
+      };
+      "ui.cursor.match" = {
+        fg = "base0A";
+        modifiers = ["underlined"];
+      };
       "ui.cursorline.primary" = {bg = "base01";};
       "ui.virtual.whitespace" = {fg = "base03";};
       "ui.virtual.ruler" = {bg = "base01";};
       "ui.virtual.indent-guide" = {fg = "base03";};
       "ui.virtual.inlay-hint" = {fg = "base03";};
-      "ui.help" = {fg = "base06"; bg = "base01";};
+      "ui.help" = {
+        fg = "base06";
+        bg = "base01";
+      };
       "ui.gutter" = {bg = "base00";};
-      "ui.statusline" = {fg = "base04"; bg = "base01";};
-      "ui.statusline.inactive" = {fg = "base03"; bg = "base01";};
-      "ui.statusline.normal" = {fg = "base01"; bg = "base0D";};
-      "ui.statusline.insert" = {fg = "base01"; bg = "base0B";};
-      "ui.statusline.select" = {fg = "base01"; bg = "base0E";};
+      "ui.statusline" = {
+        fg = "base04";
+        bg = "base01";
+      };
+      "ui.statusline.inactive" = {
+        fg = "base03";
+        bg = "base01";
+      };
+      "ui.statusline.normal" = {
+        fg = "base01";
+        bg = "base0D";
+      };
+      "ui.statusline.insert" = {
+        fg = "base01";
+        bg = "base0B";
+      };
+      "ui.statusline.select" = {
+        fg = "base01";
+        bg = "base0E";
+      };
 
-      "comment" = {fg = "base03"; modifiers = ["italic"];};
+      "comment" = {
+        fg = "base03";
+        modifiers = ["italic"];
+      };
       "variable" = "base08";
       "variable.builtin" = "base09";
       "variable.parameter" = "base08";
@@ -73,10 +118,19 @@
       "markup.heading" = "base0D";
       "markup.heading.marker" = "base03";
       "markup.list" = "base08";
-      "markup.bold" = {fg = "base0A"; modifiers = ["bold"];};
-      "markup.italic" = {fg = "base0E"; modifiers = ["italic"];};
+      "markup.bold" = {
+        fg = "base0A";
+        modifiers = ["bold"];
+      };
+      "markup.italic" = {
+        fg = "base0E";
+        modifiers = ["italic"];
+      };
       "markup.strikethrough" = {modifiers = ["crossed_out"];};
-      "markup.link.url" = {fg = "base09"; modifiers = ["underlined"];};
+      "markup.link.url" = {
+        fg = "base09";
+        modifiers = ["underlined"];
+      };
       "markup.link.text" = "base08";
       "markup.link.label" = "base0C";
       "markup.quote" = "base0C";
@@ -90,10 +144,30 @@
       "warning" = "base0A";
       "info" = "base0D";
       "hint" = "base0C";
-      "diagnostic.error" = {underline = {color = "base08"; style = "curl";};};
-      "diagnostic.warning" = {underline = {color = "base0A"; style = "curl";};};
-      "diagnostic.info" = {underline = {color = "base0D"; style = "curl";};};
-      "diagnostic.hint" = {underline = {color = "base0C"; style = "curl";};};
+      "diagnostic.error" = {
+        underline = {
+          color = "base08";
+          style = "curl";
+        };
+      };
+      "diagnostic.warning" = {
+        underline = {
+          color = "base0A";
+          style = "curl";
+        };
+      };
+      "diagnostic.info" = {
+        underline = {
+          color = "base0D";
+          style = "curl";
+        };
+      };
+      "diagnostic.hint" = {
+        underline = {
+          color = "base0C";
+          style = "curl";
+        };
+      };
 
       palette = {
         inherit

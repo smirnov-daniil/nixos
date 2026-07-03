@@ -8,7 +8,7 @@ The project utilizes a modern Nix stack for maximum reproducibility and maintain
 
 - **Nix Flakes**: The primary mechanism for dependency management and system reproducibility.
 - **`flake-parts`**: Used to structure the flake outputs and imports cleanly.
-- **`import-tree`**: Automates the discovery and import of Nix modules, reducing the need for manual import lists.
+- **Auto-import**: `flake.nix` collects every `.nix` file in the tree (via `lib.fileset`) as a flake-parts module — no manual import lists.
 - **`sops-nix`**: Handles encrypted secrets management, ensuring sensitive data is not stored in plaintext.
 - **`nh`**: Used for streamlined system management and switching.
 
@@ -47,7 +47,7 @@ Located in `nixos/features/pi/`, the integration includes:
 ### Applying Changes
 The project prefers the use of `nh` for applying configurations:
 ```bash
-sudo nh os switch
+nh os switch
 ```
 
 ### Updating Dependencies

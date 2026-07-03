@@ -1,14 +1,26 @@
 import Quickshell
+import Quickshell.Bluetooth
+import Quickshell.Services.Pipewire
 import QtQuick
 import QtQuick.Layouts
-import qs.Modules.Lock
 import qs.Common
+import qs.Services
+import qs.Widgets
 
 Variants {
+    id: root
+
+    // Panels owned by shell.qml, shared by all screens' bars.
+    required property var controlCenter
+    required property var notificationHistory
+    required property var sessionMenu
+
     model: Quickshell.screens
 
     PanelWindow {
-        property var modelData
+        id: window
+
+        required property var modelData
         screen: modelData
 
         anchors {
@@ -17,36 +29,92 @@ Variants {
             bottom: true
         }
 
-        implicitWidth: 24
-        color: Theme.base00
+        implicitWidth: 28
+        color: Theme.background
+
+        PwObjectTracker {
+            objects: [Pipewire.defaultAudioSink]
+        }
 
         ColumnLayout {
             anchors.fill: parent
 
-            // Top section - Workspaces
             ColumnLayout {
                 Layout.alignment: Qt.AlignTop
-                Layout.topMargin: 4
-                spacing: 0
+                Layout.topMargin: 6
+                spacing: 2
 
                 Workspaces {
-                    number: 6
+                    output: window.screen.name
                 }
             }
 
-            // Spacer to push system info to bottom
             Item {
                 Layout.fillHeight: true
             }
 
-            // Bottom section - System Info
             ColumnLayout {
                 Layout.alignment: Qt.AlignBottom
-                spacing: 10
+                Layout.bottomMargin: 6
+                spacing: 4
+
+                Tray {}
+
+                BarIcon {
+                    Layout.fillWidth: true
+                    visible: Niri.kbLayout !== ""
+                    glyph: Niri.kbLayout
+                    size: 10
+                    color: Niri.kbLayoutIdx === 0 ? Theme.muted : Theme.warning
+                }
+
+                BarIcon {
+                    Layout.fillWidth: true
+                    glyph: Pipewire.defaultAudioSink?.audio.muted ? "󰖁" : "󰕾"
+                    color: Pipewire.defaultAudioSink?.audio.muted ? Theme.muted : Theme.foreground
+                    onClicked: root.controlCenter.toggle()
+                }
+
+                BarIcon {
+                    Layout.fillWidth: true
+                    glyph: Network.statusIcon
+                    color: Network.wifiConnected || Network.ethernetConnected
+                        ? Theme.foreground
+                        : Theme.muted
+                    onClicked: root.controlCenter.toggle()
+                }
+
+                BarIcon {
+                    Layout.fillWidth: true
+                    visible: Bluetooth.defaultAdapter !== null
+                    glyph: {
+                        const adapter = Bluetooth.defaultAdapter;
+                        if (!adapter || !adapter.enabled)
+                            return "󰂲";
+                        const connected = [...Bluetooth.devices.values].some(d => d.connected);
+                        return connected ? "󰂱" : "󰂯";
+                    }
+                    color: Bluetooth.defaultAdapter?.enabled ? Theme.primary : Theme.muted
+                    onClicked: root.controlCenter.toggle()
+                }
+
+                BarIcon {
+                    Layout.fillWidth: true
+                    glyph: Notifs.history.length > 0 ? "󰂚" : "󰂜"
+                    color: Notifs.history.length > 0 ? Theme.foreground : Theme.muted
+                    onClicked: root.notificationHistory.toggle()
+                }
 
                 Battery {}
-                Calendar {}
-                Logout {}
+
+                Clock {}
+
+                BarIcon {
+                    Layout.fillWidth: true
+                    glyph: "󰐥"
+                    color: Theme.danger
+                    onClicked: root.sessionMenu.toggle()
+                }
             }
         }
     }

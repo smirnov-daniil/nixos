@@ -1,6 +1,5 @@
 pragma Singleton
 import Quickshell
-import QtQml
 import QtQuick
 
 QtObject {
@@ -10,7 +9,8 @@ QtObject {
     property string fontFamily: "JetBrainsMono Nerd Font"
     property int fontSize: 14
 
-    // Default Porple theme colors
+    // Fallback palette, overridden from theme.nix via QS_FLAKE_THEME (set by
+    // the nix wrapper in packages/quickshell/default.nix).
     property color base00: "#292c36"
     property color base01: "#333344"
     property color base02: "#474160"
@@ -28,56 +28,42 @@ QtObject {
     property color base0E: "#b74989"
     property color base0F: "#986841"
 
-    // Helper properties
+    // Semantic aliases
     property color background: base00
+    property color surface: base01
+    property color highlight: base02
+    property color muted: base03
     property color foreground: base05
     property color primary: base0D
-    property color secondary: base0E
+    property color accent: base0C
     property color success: base0B
     property color warning: base0A
     property color danger: base08
 
-    function load(path) {
-        var xhr = new XMLHttpRequest()
-        xhr.open("GET", path)
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                if (xhr.status === 200 || xhr.status === 0) {
-                    try {
-                        var p = JSON.parse(xhr.responseText)
-                        for (var k in p) {
-                            if (p.hasOwnProperty(k) && theme.hasOwnProperty(k)) {
-                                // Ensure proper hex format
-                                var hexValue = p[k]
-                                if (typeof hexValue === 'string') {
-                                    // Add # if missing
-                                    var colorValue = hexValue.startsWith('#') ? hexValue : '#' + hexValue
-                                    // Validate it's a proper color
-                                    try {
-                                        // Use Qt.rgba to validate color
-                                        var colorObj = Qt.color(colorValue)
-                                        if (colorObj) {
-                                            theme[k] = colorValue
-                                        }
-                                    } catch(e) {
-                                        console.warn("Invalid color format for", k, ":", hexValue)
-                                    }
-                                }
-                            }
-                        }
-                        console.log("Theme: palette loaded from", path)
-                    } catch(e) {
-                        console.error("Theme: JSON parse failed:", e)
-                    }
-                } else {
-                    console.warn("Theme: failed to load", path, "status:", xhr.status)
-                }
+    function _apply(raw) {
+        try {
+            const palette = JSON.parse(raw);
+            for (const key in palette) {
+                if (!theme.hasOwnProperty(key))
+                    continue;
+                const value = String(palette[key]);
+                theme[key] = value.startsWith("#") ? value : "#" + value;
             }
+        } catch (e) {
+            console.error("Theme: failed to parse theme file:", e);
         }
-        xhr.send()
     }
 
     Component.onCompleted: {
-        theme.load(Quickshell.env("XDG_CONFIG_HOME") + "/stylix/palette.json")
+        const path = Quickshell.env("QS_FLAKE_THEME_FILE");
+        if (!path)
+            return;
+        const xhr = new XMLHttpRequest();
+        xhr.open("GET", "file://" + path);
+        xhr.onreadystatechange = () => {
+            if (xhr.readyState === XMLHttpRequest.DONE && (xhr.status === 200 || xhr.status === 0))
+                theme._apply(xhr.responseText);
+        };
+        xhr.send();
     }
 }

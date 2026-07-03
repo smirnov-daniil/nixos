@@ -58,7 +58,7 @@
       pathsToLink = ["/share/zsh/site-functions"];
     };
   in {
-    # My whole desktop in one package, includes kityy terminal
+    # My whole desktop in one package: niri wired to my terminal and editor
     packages.desktop = inputs.wrapper-modules.wrappers.niri.wrap {
       inherit pkgs;
       imports = [self.wrappersModules.niri];

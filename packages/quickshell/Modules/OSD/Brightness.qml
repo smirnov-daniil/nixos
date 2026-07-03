@@ -10,10 +10,19 @@ Osd {
 	value: currentBrightness / maxBrightness
 	brightness: 0.7
 
-	property int maxBrightness
+	property int maxBrightness: 1
 	property int currentBrightness
+	// The first reads after startup populate state; only show the OSD for
+	// changes after that.
+	property bool armed: false
 
-	onCurrentBrightnessChanged: show()
+	Timer {
+		interval: 2000
+		running: true
+		onTriggered: armed = true
+	}
+
+	onCurrentBrightnessChanged: if (armed) show()
 
 	iconUpdater: function () {
 		switch (Math.round(value / (1 / 3)) * (1 / 3)) {

@@ -31,7 +31,5 @@
         };
       };
     };
-
-    preferences.monitors.enable = false;
   };
 }

@@ -1,5 +1,13 @@
-{self, ...}: {
-  flake.nixosModules.desktop = {pkgs, ...}: let
+{
+  self,
+  inputs,
+  ...
+}: {
+  flake.nixosModules.desktop = {
+    pkgs,
+    config,
+    ...
+  }: let
     selfpkgs = self.packages."${pkgs.stdenv.hostPlatform.system}";
   in {
     imports = [
@@ -9,20 +17,19 @@
       self.nixosModules.zen-browser
     ];
 
-    networking = {
-      networkmanager.enable = true;
-      wireless.enable = true;
-    };
+    networking.networkmanager.enable = true;
 
     programs.niri.enable = true;
-    programs.niri.package = selfpkgs.niri;
-
-    # preferences.autostart = [selfpkgs.quickshellWrapped];
-    preferences.autostart = [selfpkgs.noctalia-shell];
+    # Rewrap niri per-host so preferences.autostart lands in spawn-at-startup.
+    programs.niri.package = inputs.wrapper-modules.wrappers.niri.wrap {
+      inherit pkgs;
+      imports = [self.wrappersModules.niri];
+      autostart = config.preferences.autostart;
+    };
 
     environment.systemPackages = [
       selfpkgs.terminal
-      selfpkgs.noctalia-shell
+      selfpkgs.quickshellWrapped
     ];
 
     fonts.packages = with pkgs; [
@@ -41,13 +48,11 @@
 
     time.timeZone = "Europe/Moscow";
 
-    # services.upower.enable = true;
-
-    # security.polkit.enable = true;
+    # Battery/power data for the quickshell bar (UPower DBus).
+    services.upower.enable = true;
+    services.power-profiles-daemon.enable = true;
 
     hardware = {
-      # enableAllFirmware = true;
-
       bluetooth.enable = true;
       bluetooth.powerOnBoot = true;
     };

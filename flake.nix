@@ -3,9 +3,7 @@
 
   inputs = {
     flake-parts.url = "github:hercules-ci/flake-parts";
-    import-tree.url = "github:vic/import-tree";
     nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
-    nixpkgs-stable.url = "github:NixOS/nixpkgs?ref=nixos-25.11";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     sops-nix.url = "github:Mic92/sops-nix";
     wrapper-modules.url = "github:BirdeeHub/nix-wrapper-modules";

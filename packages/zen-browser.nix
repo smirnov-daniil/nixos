@@ -1,7 +1,4 @@
-{
-  inputs,
-  ...
-}: {
+{inputs, ...}: {
   perSystem = {pkgs, ...}: let
     inherit (pkgs) lib;
     nixglhost = inputs.nix-gl-host.packages.${pkgs.system}.default;
@@ -94,6 +91,9 @@
         };
       };
   in {
+    # Plain wrapped zen for NixOS hosts (nixos/features/zen-browser.nix).
+    packages.zen-browser-plain = zen;
+
     # Launch zen through nixglhost so it uses the host NVIDIA OpenGL drivers
     # (GPU WebRender / WebGL / HW video decode) on non-NixOS. The desktop file
     # uses a bare `zen` Exec resolved via PATH, so menu launches hit this

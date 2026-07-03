@@ -13,11 +13,21 @@ Osd {
 
 	PwObjectTracker { objects: [Pipewire.defaultAudioSink, Pipewire.defaultAudioSource, ...Pipewire.nodes.values.filter(n => n.isStream)]; }
 
-	onIsMutedChanged: show();
-	onValueChanged: show();
+	// The sink binds asynchronously after startup, changing value/muted
+	// once — don't flash the OSD for that.
+	property bool armed: false
+
+	Timer {
+		interval: 2000
+		running: true
+		onTriggered: armed = true
+	}
+
+	onIsMutedChanged: if (armed) show();
+	onValueChanged: if (armed) show();
 
 	iconUpdater: function () {
-		if (isMuted || !value > 0) return Quickshell.iconPath("audio-volume-muted");
+		if (isMuted || value === 0) return Quickshell.iconPath("audio-volume-muted");
 			switch (Math.round(value / 0.5) * 0.5) {
 				case 0:
 					return Quickshell.iconPath("audio-volume-low");
