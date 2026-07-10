@@ -36,6 +36,30 @@ Variants {
             objects: [Pipewire.defaultAudioSink]
         }
 
+        // Bluetooth.devices only signals insert/remove; bump a revision on
+        // per-device connect changes so the glyph binding re-evaluates.
+        property int btRev: 0
+
+        Item {
+            visible: false
+
+            Repeater {
+                model: Bluetooth.devices
+
+                Item {
+                    required property BluetoothDevice modelData
+
+                    Connections {
+                        target: modelData
+
+                        function onConnectedChanged() {
+                            window.btRev++;
+                        }
+                    }
+                }
+            }
+        }
+
         ColumnLayout {
             anchors.fill: parent
 
@@ -88,6 +112,7 @@ Variants {
                     Layout.fillWidth: true
                     visible: Bluetooth.defaultAdapter !== null
                     glyph: {
+                        void window.btRev;
                         const adapter = Bluetooth.defaultAdapter;
                         if (!adapter || !adapter.enabled)
                             return "󰂲";

@@ -11,6 +11,10 @@
   }: let
     selfpkgs = self.packages.${config.pkgs.stdenv.hostPlatform.system};
     quickshellExe = lib.getExe selfpkgs.quickshellWrapped;
+    # Media keys must not depend on session PATH — bare `wpctl` silently
+    # fails when wireplumber's bin isn't in systemPackages.
+    wpctl = "${config.pkgs.wireplumber}/bin/wpctl";
+    playerctl = lib.getExe config.pkgs.playerctl;
 
     # Named workspaces w0..w9, reachable with Mod+1..Mod+0.
     workspaceNames = map (i: "w${toString i}") (lib.range 0 9);
@@ -91,11 +95,16 @@
             "Mod+S".spawn-sh = "${quickshellExe} ipc call launcher toggle";
             "Mod+N".spawn-sh = "${quickshellExe} ipc call history toggle";
             "Mod+Escape".spawn-sh = "${quickshellExe} ipc call session toggle";
-            "Mod+V".spawn-sh = "${config.pkgs.alsa-utils}/bin/amixer sset Capture toggle";
+            "Mod+V".spawn-sh = "${wpctl} set-mute @DEFAULT_AUDIO_SOURCE@ toggle";
 
-            "XF86AudioRaiseVolume".spawn-sh = "wpctl set-volume -l 1.4 @DEFAULT_AUDIO_SINK@ 5%+";
-            "XF86AudioLowerVolume".spawn-sh = "wpctl set-volume -l 1.4 @DEFAULT_AUDIO_SINK@ 5%-";
-            "XF86AudioMute".spawn-sh = "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle";
+            "XF86AudioRaiseVolume".spawn-sh = "${wpctl} set-volume -l 1.4 @DEFAULT_AUDIO_SINK@ 5%+";
+            "XF86AudioLowerVolume".spawn-sh = "${wpctl} set-volume -l 1.4 @DEFAULT_AUDIO_SINK@ 5%-";
+            "XF86AudioMute".spawn-sh = "${wpctl} set-mute @DEFAULT_AUDIO_SINK@ toggle";
+            "XF86AudioMicMute".spawn-sh = "${wpctl} set-mute @DEFAULT_AUDIO_SOURCE@ toggle";
+            "XF86AudioPlay".spawn-sh = "${playerctl} play-pause";
+            "XF86AudioPause".spawn-sh = "${playerctl} play-pause";
+            "XF86AudioNext".spawn-sh = "${playerctl} next";
+            "XF86AudioPrev".spawn-sh = "${playerctl} previous";
             "XF86MonBrightnessUp".spawn-sh = "${lib.getExe config.pkgs.brightnessctl} set 5%+";
             "XF86MonBrightnessDown".spawn-sh = "${lib.getExe config.pkgs.brightnessctl} set 5%-";
 

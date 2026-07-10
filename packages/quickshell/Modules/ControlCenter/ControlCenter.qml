@@ -27,6 +27,8 @@ PopupPanel {
             Network.scan();
             brightnessRead.running = true;
         }
+        if (adapter && adapter.enabled)
+            adapter.discovering = shown;
     }
 
     PwObjectTracker {
@@ -110,8 +112,11 @@ PopupPanel {
                 text: "Bluetooth"
                 active: root.adapter?.enabled ?? false
                 onToggled: {
-                    if (root.adapter)
-                        root.adapter.enabled = !root.adapter.enabled;
+                    if (!root.adapter)
+                        return;
+                    root.adapter.enabled = !root.adapter.enabled;
+                    if (root.adapter.enabled)
+                        root.adapter.discovering = true;
                 }
             }
         }
@@ -173,7 +178,7 @@ PopupPanel {
 
         SectionLabel {
             visible: root.adapter?.enabled ?? false
-            text: "BLUETOOTH"
+            text: root.adapter?.discovering ? "BLUETOOTH · scanning…" : "BLUETOOTH"
         }
 
         ListView {
@@ -181,37 +186,64 @@ PopupPanel {
             height: 90
             clip: true
             visible: root.adapter?.enabled ?? false
-            model: [...Bluetooth.devices.values].filter(d => d.paired || d.connected)
+            // ObjectModel directly: valuesChanged fires only on insert/remove,
+            // a filtered JS snapshot would go stale on pair/connect changes.
+            model: Bluetooth.devices
 
             delegate: Item {
-                required property var modelData
+                id: deviceRow
 
+                required property BluetoothDevice modelData
+
+                readonly property bool relevant: modelData.name !== ""
+                    && (modelData.connected || modelData.paired || modelData.bonded
+                        || (root.adapter?.discovering ?? false))
+                readonly property bool busy: modelData.pairing
+                    || modelData.state === BluetoothDeviceState.Connecting
+                    || modelData.state === BluetoothDeviceState.Disconnecting
+
+                visible: relevant
                 width: parent ? parent.width : 0
-                height: 26
+                height: relevant ? 26 : 0
 
                 Row {
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 8
 
                     Text {
-                        text: modelData.connected ? "󰂱" : "󰂯"
-                        color: modelData.connected ? Theme.primary : Theme.muted
+                        text: deviceRow.modelData.connected ? "󰂱" : "󰂯"
+                        color: deviceRow.modelData.connected ? Theme.primary : Theme.muted
                         font.pixelSize: 13
                         font.family: Theme.fontFamily
                     }
 
                     Text {
-                        text: modelData.name
-                        color: modelData.connected ? Theme.foreground : Theme.muted
+                        text: deviceRow.modelData.name
+                        color: deviceRow.modelData.connected ? Theme.foreground : Theme.muted
                         font.pixelSize: 12
                         font.family: Theme.fontFamily
                     }
 
                     Text {
-                        visible: modelData.batteryAvailable
-                        text: Math.round(modelData.battery * 100) + "%"
+                        visible: deviceRow.busy || deviceRow.modelData.batteryAvailable
+                        text: {
+                            if (deviceRow.modelData.pairing)
+                                return "pairing…";
+                            if (deviceRow.busy)
+                                return "…";
+                            return Math.round(deviceRow.modelData.battery * 100) + "%";
+                        }
                         color: Theme.muted
                         font.pixelSize: 10
+                        font.family: Theme.fontFamily
+                    }
+
+                    Text {
+                        visible: !deviceRow.modelData.paired && !deviceRow.modelData.bonded
+                            && !deviceRow.modelData.connected && !deviceRow.busy
+                        text: "new"
+                        color: Theme.warning
+                        font.pixelSize: 9
                         font.family: Theme.fontFamily
                     }
                 }
@@ -219,10 +251,17 @@ PopupPanel {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        if (modelData.connected)
-                            modelData.disconnect();
-                        else
-                            modelData.connect();
+                        const device = deviceRow.modelData;
+                        if (deviceRow.busy)
+                            return;
+                        if (device.connected) {
+                            device.disconnect();
+                        } else if (device.paired || device.bonded) {
+                            device.connect();
+                        } else {
+                            device.trusted = true;
+                            device.pair();
+                        }
                     }
                 }
             }

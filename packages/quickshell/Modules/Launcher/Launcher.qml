@@ -68,7 +68,9 @@ PopupPanel {
         input.text = ""; // syncs query via onTextChanged
         selectedIndex = 0;
         if (shown)
-            input.forceActiveFocus();
+            // The window isn't mapped yet when shown flips; grab focus after
+            // the surface exists or the compositor drops the request.
+            Qt.callLater(() => input.forceActiveFocus());
     }
 
     Column {
