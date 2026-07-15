@@ -32,6 +32,7 @@
       pkgs.imv
       pkgs.killall
       pkgs.microfetch
+      pkgs.openspec
       pkgs.p7zip
       pkgs.ripgrep
       pkgs.serie
@@ -50,6 +51,7 @@
       self'.packages.jujutsu
       self'.packages.nix-check-bin
       self'.packages.oh-my-posh
+      self'.packages.pi
       self'.packages.zellij
     ];
     combinedCompletions = pkgs.buildEnv {

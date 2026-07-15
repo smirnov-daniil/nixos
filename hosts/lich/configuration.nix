@@ -8,7 +8,7 @@
     lib,
     ...
   }: {
-    imports = [self.nixosModules.wsl self.nixosModules.base self.nixosModules.general self.nixosModules.pi];
+    imports = [self.nixosModules.wsl self.nixosModules.base self.nixosModules.general];
     system.stateVersion = "25.11";
     preferences.hostname = "lich";
     networking = {
