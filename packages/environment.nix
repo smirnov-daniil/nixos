@@ -47,12 +47,12 @@
       self'.packages.fzf
       self'.packages.git
       self'.packages.helix
+      self'.packages.herdr
       self'.packages.jjui
       self'.packages.jujutsu
       self'.packages.nix-check-bin
       self'.packages.oh-my-posh
       self'.packages.pi
-      self'.packages.zellij
     ];
     combinedCompletions = pkgs.buildEnv {
       name = "env-completions";

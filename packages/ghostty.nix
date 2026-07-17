@@ -48,8 +48,8 @@
             selection-background = self.themeNoHash.base02;
             selection-foreground = self.themeNoHash.base05;
 
-            # Multiplexing (splits/tabs) is zellij's job; alt binds here would
-            # shadow zellij and helix defaults. Font size stays on ghostty's
+            # Multiplexing (splits/tabs) is herdr's job; alt binds here would
+            # shadow herdr and helix defaults. Font size stays on ghostty's
             # default ctrl+equal/ctrl+minus.
             keybind = [
               "performable:ctrl+c=copy_to_clipboard"
