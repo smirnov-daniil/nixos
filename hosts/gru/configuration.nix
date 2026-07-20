@@ -14,6 +14,7 @@
       self.nixosModules.general
       self.nixosModules.intel
       self.nixosModules.desktop
+      self.nixosModules.browsec
       inputs.sops-nix.nixosModules.default
     ];
     system.stateVersion = "25.11";
