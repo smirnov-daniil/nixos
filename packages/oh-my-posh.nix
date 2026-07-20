@@ -48,17 +48,17 @@
               style = 'folder'
 
           [[blocks.segments]]
-            type = "jujutsu"
-            template = " {{.ClosestBookmarks}} {{if .Working.Changed}}\uf044 {{ .Working.String }}{{ end }}"
-            style = "plain"
-            foreground = 'darkGray'
+            type = 'jujutsu'
+            template = " {{ .ChangeID }}{{ if .ClosestBookmarks }} <cyan>{{ .ClosestBookmarks }}</>{{ end }}{{ if .Working.Changed }} <yellow>\uf044 {{ .Working.String }}</>{{ end }}"
+            style = 'plain'
+            foreground = 'magenta'
 
-            [options]
-            fetch_status = true
-            ignore_working_copy = false
-            fetch_ahead_counter = true
-            ahead_icon = "⇡"
-            foreground = 'cyan'
+            [blocks.segments.properties]
+              change_id_min_len = 8
+              fetch_status = true
+              ignore_working_copy = false
+              fetch_ahead_counter = true
+              ahead_icon = '⇡'
 
         [[blocks]]
           type = 'rprompt'
