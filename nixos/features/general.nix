@@ -18,6 +18,15 @@
       # hashedPasswordFile = "/persist/passwd";
       # initialPassword = "12345";
     };
+
+    programs.nh = {
+      enable = true;
+      package = self.packages.${pkgs.stdenv.hostPlatform.system}.nh;
+      clean = {
+        enable = true;
+        extraArgs = "--keep 5 --keep-since 7d";
+      };
+    };
     environment.variables = {
       "GIT_AUTHOR_NAME" = "${config.preferences.user.fullname}";
       "GIT_AUTHOR_EMAIL" = "${config.preferences.user.email}";

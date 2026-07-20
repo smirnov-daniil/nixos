@@ -28,29 +28,54 @@ PopupPanel {
                 anchors.verticalCenter: parent.verticalCenter
             }
 
-            Rectangle {
-                visible: Notifs.history.length > 0
-                width: clearText.implicitWidth + 16
-                height: 22
-                radius: 6
-                color: Theme.surface
+            Row {
+                spacing: 6
                 anchors {
                     right: parent.right
                     verticalCenter: parent.verticalCenter
                 }
 
-                Text {
-                    id: clearText
-                    text: "Clear"
-                    color: Theme.foreground
-                    font.pixelSize: 11
-                    font.family: Theme.fontFamily
-                    anchors.centerIn: parent
+                Rectangle {
+                    width: dndText.implicitWidth + 16
+                    height: 22
+                    radius: 6
+                    color: Notifs.dnd ? Theme.warning : Theme.surface
+
+                    Text {
+                        id: dndText
+                        text: "DND"
+                        color: Notifs.dnd ? Theme.background : Theme.muted
+                        font.pixelSize: 11
+                        font.family: Theme.fontFamily
+                        anchors.centerIn: parent
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: Notifs.dnd = !Notifs.dnd
+                    }
                 }
 
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: Notifs.clearHistory()
+                Rectangle {
+                    visible: Notifs.history.length > 0
+                    width: clearText.implicitWidth + 16
+                    height: 22
+                    radius: 6
+                    color: Theme.surface
+
+                    Text {
+                        id: clearText
+                        text: "Clear"
+                        color: Theme.foreground
+                        font.pixelSize: 11
+                        font.family: Theme.fontFamily
+                        anchors.centerIn: parent
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: Notifs.clearHistory()
+                    }
                 }
             }
         }

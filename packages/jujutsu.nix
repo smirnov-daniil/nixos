@@ -26,10 +26,6 @@
       (inputs.wrappers.wrapperModules.jujutsu.apply {
         inherit pkgs;
         settings = {
-          # user = {
-          #   name = "Yurii";
-          #   email = "yurii@goxore.com";
-          # };
           aliases = {
             l = logCommand;
           };
@@ -53,7 +49,7 @@
     in {
       options = {
         settings = lib.mkOption {
-          type = tomlFormat.type;
+          inherit (tomlFormat) type;
         };
       };
 

@@ -11,6 +11,7 @@ Variants {
     id: root
 
     // Panels owned by shell.qml, shared by all screens' bars.
+    required property var calendar
     required property var controlCenter
     required property var notificationHistory
     required property var sessionMenu
@@ -125,14 +126,24 @@ Variants {
 
                 BarIcon {
                     Layout.fillWidth: true
-                    glyph: Notifs.history.length > 0 ? "󰂚" : "󰂜"
-                    color: Notifs.history.length > 0 ? Theme.foreground : Theme.muted
-                    onClicked: root.notificationHistory.toggle()
+                    glyph: Notifs.dnd ? "󰂛" : (Notifs.history.length > 0 ? "󰂚" : "󰂜")
+                    color: Notifs.dnd
+                        ? Theme.warning
+                        : (Notifs.history.length > 0 ? Theme.foreground : Theme.muted)
+                    // Right click toggles do-not-disturb.
+                    onClicked: mouse => {
+                        if (mouse.button === Qt.RightButton)
+                            Notifs.dnd = !Notifs.dnd;
+                        else
+                            root.notificationHistory.toggle();
+                    }
                 }
 
                 Battery {}
 
-                Clock {}
+                Clock {
+                    onClicked: root.calendar.toggle()
+                }
 
                 BarIcon {
                     Layout.fillWidth: true

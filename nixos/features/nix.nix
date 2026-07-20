@@ -3,39 +3,29 @@
     imports = [
       inputs.nix-index-database.nixosModules.nix-index
     ];
-    programs.nix-index-database.comma.enable = true;
+    programs = {
+      nix-index-database.comma.enable = true;
+      nix-ld.enable = true;
+      direnv = {
+        enable = true;
+        nix-direnv.enable = true;
+      };
+    };
     nix.settings = {
-      # substituters = [
-      #   "https://nix-community.cachix.org"
-      #   "https://cuda-maintainers.cachix.org"
-      #   "https://hyprland.cachix.org"
-      # ];
-      # trusted-substituters = [
-      #   "https://hyprland.cachix.org"
-      #   "https://nix-community.cachix.org"
-      #   "https://cuda-maintainers.cachix.org"
-      # ];
-      # trusted-public-keys = [
-      #   "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-      #   "cuda-maintainers.cachix.org-1:0dq3bujKpuEPMCX6U4WylrUDZ9JyUG0VpVZa7CNfq5E="
-      #   "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
-      # ];
+      substituters = [
+        "https://nix-community.cachix.org"
+      ];
+      trusted-public-keys = [
+        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      ];
+      trusted-users = ["root" "@wheel"];
       experimental-features = [
         "nix-command"
         "flakes"
       ];
     };
-    programs.nix-ld.enable = true;
+    nix.optimise.automatic = true;
     nixpkgs.config.allowUnfree = true;
-    # programs.direnv = {
-    #   enable = true;
-    #   silent = false;
-    #   loadInNixShell = true;
-    #   direnvrcExtra = "";
-    #   nix-direnv = {
-    #     enable = true;
-    #   };
-    # };
     environment.systemPackages = with pkgs; [
       # Nix tooling
       nil

@@ -30,7 +30,7 @@ Commit messages follow conventional-commit style, e.g. `fix(omp): jujutsu`, `fea
 
 ### NixOS modules are defined piecewise and merged
 
-Files under `nixos/` define entries in `flake.nixosModules.<name>`. The same module name may be defined in several files — e.g. `flake.nixosModules.base` is spread across `nixos/base/user.nix`, `keymap.nix`, `monitors.nix`, `start.nix` and merged by the flake-parts `modules` flakeModule. Host-independent knobs live in the custom `preferences.*` option namespace (`preferences.hostname`, `preferences.user.{name,fullname,email}`, `preferences.autostart`, ...) declared in `nixos/base/`.
+Files under `nixos/` define entries in `flake.nixosModules.<name>`. The same module name may be defined in several files — e.g. `flake.nixosModules.base` is spread across `nixos/base/user.nix` and `start.nix` and merged by the flake-parts `modules` flakeModule. Host-independent knobs live in the custom `preferences.*` option namespace (`preferences.hostname`, `preferences.user.{name,fullname,email}`, `preferences.autostart`, ...) declared in `nixos/base/`.
 
 - `nixos/base/` — option declarations and fundamentals.
 - `nixos/features/` — opt-in named modules (`general`, `desktop`, `intel`, `net`, `nix`, `wsl`, `pi`, ...) that hosts import explicitly.
@@ -62,11 +62,12 @@ Key aggregate packages in `packages/environment.nix`:
 
 ### Quickshell desktop shell
 
-`packages/quickshell/` is a custom QML shell for niri (bar, app launcher, control center, notification daemon, OSDs, session menu). Key facts:
+`packages/quickshell/` is a custom QML shell for niri (bar, app launcher, control center, notification daemon with DND, OSDs, session menu, lock screen, calendar, low-battery alerts). Key facts:
 
 - `Services/Niri.qml` tracks workspaces/keyboard layout by consuming `niri msg --json event-stream` (full state resent on every reconnect; the Process auto-restarts because niri drops slow IPC clients). There is no quickshell niri module — don't use `Quickshell.Hyprland` here.
 - Singletons under `Services/` use `pragma Singleton` + the `qs.Services` import; wifi is nmcli polling (`Network.qml`), notifications are `Quickshell.Services.Notifications` (`Notifs.qml`); battery/bluetooth/audio/tray use quickshell's UPower/Bluetooth/Pipewire/SystemTray modules directly.
-- Panels are toggled via IPC: `quickshell ipc call <launcher|controlcenter|history|session> toggle` — niri binds in `packages/niri.nix` call the *wrapped* binary so `-c <config>` matches the running instance. After `nh os switch`, the running shell is still the old store path, so IPC binds from the new generation won't reach it until niri/quickshell restarts.
+- Panels are toggled via IPC: `quickshell ipc call <launcher|controlcenter|history|session|calendar> toggle` and `quickshell ipc call lock lock` — niri binds in `packages/niri.nix` call the *wrapped* binary so `-c <config>` matches the running instance. After `nh os switch`, the running shell is still the old store path, so IPC binds from the new generation won't reach it until niri/quickshell restarts.
+- The lock screen (`Modules/Lock/`) is ext-session-lock + `Quickshell.Services.Pam` with the default `login` PAM config (works on NixOS and Ubuntu without pam.d wiring); the session menu locks in-process before suspend/hibernate instead of relying on a `loginctl lock-session` listener. Low-battery alerts (`Modules/Notifications/BatteryAlerts.qml`) self-notify via `notify-send`, which loops back into the shell's own notification server — `libnotify` is in the wrapper's runtimeInputs for this.
 - The palette is injected from `theme.nix` via `QS_FLAKE_THEME_FILE` (plus `QML_XHR_ALLOW_FILE_READ=1` — Qt 6 blocks file:// XHR otherwise). Root `shell.qml` needs `//@ pragma UseQApplication` or tray menus break.
 - niri autostarts the shell through the `autostart` option of `flake.wrappersModules.niri`; hosts add extras via `preferences.autostart` (consumed in `nixos/features/desktop.nix`).
 
@@ -76,7 +77,7 @@ Key aggregate packages in `packages/environment.nix`:
 
 ### Non-NixOS (Ubuntu) usage
 
-The flake also serves a non-NixOS Ubuntu machine. GUI apps needing OpenGL are wrapped with `nix-gl-host` (see `packages/ghostty.nix`): the entrypoint is replaced with `nixglhost -- <app>` so the host's NVIDIA driver is injected at runtime. Keep this wrapping intact when touching ghostty.
+The flake also serves a non-NixOS Ubuntu machine. GUI apps needing OpenGL are wrapped with `nix-gl-host` (see `packages/ghostty.nix`): the entrypoint is a dispatcher that execs the app directly on NixOS (`/etc/NIXOS` present) and through `nixglhost -- <app>` elsewhere, injecting the host's NVIDIA driver at runtime. Keep this wrapping intact when touching ghostty — and keep the NixOS bypass: nixglhost also scans `/run/opengl-driver/lib`, so without the bypass it pins an NVIDIA-only EGL vendor on NixOS and breaks GL on PRIME-offload hosts (gru).
 
 Git/jj identity comes from environment variables (`GIT_AUTHOR_*`, `GIT_COMMITTER_*`, `JJ_USER`, `JJ_EMAIL`) set in `nixos/features/general.nix`, not from `user.*` config in the wrapped git/jujutsu packages.
 

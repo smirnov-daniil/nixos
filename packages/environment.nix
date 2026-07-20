@@ -60,36 +60,38 @@
       pathsToLink = ["/share/zsh/site-functions"];
     };
   in {
-    # My whole desktop in one package: niri wired to my terminal and editor
-    packages.desktop = inputs.wrapper-modules.wrappers.niri.wrap {
-      inherit pkgs;
-      imports = [self.wrappersModules.niri];
-      terminal = lib.getExe self'.packages.terminal;
-      env = {
-        EDITOR = lib.getExe self'.packages.helix;
+    packages = {
+      # My whole desktop in one package: niri wired to my terminal and editor
+      desktop = inputs.wrapper-modules.wrappers.niri.wrap {
+        inherit pkgs;
+        imports = [self.wrappersModules.niri];
+        terminal = lib.getExe self'.packages.terminal;
+        env = {
+          EDITOR = lib.getExe self'.packages.helix;
+        };
       };
-    };
 
-    # My primary flake terminal
-    packages.terminal = self'.packages.ghostty;
+      # My primary flake terminal
+      terminal = self'.packages.ghostty;
 
-    # My primary flake shell with all of it's packages
-    packages.environment = inputs.wrappers.lib.wrapPackage {
-      inherit pkgs;
-      package = self'.packages.zsh;
-      runtimeInputs = myTools;
-      env = {
-        EDITOR = lib.getExe self'.packages.helix;
+      # My primary flake shell with all of it's packages
+      environment = inputs.wrappers.lib.wrapPackage {
+        inherit pkgs;
+        package = self'.packages.zsh;
+        runtimeInputs = myTools;
+        env = {
+          EDITOR = lib.getExe self'.packages.helix;
+        };
       };
-    };
 
-    packages.completions = combinedCompletions;
+      completions = combinedCompletions;
 
-    packages.nix-check-bin = pkgs.writeShellApplication {
-      name = "nix-check-bin";
-      text = ''
-        $EDITOR "$(nix build "$1" --no-link --print-out-paths)/bin"
-      '';
+      nix-check-bin = pkgs.writeShellApplication {
+        name = "nix-check-bin";
+        text = ''
+          $EDITOR "$(nix build "$1" --no-link --print-out-paths)/bin"
+        '';
+      };
     };
   };
 }

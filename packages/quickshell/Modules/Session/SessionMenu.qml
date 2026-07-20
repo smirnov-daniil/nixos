@@ -10,13 +10,15 @@ import qs.Services
 PanelWindow {
     id: root
 
+    required property var lockScreen
+
     property bool shown: false
 
     readonly property var actions: [
-        {key: "l", label: "Lock", glyph: "󰌾", command: "loginctl lock-session"},
+        {key: "l", label: "Lock", glyph: "󰌾", lock: true},
         {key: "e", label: "Logout", glyph: "󰗽", command: "loginctl terminate-user $USER"},
-        {key: "u", label: "Suspend", glyph: "󰤄", command: "systemctl suspend"},
-        {key: "h", label: "Hibernate", glyph: "󰋊", command: "systemctl hibernate"},
+        {key: "u", label: "Suspend", glyph: "󰤄", lock: true, command: "systemctl suspend"},
+        {key: "h", label: "Hibernate", glyph: "󰋊", lock: true, command: "systemctl hibernate"},
         {key: "s", label: "Shutdown", glyph: "󰐥", command: "systemctl poweroff"},
         {key: "r", label: "Reboot", glyph: "󰜉", command: "systemctl reboot"}
     ]
@@ -27,7 +29,10 @@ PanelWindow {
 
     function run(action) {
         shown = false;
-        Quickshell.execDetached(["sh", "-c", action.command]);
+        if (action.lock)
+            root.lockScreen.lock();
+        if (action.command)
+            Quickshell.execDetached(["sh", "-c", action.command]);
     }
 
     visible: shown

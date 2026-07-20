@@ -5,7 +5,7 @@
   ...
 }: {
   perSystem = {pkgs, ...}: let
-    theme = self.theme;
+    inherit (self) theme;
     # base16 -> helix theme generated from theme.nix (self.theme).
     flakeTheme = {
       "ui.background" = {bg = "base00";};
@@ -219,9 +219,11 @@
             };
           };
           keys.normal = {
-            space.space = "file_picker";
-            space.w = ":w";
-            space.q = ":q";
+            space = {
+              space = "file_picker";
+              w = ":w";
+              q = ":q";
+            };
           };
         };
         languages = {

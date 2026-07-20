@@ -74,6 +74,7 @@
             "Mod+Q".close-window = {};
             "Mod+F".maximize-column = {};
             "Mod+G".fullscreen-window = {};
+            "Mod+O".toggle-overview = {};
             "Mod+Shift+F".toggle-window-floating = {};
             "Mod+C".center-column = {};
 

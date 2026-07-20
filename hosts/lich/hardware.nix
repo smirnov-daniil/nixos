@@ -8,81 +8,85 @@
   }: {
     imports = [];
 
-    boot.initrd.availableKernelModules = [];
-    boot.initrd.kernelModules = [];
-    boot.kernelModules = ["kvm-amd"];
-    boot.extraModulePackages = [];
-
-    # fileSystems."/lib/modules/6.6.87.2-microsoft-standard-WSL2" = {
-    #   device = "none";
-    #   fsType = "overlay";
-    # };
-
-    fileSystems."/mnt/wsl" = {
-      device = "none";
-      fsType = "tmpfs";
+    boot = {
+      initrd.availableKernelModules = [];
+      initrd.kernelModules = [];
+      kernelModules = ["kvm-amd"];
+      extraModulePackages = [];
     };
 
-    fileSystems."/usr/lib/wsl/drivers" = {
-      device = "drivers";
-      fsType = "9p";
-    };
+    fileSystems = {
+      # "/lib/modules/6.6.87.2-microsoft-standard-WSL2" = {
+      #   device = "none";
+      #   fsType = "overlay";
+      # };
 
-    fileSystems."/" = {
-      device = "/dev/disk/by-uuid/e744ca5c-2d3c-4290-a361-4056c7ddc96c";
-      fsType = "ext4";
-    };
+      "/mnt/wsl" = {
+        device = "none";
+        fsType = "tmpfs";
+      };
 
-    fileSystems."/mnt/wslg" = {
-      device = "none";
-      fsType = "tmpfs";
-    };
+      "/usr/lib/wsl/drivers" = {
+        device = "drivers";
+        fsType = "9p";
+      };
 
-    fileSystems."/mnt/wslg/distro" = {
-      device = "none";
-      fsType = "none";
-      options = ["bind"];
-    };
+      "/" = {
+        device = "/dev/disk/by-uuid/e744ca5c-2d3c-4290-a361-4056c7ddc96c";
+        fsType = "ext4";
+      };
 
-    fileSystems."/usr/lib/wsl/lib" = {
-      device = "none";
-      fsType = "overlay";
-    };
+      "/mnt/wslg" = {
+        device = "none";
+        fsType = "tmpfs";
+      };
 
-    fileSystems."/mnt/wslg/doc" = {
-      device = "none";
-      fsType = "overlay";
-    };
+      "/mnt/wslg/distro" = {
+        device = "none";
+        fsType = "none";
+        options = ["bind"];
+      };
 
-    fileSystems."/tmp/.X11-unix" = {
-      device = "/mnt/wslg/.X11-unix";
-      fsType = "none";
-      options = ["bind"];
-    };
+      "/usr/lib/wsl/lib" = {
+        device = "none";
+        fsType = "overlay";
+      };
 
-    fileSystems."/mnt/c" = {
-      device = "C:\134";
-      fsType = "9p";
-    };
+      "/mnt/wslg/doc" = {
+        device = "none";
+        fsType = "overlay";
+      };
 
-    fileSystems."/mnt/z" = {
-      device = "/dev/disk/by-uuid/2602ef6c-b358-4ad1-9614-a3b3bb75ee58";
-      fsType = "ext4";
-    };
+      "/tmp/.X11-unix" = {
+        device = "/mnt/wslg/.X11-unix";
+        fsType = "none";
+        options = ["bind"];
+      };
 
-    fileSystems."/workspace" = {
-      device = "/mnt/z/workspace";
-      fsType = "none";
-      options = ["bind"];
-    };
+      "/mnt/c" = {
+        device = "C:\134";
+        fsType = "9p";
+      };
 
-    fileSystems."/mnt/wslg/run/user/1000" = {
-      device = "tmpfs";
-      fsType = "tmpfs";
-      options = [
-        "uid=1000" # Change 1000 to your user's specific UID
-        "gid=100" # Change 100 to your user's primary GID (usually 'users' or 'wheel')
-      ];
+      "/mnt/z" = {
+        device = "/dev/disk/by-uuid/2602ef6c-b358-4ad1-9614-a3b3bb75ee58";
+        fsType = "ext4";
+      };
+
+      "/workspace" = {
+        device = "/mnt/z/workspace";
+        fsType = "none";
+        options = ["bind"];
+      };
+
+      "/mnt/wslg/run/user/1000" = {
+        device = "tmpfs";
+        fsType = "tmpfs";
+        options = [
+          "uid=1000" # Change 1000 to your user's specific UID
+          "gid=100" # Change 100 to your user's primary GID (usually 'users' or 'wheel')
+        ];
+      };
     };
 
     swapDevices = [

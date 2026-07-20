@@ -9,6 +9,7 @@
       package = pkgs.quickshell;
       runtimeInputs = [
         pkgs.brightnessctl # OSD + control center brightness slider
+        pkgs.libnotify # notify-send for battery alerts (loops back into the shell)
         pkgs.networkmanager # nmcli for the wifi service
       ];
       env = {

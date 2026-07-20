@@ -60,17 +60,6 @@
             ahead_icon = "⇡"
             foreground = 'cyan'
 
-          # [[blocks.segments]]
-          #   template = ' {{ .HEAD }}{{ if or (.Working.Changed) (.Staging.Changed) }}*{{ end }} <cyan>{{ if gt .Behind 0 }}⇣{{ end }}{{ if gt .Ahead 0 }}⇡{{ end }}</>'
-          #   foreground = 'darkGray'
-          #   type = 'git'
-          #   style = 'plain'
-
-          #   [blocks.segments.properties]
-          #     branch_icon = ""
-          #     commit_icon = '@'
-          #     fetch_status = true
-
         [[blocks]]
           type = 'rprompt'
           overflow = 'hidden'

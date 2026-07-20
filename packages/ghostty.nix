@@ -63,14 +63,25 @@
       # Launch ghostty through nixglhost so it picks up the host's NVIDIA
       # OpenGL drivers on non-NixOS. symlinkJoin keeps the wrapper's desktop
       # file, terminfo and shell integration; only the entrypoint is replaced.
+      #
+      # On NixOS nixglhost must be skipped: its driver scan includes
+      # /run/opengl-driver/lib, so it "finds" the NVIDIA driver and pins
+      # __EGL_VENDOR_LIBRARY_DIRS to an NVIDIA-only vendor dir, hiding Mesa.
+      # On a PRIME-offload host (gru) that kills GL context creation unless
+      # the whole session runs under nvidia-offload.
       pkgs.symlinkJoin {
         name = "ghostty-nixglhost";
         paths = [ghosttyWrapped];
-        nativeBuildInputs = [pkgs.makeWrapper];
         postBuild = ''
           rm $out/bin/ghostty
-          makeWrapper ${nixglhost}/bin/nixglhost $out/bin/ghostty \
-            --add-flags "-- ${ghosttyWrapped}/bin/ghostty"
+          cat > $out/bin/ghostty <<EOF
+          #!${pkgs.runtimeShell}
+          if [ -e /etc/NIXOS ]; then
+            exec ${ghosttyWrapped}/bin/ghostty "\$@"
+          fi
+          exec ${nixglhost}/bin/nixglhost -- ${ghosttyWrapped}/bin/ghostty "\$@"
+          EOF
+          chmod +x $out/bin/ghostty
 
           # Repoint the desktop launcher at the nixglhost entrypoint so menu
           # launches also pick up the host OpenGL drivers (the upstream

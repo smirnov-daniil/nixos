@@ -24,7 +24,13 @@
       age.keyFile = "/home/${config.preferences.user.name}/.config/sops/age/keys.txt";
     };
 
-    services.xserver.videoDrivers = ["nvidia"];
+    services = {
+      xserver.videoDrivers = ["nvidia"];
+      fstrim.enable = true;
+      fwupd.enable = true;
+      thermald.enable = true;
+    };
+    zramSwap.enable = true;
     hardware.graphics.enable = true;
 
     hardware.nvidia = {
@@ -53,10 +59,13 @@
     boot = {
       kernelPackages = pkgs.linuxPackages_latest;
 
-      loader.grub.enable = true;
-      loader.grub.devices = ["nodev"];
-      loader.grub.efiSupport = true;
-      loader.efi.canTouchEfiVariables = true; # let NixOS add a boot entry
+      loader = {
+        limine = {
+          enable = true;
+          efiSupport = true;
+        };
+        efi.canTouchEfiVariables = true; # let NixOS add a boot entry
+      };
 
       supportedFilesystems.ntfs = true;
     };

@@ -12,6 +12,8 @@ Singleton {
     // Plain copies (survive Notification destruction): {appName, appIcon,
     // image, summary, body, urgency, time}
     property var history: []
+    // DND: suppress popups (critical still shows), keep recording history.
+    property bool dnd: false
     property int maxPopups: 5
     property int maxHistory: 50
 
@@ -50,6 +52,13 @@ Singleton {
                 urgency: notification.urgency,
                 time: new Date()
             }].concat(root.history).slice(0, root.maxHistory);
+
+            if (root.dnd && notification.urgency !== NotificationUrgency.Critical) {
+                // Expire instead of just skipping the popup — a tracked
+                // notification nobody dismisses lingers in the server forever.
+                notification.expire();
+                return;
+            }
 
             let next = root.popups.concat([notification]);
             while (next.length > root.maxPopups) {
