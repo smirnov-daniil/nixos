@@ -49,7 +49,7 @@
 
           [[blocks.segments]]
             type = 'jujutsu'
-            template = " {{ .ChangeID }}{{ if .ClosestBookmarks }} <cyan>{{ .ClosestBookmarks }}</>{{ end }}{{ if .Working.Changed }} <yellow>\uf044 {{ .Working.String }}</>{{ end }}"
+            template = " {{ .ChangeID }}{{ if .ClosestBookmarks }} <cyan>{{ replaceP \"[^ ]*/\" (replaceP \"[^ ]*@\" .ClosestBookmarks \"\") \"\" }}</>{{ end }}{{ if .Working.Changed }} <yellow>\uf044 {{ .Working.String }}</>{{ end }}"
             style = 'plain'
             foreground = 'magenta'
 
