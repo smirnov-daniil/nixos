@@ -22,6 +22,7 @@
             extensions = [
               (extension "prefer-rg.ts")
               (extension "prefer-fd.ts")
+              (extension "prefer-eza.ts")
               (extension "prefer-jj.ts")
               (extension "plan-mode.ts")
               (extension "memory.ts")
@@ -35,13 +36,19 @@
               ./skills/verify
               ./skills/security-review
               ./skills/run
+              ./skills/graphify
+              ./skills/jujutsu
+              ./skills/markitdown
             ];
 
             promptTemplates = [./prompts];
 
             settings = {
-              defaultProvider = "anthropic";
-              defaultModel = "claude-sonnet-5";
+              defaultProvider = "openai-codex";
+              defaultModel = "gpt-5.4";
+              defaultThinkingLevel = "xhigh";
+              enableSkillCommands = true;
+              theme = "dark";
             };
           };
         }
@@ -53,6 +60,10 @@
     packages.pi = inputs.wrappers.lib.wrapPackage {
       inherit pkgs;
       inherit (agent) package;
+      runtimeInputs = [
+        pkgs.clang-tools
+        pkgs.eza
+      ];
       # mkCodingAgent has no option for installing arbitrary resource dirs
       # like ~/.pi/agent/agents/*.md (that's specific to the vendored
       # subagent extension's own discovery, not a pi-core concept), so this

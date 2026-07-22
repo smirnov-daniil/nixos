@@ -16,6 +16,7 @@ import { getAgentDir } from "@earendil-works/pi-coding-agent";
 interface AgentRole {
 	model?: string;
 	tools?: string[];
+	thinking?: string;
 	systemPrompt: string;
 }
 
@@ -43,6 +44,7 @@ function loadRole(name: string): AgentRole {
 	return {
 		model: fields.model,
 		tools: tools && tools.length > 0 ? tools : undefined,
+		thinking: fields.effort,
 		systemPrompt: body.trim(),
 	};
 }
@@ -67,6 +69,7 @@ export async function spawnAgent(roleName: string, task: string, cwd: string): P
 	const args: string[] = ["--mode", "json", "-p", "--no-session"];
 	if (role.model) args.push("--model", role.model);
 	if (role.tools) args.push("--tools", role.tools.join(","));
+	if (role.thinking) args.push("--thinking", role.thinking);
 
 	const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "pi-pipeline-"));
 	const promptPath = path.join(tmpDir, "prompt.md");

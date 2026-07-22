@@ -1,0 +1,227 @@
+{
+  ".claude__settings.local.json.md": {
+    "mtime": 1784726847.0297136,
+    "ast_hash": "0f36a6063a901aa80dfd7ee737b77d91",
+    "semantic_hash": "0f36a6063a901aa80dfd7ee737b77d91"
+  },
+  ".github__workflows__check.yml.md": {
+    "mtime": 1784726847.0347848,
+    "ast_hash": "184ea776636a6bb3308033f0643c0a6a",
+    "semantic_hash": "184ea776636a6bb3308033f0643c0a6a"
+  },
+  "AGENTS.md.md": {
+    "mtime": 1784726847.0294228,
+    "ast_hash": "c09bf1ea1885b8cce199eb7cfb764de6",
+    "semantic_hash": "c09bf1ea1885b8cce199eb7cfb764de6"
+  },
+  "CLAUDE.md.md": {
+    "mtime": 1784726847.029169,
+    "ast_hash": "82b7249429e7a2914f2c6533dc6da4a0",
+    "semantic_hash": "82b7249429e7a2914f2c6533dc6da4a0"
+  },
+  "NOTES.md.md": {
+    "mtime": 1784726847.028813,
+    "ast_hash": "3a2f1aa4e88783a4a504e8fd9bb12631",
+    "semantic_hash": "3a2f1aa4e88783a4a504e8fd9bb12631"
+  },
+  "README.md.md": {
+    "mtime": 1784726847.0293021,
+    "ast_hash": "befd72e9168bad6f359e0b7c0e505ffb",
+    "semantic_hash": "befd72e9168bad6f359e0b7c0e505ffb"
+  },
+  "flake.nix.md": {
+    "mtime": 1784726847.0290265,
+    "ast_hash": "f2dc0be3b4497aa4acc3d234c34b8bbf",
+    "semantic_hash": "f2dc0be3b4497aa4acc3d234c34b8bbf"
+  },
+  "hosts__aku__configuration.nix.md": {
+    "mtime": 1784726847.032094,
+    "ast_hash": "a59b1790cc0f019b535f8f543415e260",
+    "semantic_hash": "a59b1790cc0f019b535f8f543415e260"
+  },
+  "hosts__aku__default.nix.md": {
+    "mtime": 1784726847.032208,
+    "ast_hash": "0e4ca73e6b6defd4d45a5f693e8029c4",
+    "semantic_hash": "0e4ca73e6b6defd4d45a5f693e8029c4"
+  },
+  "hosts__aku__hardware.nix.md": {
+    "mtime": 1784726847.0319755,
+    "ast_hash": "2b380c4b1e73480a5a72b0b12dd6d700",
+    "semantic_hash": "2b380c4b1e73480a5a72b0b12dd6d700"
+  },
+  "hosts__gru__configuration.nix.md": {
+    "mtime": 1784726847.0328457,
+    "ast_hash": "66b849e7e81acd7400143b9e4f4c8eae",
+    "semantic_hash": "66b849e7e81acd7400143b9e4f4c8eae"
+  },
+  "hosts__gru__default.nix.md": {
+    "mtime": 1784726847.0329616,
+    "ast_hash": "55971389c36905300377099794fbd707",
+    "semantic_hash": "55971389c36905300377099794fbd707"
+  },
+  "hosts__gru__hardware.nix.md": {
+    "mtime": 1784726847.0327256,
+    "ast_hash": "7b64e2473b5d5724516ff207a106aec0",
+    "semantic_hash": "7b64e2473b5d5724516ff207a106aec0"
+  },
+  "hosts__lich__configuration.nix.md": {
+    "mtime": 1784726847.0324607,
+    "ast_hash": "15ec20e3e14afa185a743c0dc07e75e3",
+    "semantic_hash": "15ec20e3e14afa185a743c0dc07e75e3"
+  },
+  "hosts__lich__default.nix.md": {
+    "mtime": 1784726847.0325925,
+    "ast_hash": "46c079c7cb5b7c688fcdb835fd488074",
+    "semantic_hash": "46c079c7cb5b7c688fcdb835fd488074"
+  },
+  "hosts__lich__hardware.nix.md": {
+    "mtime": 1784726847.032339,
+    "ast_hash": "a08c248581321f6c08dd77f29c43b50a",
+    "semantic_hash": "a08c248581321f6c08dd77f29c43b50a"
+  },
+  "nixos__base__start.nix.md": {
+    "mtime": 1784726847.0332701,
+    "ast_hash": "5bcf45aec227b7790a58a5a725bda4a2",
+    "semantic_hash": "5bcf45aec227b7790a58a5a725bda4a2"
+  },
+  "nixos__base__user.nix.md": {
+    "mtime": 1784726847.0333889,
+    "ast_hash": "4386f634b6f12d1be7756ea03feb6d64",
+    "semantic_hash": "4386f634b6f12d1be7756ea03feb6d64"
+  },
+  "nixos__features__desktop.nix.md": {
+    "mtime": 1784726847.033762,
+    "ast_hash": "028874e3e4e255ca5f71d07a59967b60",
+    "semantic_hash": "028874e3e4e255ca5f71d07a59967b60"
+  },
+  "nixos__features__general.nix.md": {
+    "mtime": 1784726847.0336475,
+    "ast_hash": "0c0450ebf70a8ca675117391f0832ed7",
+    "semantic_hash": "0c0450ebf70a8ca675117391f0832ed7"
+  },
+  "nixos__features__gtk.nix.md": {
+    "mtime": 1784726847.033532,
+    "ast_hash": "92ef87b2b20c7dac60faefea1f9af615",
+    "semantic_hash": "92ef87b2b20c7dac60faefea1f9af615"
+  },
+  "nixos__features__intel.nix.md": {
+    "mtime": 1784726847.033885,
+    "ast_hash": "2be7232f3683d7dd974e94fd2b72686a",
+    "semantic_hash": "2be7232f3683d7dd974e94fd2b72686a"
+  },
+  "nixos__features__net.nix.md": {
+    "mtime": 1784726847.0344718,
+    "ast_hash": "6877202ca19a5749aad0964404250b01",
+    "semantic_hash": "6877202ca19a5749aad0964404250b01"
+  },
+  "nixos__features__nix.nix.md": {
+    "mtime": 1784726847.0346107,
+    "ast_hash": "9d7d0ea7486748b641f4af9a6839b790",
+    "semantic_hash": "9d7d0ea7486748b641f4af9a6839b790"
+  },
+  "nixos__features__pipewire.nix.md": {
+    "mtime": 1784726847.0342362,
+    "ast_hash": "2c00fee363c7ea4d1a729563806bed5e",
+    "semantic_hash": "2c00fee363c7ea4d1a729563806bed5e"
+  },
+  "nixos__features__vm.nix.md": {
+    "mtime": 1784726847.0339992,
+    "ast_hash": "ad472731ef0abe2a1ecbf6fe6956cffd",
+    "semantic_hash": "ad472731ef0abe2a1ecbf6fe6956cffd"
+  },
+  "nixos__features__wsl.nix.md": {
+    "mtime": 1784726847.034351,
+    "ast_hash": "b171bc0fdc509cf41f4f35fb7a843e36",
+    "semantic_hash": "b171bc0fdc509cf41f4f35fb7a843e36"
+  },
+  "nixos__features__zen-browser.nix.md": {
+    "mtime": 1784726847.0341136,
+    "ast_hash": "8dd4aa5c8ea65ede00127788003203d2",
+    "semantic_hash": "8dd4aa5c8ea65ede00127788003203d2"
+  },
+  "packages__browsec.nix.md": {
+    "mtime": 1784726847.0310345,
+    "ast_hash": "1352583349c7ee743f9c0d99770970da",
+    "semantic_hash": "1352583349c7ee743f9c0d99770970da"
+  },
+  "packages__environment.nix.md": {
+    "mtime": 1784726847.0309165,
+    "ast_hash": "2a85e41dde8da41ea68e546bb241a536",
+    "semantic_hash": "2a85e41dde8da41ea68e546bb241a536"
+  },
+  "packages__fzf.nix.md": {
+    "mtime": 1784726847.0304308,
+    "ast_hash": "b945787b4e9c0614451b976a19340457",
+    "semantic_hash": "b945787b4e9c0614451b976a19340457"
+  },
+  "packages__ghostty.nix.md": {
+    "mtime": 1784726847.029975,
+    "ast_hash": "2ea833f10091b29b5f092a45fc0c9d7e",
+    "semantic_hash": "2ea833f10091b29b5f092a45fc0c9d7e"
+  },
+  "packages__git.nix.md": {
+    "mtime": 1784726847.02986,
+    "ast_hash": "f764659c767546100dbfd5b076aa7cb0",
+    "semantic_hash": "f764659c767546100dbfd5b076aa7cb0"
+  },
+  "packages__helix.nix.md": {
+    "mtime": 1784726847.0311513,
+    "ast_hash": "e1e58ff37dc8b2f5030eb5669c25e24f",
+    "semantic_hash": "e1e58ff37dc8b2f5030eb5669c25e24f"
+  },
+  "packages__herdr.nix.md": {
+    "mtime": 1784726847.0306857,
+    "ast_hash": "28ee9b7e3c480cd29addb4da8467a86c",
+    "semantic_hash": "28ee9b7e3c480cd29addb4da8467a86c"
+  },
+  "packages__jujutsu.nix.md": {
+    "mtime": 1784726847.0312705,
+    "ast_hash": "1435dafc70214d83625e5fcd9539dc94",
+    "semantic_hash": "1435dafc70214d83625e5fcd9539dc94"
+  },
+  "packages__nh.nix.md": {
+    "mtime": 1784726847.0302057,
+    "ast_hash": "eb08980e2e82999b1c9e0afc51a6a158",
+    "semantic_hash": "eb08980e2e82999b1c9e0afc51a6a158"
+  },
+  "packages__niri.nix.md": {
+    "mtime": 1784726847.030565,
+    "ast_hash": "ae2a6ff73604a15372f7dddb1351b365",
+    "semantic_hash": "ae2a6ff73604a15372f7dddb1351b365"
+  },
+  "packages__oh-my-posh.nix.md": {
+    "mtime": 1784726847.0303195,
+    "ast_hash": "0e105038b95539f47a675bc71fd612e6",
+    "semantic_hash": "0e105038b95539f47a675bc71fd612e6"
+  },
+  "packages__quickshell__default.nix.md": {
+    "mtime": 1784726847.0349693,
+    "ast_hash": "6371e0fc2733360b5febedce97425b72",
+    "semantic_hash": "6371e0fc2733360b5febedce97425b72"
+  },
+  "packages__wlr-which-key.nix.md": {
+    "mtime": 1784726847.0313933,
+    "ast_hash": "b809b6bd68d4388d59eb64b15918ed0f",
+    "semantic_hash": "b809b6bd68d4388d59eb64b15918ed0f"
+  },
+  "packages__zen-browser.nix.md": {
+    "mtime": 1784726847.0308008,
+    "ast_hash": "e899c46c86c96061b54a96e66011308b",
+    "semantic_hash": "e899c46c86c96061b54a96e66011308b"
+  },
+  "packages__zsh.nix.md": {
+    "mtime": 1784726847.030093,
+    "ast_hash": "3c3b4f7aa118930ba195c30cb81181f6",
+    "semantic_hash": "3c3b4f7aa118930ba195c30cb81181f6"
+  },
+  "parts.nix.md": {
+    "mtime": 1784726847.0289211,
+    "ast_hash": "92923fe41dcdc870948e3d994f8771c9",
+    "semantic_hash": "92923fe41dcdc870948e3d994f8771c9"
+  },
+  "theme.nix.md": {
+    "mtime": 1784726847.02869,
+    "ast_hash": "7d5550623f68d234e1865bae674b17f0",
+    "semantic_hash": "7d5550623f68d234e1865bae674b17f0"
+  }
+}
