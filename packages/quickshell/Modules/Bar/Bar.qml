@@ -87,6 +87,32 @@ Variants {
 
                 BarIcon {
                     Layout.fillWidth: true
+                    visible: Media.available
+                    glyph: Media.activePlayer?.isPlaying ? "󰎆" : "󰏤"
+                    color: Media.activePlayer?.isPlaying ? Theme.accent : Theme.muted
+                    onClicked: mouse => {
+                        if (mouse.button === Qt.MiddleButton)
+                            Media.activePlayer?.togglePlaying();
+                        else if (mouse.button === Qt.RightButton)
+                            Media.activePlayer?.next();
+                        else
+                            root.controlCenter.toggle();
+                    }
+                }
+
+                BarIcon {
+                    Layout.fillWidth: true
+                    visible: SystemActions.recording || Niri.screenCasting
+                    glyph: SystemActions.recording ? "󰑊" : "󰹑"
+                    color: Theme.danger
+                    onClicked: {
+                        if (SystemActions.recording)
+                            SystemActions.toggleRecording();
+                    }
+                }
+
+                BarIcon {
+                    Layout.fillWidth: true
                     visible: Niri.kbLayout !== ""
                     glyph: Niri.kbLayout
                     size: 10
@@ -126,14 +152,14 @@ Variants {
 
                 BarIcon {
                     Layout.fillWidth: true
-                    glyph: Notifs.dnd ? "󰂛" : (Notifs.history.length > 0 ? "󰂚" : "󰂜")
-                    color: Notifs.dnd
+                    glyph: Notifs.effectiveDnd ? "󰂛" : (Notifs.history.length > 0 ? "󰂚" : "󰂜")
+                    color: Notifs.effectiveDnd
                         ? Theme.warning
                         : (Notifs.history.length > 0 ? Theme.foreground : Theme.muted)
                     // Right click toggles do-not-disturb.
                     onClicked: mouse => {
                         if (mouse.button === Qt.RightButton)
-                            Notifs.dnd = !Notifs.dnd;
+                            Notifs.toggleDnd();
                         else
                             root.notificationHistory.toggle();
                     }

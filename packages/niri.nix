@@ -15,6 +15,13 @@
     # fails when wireplumber's bin isn't in systemPackages.
     wpctl = "${config.pkgs.wireplumber}/bin/wpctl";
     playerctl = lib.getExe config.pkgs.playerctl;
+    clipboardWatcher = config.pkgs.writeShellApplication {
+      name = "clipboard-watcher";
+      runtimeInputs = [config.pkgs.cliphist config.pkgs.wl-clipboard];
+      text = ''
+        exec wl-paste --watch cliphist store
+      '';
+    };
 
     # Named workspaces w0..w9, reachable with Mod+1..Mod+0.
     workspaceNames = map (i: "w${toString i}") (lib.range 0 9);
@@ -39,7 +46,7 @@
     };
     config = {
       # The quickshell bar/launcher/notifications are part of the desktop.
-      autostart = [selfpkgs.quickshellWrapped];
+      autostart = [selfpkgs.quickshellWrapped clipboardWatcher];
 
       settings = {
         prefer-no-csd = {};
@@ -95,8 +102,10 @@
 
             "Mod+S".spawn-sh = "${quickshellExe} ipc call launcher toggle";
             "Mod+N".spawn-sh = "${quickshellExe} ipc call history toggle";
+            "Mod+V".spawn-sh = "${quickshellExe} ipc call clipboard toggle";
+            "Mod+Tab".spawn-sh = "${quickshellExe} ipc call windows toggle";
             "Mod+Escape".spawn-sh = "${quickshellExe} ipc call session toggle";
-            "Mod+V".spawn-sh = "${wpctl} set-mute @DEFAULT_AUDIO_SOURCE@ toggle";
+            "Mod+Ctrl+V".spawn-sh = "${wpctl} set-mute @DEFAULT_AUDIO_SOURCE@ toggle";
 
             "XF86AudioRaiseVolume".spawn-sh = "${wpctl} set-volume -l 1.4 @DEFAULT_AUDIO_SINK@ 5%+";
             "XF86AudioLowerVolume".spawn-sh = "${wpctl} set-volume -l 1.4 @DEFAULT_AUDIO_SINK@ 5%-";
@@ -141,6 +150,16 @@
                 key = "n";
                 desc = "Notifications";
                 cmd = "${quickshellExe} ipc call history toggle";
+              }
+              {
+                key = "v";
+                desc = "Clipboard";
+                cmd = "${quickshellExe} ipc call clipboard toggle";
+              }
+              {
+                key = "w";
+                desc = "Windows";
+                cmd = "${quickshellExe} ipc call windows toggle";
               }
               {
                 key = "f";

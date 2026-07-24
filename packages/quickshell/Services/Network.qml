@@ -7,6 +7,7 @@ import Quickshell.Io
 Singleton {
     id: root
 
+    property bool networkingEnabled: true
     property bool wifiEnabled: true
     property bool wifiConnected: false
     property bool ethernetConnected: false
@@ -16,6 +17,9 @@ Singleton {
     property var networks: []
     property bool scanning: false
     property var _savedNames: []
+    property var vpnConnections: []
+    property var activeVpns: []
+    property string lastError: ""
 
     readonly property string statusIcon: {
         if (ethernetConnected)
@@ -36,6 +40,7 @@ Singleton {
     function refresh() {
         statusProc.running = true;
         savedProc.running = true;
+        vpnProc.running = true;
     }
 
     function scan() {
@@ -51,13 +56,28 @@ Singleton {
         refreshSoon.restart();
     }
 
+    function toggleNetworking() {
+        Quickshell.execDetached(["nmcli", "networking", networkingEnabled ? "off" : "on"]);
+        networkingEnabled = !networkingEnabled;
+        refreshSoon.restart();
+    }
+
+    function toggleVpn(name) {
+        const active = activeVpns.includes(name);
+        Quickshell.execDetached(["nmcli", "connection", active ? "down" : "up", name]);
+        refreshSoon.restart();
+    }
+
     property bool connecting: false
 
-    function connect(ssid) {
+    function connect(ssid, password) {
         if (connecting)
             return;
         connecting = true;
+        lastError = "";
         connectProc.command = ["nmcli", "device", "wifi", "connect", ssid];
+        if (password)
+            connectProc.command = connectProc.command.concat(["password", password]);
         connectProc.running = true;
     }
 
@@ -65,9 +85,26 @@ Singleton {
     // inside the last field and unescaping it (nmcli -t escapes ':' and
     // '\' in values; SSIDs may contain both).
     function _fields(line, count) {
-        const parts = line.split(":");
-        const last = parts.slice(count - 1).join(":").replace(/\\(.)/g, "$1");
-        return parts.slice(0, count - 1).concat(last);
+        const fields = [];
+        let field = "";
+        let escaped = false;
+        for (const character of line) {
+            if (escaped) {
+                field += character;
+                escaped = false;
+            } else if (character === "\\") {
+                escaped = true;
+            } else if (character === ":" && fields.length < count - 1) {
+                fields.push(field);
+                field = "";
+            } else {
+                field += character;
+            }
+        }
+        if (escaped)
+            field += "\\";
+        fields.push(field);
+        return fields;
     }
 
     Timer {
@@ -86,17 +123,18 @@ Singleton {
 
     Process {
         id: statusProc
-        command: ["sh", "-c", "nmcli radio wifi; nmcli -t -f TYPE,STATE device; nmcli -t -f IN-USE,SIGNAL,SSID device wifi list --rescan no"]
+        command: ["sh", "-c", "nmcli networking; nmcli radio wifi; nmcli -t -f TYPE,STATE device; nmcli -t -f IN-USE,SIGNAL,SSID device wifi list --rescan no"]
         environment: ({LC_ALL: "C"})
         stdout: StdioCollector {
             onStreamFinished: {
                 const lines = text.split("\n").filter(l => l !== "");
-                root.wifiEnabled = lines[0]?.trim() === "enabled";
+                root.networkingEnabled = lines[0]?.trim() === "enabled";
+                root.wifiEnabled = lines[1]?.trim() === "enabled";
                 let wifiUp = false;
                 let ethUp = false;
                 let ssid = "";
                 let signal = 0;
-                for (const line of lines.slice(1)) {
+                for (const line of lines.slice(2)) {
                     // Wifi-list lines start with "*" (in use) or ":" (empty
                     // IN-USE field); everything else is a device line.
                     if (line.includes(":") && !line.startsWith("*") && !line.startsWith(":") && !line.startsWith(" ")) {
@@ -122,12 +160,29 @@ Singleton {
 
     Process {
         id: savedProc
-        command: ["nmcli", "-t", "-f", "NAME", "connection", "show"]
+        command: ["nmcli", "-t", "-f", "NAME,TYPE", "connection", "show"]
         environment: ({LC_ALL: "C"})
         stdout: StdioCollector {
-            onStreamFinished: root._savedNames = text.split("\n")
-                .filter(l => l !== "")
-                .map(l => l.replace(/\\(.)/g, "$1"))
+            onStreamFinished: {
+                const connections = text.split("\n").filter(line => line !== "").map(line => root._fields(line, 2));
+                root._savedNames = connections.map(fields => fields[0]);
+                root.vpnConnections = connections
+                    .filter(fields => fields[1] === "vpn" || fields[1] === "wireguard")
+                    .map(fields => fields[0]);
+            }
+        }
+    }
+
+    Process {
+        id: vpnProc
+        command: ["nmcli", "-t", "-f", "NAME,TYPE", "connection", "show", "--active"]
+        environment: ({LC_ALL: "C"})
+        stdout: StdioCollector {
+            onStreamFinished: root.activeVpns = text.split("\n")
+                .filter(line => line !== "")
+                .map(line => root._fields(line, 2))
+                .filter(fields => fields[1] === "vpn" || fields[1] === "wireguard")
+                .map(fields => fields[0])
         }
     }
 
@@ -167,6 +222,9 @@ Singleton {
     Process {
         id: connectProc
         environment: ({LC_ALL: "C"})
+        stderr: StdioCollector {
+            onStreamFinished: root.lastError = text.trim()
+        }
         onRunningChanged: {
             if (!running) {
                 root.connecting = false;

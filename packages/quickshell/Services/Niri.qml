@@ -13,6 +13,8 @@ Singleton {
     // Workspace objects as sent by niri: id, idx, name, output,
     // is_active, is_focused, is_urgent, active_window_id.
     property var workspaces: []
+    property var windows: []
+    property var casts: []
     property var kbLayoutNames: []
     property int kbLayoutIdx: 0
     property bool overviewOpen: false
@@ -23,6 +25,8 @@ Singleton {
     }
 
     readonly property var focusedWorkspace: workspaces.find(ws => ws.is_focused) ?? null
+    readonly property var focusedWindow: windows.find(window => window.is_focused) ?? null
+    readonly property bool screenCasting: casts.length > 0
 
     readonly property var focusedScreen: {
         const output = focusedWorkspace?.output;
@@ -47,6 +51,11 @@ Singleton {
         return workspaces
             .filter(ws => ws.output === output)
             .sort((a, b) => a.idx - b.idx);
+    }
+
+    function focusWindow(window) {
+        if (window)
+            Quickshell.execDetached(["niri", "msg", "action", "focus-window", "--id", String(window.id)]);
     }
 
     function handleEvent(line) {
@@ -86,6 +95,38 @@ Singleton {
             workspaces = workspaces.map(ws => ws.id === data.id
                 ? Object.assign({}, ws, {is_urgent: data.urgent})
                 : ws);
+            break;
+        case "WindowsChanged":
+            windows = data.windows;
+            break;
+        case "WindowOpenedOrChanged":
+            windows = windows.some(window => window.id === data.window.id)
+                ? windows.map(window => window.id === data.window.id ? data.window : window)
+                : windows.concat([data.window]);
+            if (data.window.is_focused)
+                windows = windows.map(window => Object.assign({}, window, {is_focused: window.id === data.window.id}));
+            break;
+        case "WindowClosed":
+            windows = windows.filter(window => window.id !== data.id);
+            break;
+        case "WindowFocusChanged":
+            windows = windows.map(window => Object.assign({}, window, {is_focused: window.id === data.id}));
+            break;
+        case "WindowUrgencyChanged":
+            windows = windows.map(window => window.id === data.id
+                ? Object.assign({}, window, {is_urgent: data.urgent})
+                : window);
+            break;
+        case "CastsChanged":
+            casts = data.casts;
+            break;
+        case "CastStartedOrChanged":
+            casts = casts.some(cast => cast.stream_id === data.cast.stream_id)
+                ? casts.map(cast => cast.stream_id === data.cast.stream_id ? data.cast : cast)
+                : casts.concat([data.cast]);
+            break;
+        case "CastStopped":
+            casts = casts.filter(cast => cast.stream_id !== data.stream_id);
             break;
         case "KeyboardLayoutsChanged":
             kbLayoutNames = data.keyboard_layouts.names;

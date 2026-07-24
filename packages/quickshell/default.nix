@@ -9,8 +9,15 @@
       package = pkgs.quickshell;
       runtimeInputs = [
         pkgs.brightnessctl # OSD + control center brightness slider
+        pkgs.cliphist
+        pkgs.gammastep
+        pkgs.grim
         pkgs.libnotify # notify-send for battery alerts (loops back into the shell)
         pkgs.networkmanager # nmcli for the wifi service
+        pkgs.slurp
+        pkgs.systemd
+        pkgs.wf-recorder
+        pkgs.wl-clipboard
       ];
       env = {
         # theme.nix is the single source of truth; Common/Theme.qml loads this.

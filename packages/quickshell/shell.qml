@@ -3,12 +3,14 @@ import Quickshell
 import Quickshell.Io
 import qs.Modules.Bar
 import qs.Modules.Calendar
+import qs.Modules.Clipboard
 import qs.Modules.ControlCenter
 import qs.Modules.Launcher
 import qs.Modules.Lock
 import qs.Modules.Notifications
 import qs.Modules.OSD
 import qs.Modules.Session
+import qs.Modules.Windows
 
 ShellRoot {
     id: root
@@ -27,6 +29,14 @@ ShellRoot {
 
     Launcher {
         id: launcher
+    }
+
+    Clipboard {
+        id: clipboard
+    }
+
+    WindowSwitcher {
+        id: windowSwitcher
     }
 
     ControlCenter {
@@ -55,6 +65,22 @@ ShellRoot {
 
         function toggle(): void {
             launcher.toggle();
+        }
+    }
+
+    IpcHandler {
+        target: "clipboard"
+
+        function toggle(): void {
+            clipboard.toggle();
+        }
+    }
+
+    IpcHandler {
+        target: "windows"
+
+        function toggle(): void {
+            windowSwitcher.toggle();
         }
     }
 

@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Bluetooth
 import Quickshell.Io
 import Quickshell.Services.Pipewire
+import Quickshell.Services.UPower
 import qs.Common
 import qs.Services
 import qs.Widgets
@@ -11,29 +12,35 @@ import qs.Widgets
 PopupPanel {
     id: root
 
-    panelWidth: 330
-    panelHeight: 580
+    panelWidth: 360
+    panelHeight: 680
+    exclusiveKeyboard: true
 
     readonly property var sink: Pipewire.defaultAudioSink
     readonly property var source: Pipewire.defaultAudioSource
     readonly property var adapter: Bluetooth.defaultAdapter
+    readonly property var battery: UPower.displayDevice
+    readonly property var audioInputs: [...Pipewire.nodes.values].filter(node => !node.isSink && !node.isStream && node.audio !== null)
+    readonly property var audioStreams: [...Pipewire.nodes.values].filter(node => node.isStream && node.audio !== null)
 
     property int maxBrightness: 1
     property int currentBrightness: 0
+    property string pendingSsid: ""
 
     onShownChanged: {
         if (shown) {
             Network.refresh();
             Network.scan();
             brightnessRead.running = true;
+        } else {
+            pendingSsid = "";
         }
         if (adapter && adapter.enabled)
             adapter.discovering = shown;
     }
 
     PwObjectTracker {
-        objects: [Pipewire.defaultAudioSink, Pipewire.defaultAudioSource,
-            ...Pipewire.nodes.values.filter(n => n.isSink && !n.isStream)]
+        objects: [...Pipewire.nodes.values]
     }
 
     Process {
@@ -48,6 +55,13 @@ PopupPanel {
         }
     }
 
+    function duration(seconds) {
+        if (!Number.isFinite(seconds) || seconds <= 0)
+            return "—";
+        const minutes = Math.round(seconds / 60);
+        return Math.floor(minutes / 60) + "h " + String(minutes % 60).padStart(2, "0") + "m";
+    }
+
     component SectionLabel: Text {
         color: Theme.muted
         font.pixelSize: 10
@@ -56,6 +70,8 @@ PopupPanel {
     }
 
     component ToggleChip: Rectangle {
+        id: toggleChip
+
         property string glyph: ""
         property string text: ""
         property bool active: false
@@ -71,16 +87,16 @@ PopupPanel {
             spacing: 8
 
             Text {
-                text: parent.parent.glyph
-                color: parent.parent.active ? Theme.background : Theme.foreground
+                text: toggleChip.glyph
+                color: toggleChip.active ? Theme.background : Theme.foreground
                 font.pixelSize: 15
                 font.family: Theme.fontFamily
                 anchors.verticalCenter: parent.verticalCenter
             }
 
             Text {
-                text: parent.parent.text
-                color: parent.parent.active ? Theme.background : Theme.foreground
+                text: toggleChip.text
+                color: toggleChip.active ? Theme.background : Theme.foreground
                 font.pixelSize: 12
                 font.family: Theme.fontFamily
                 anchors.verticalCenter: parent.verticalCenter
@@ -89,16 +105,190 @@ PopupPanel {
 
         MouseArea {
             anchors.fill: parent
-            onClicked: parent.toggled()
+            onClicked: toggleChip.toggled()
         }
     }
 
-    Column {
-        anchors.fill: parent
-        spacing: 8
+    component MiniButton: Rectangle {
+        id: miniButton
+
+        property string glyph: ""
+        property string text: ""
+        property bool active: false
+        signal clicked
+
+        width: 100
+        height: 30
+        radius: 8
+        color: active ? Theme.accent : Theme.surface
 
         Row {
-            spacing: 12
+            anchors.centerIn: parent
+            spacing: 5
+
+            Text {
+                text: miniButton.glyph
+                color: miniButton.active ? Theme.background : Theme.foreground
+                font.pixelSize: 12
+                font.family: Theme.fontFamily
+            }
+
+            Text {
+                text: miniButton.text
+                color: miniButton.active ? Theme.background : Theme.foreground
+                font.pixelSize: 10
+                font.family: Theme.fontFamily
+            }
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: miniButton.clicked()
+        }
+    }
+
+    Flickable {
+        anchors.fill: parent
+        clip: true
+        contentHeight: content.implicitHeight
+        boundsBehavior: Flickable.StopAtBounds
+
+        Column {
+            id: content
+            width: parent.width
+            spacing: 8
+
+            SectionLabel {
+                visible: Media.available
+                text: "NOW PLAYING"
+            }
+
+            Rectangle {
+                visible: Media.available
+                width: parent.width
+                height: 118
+                radius: 10
+                color: Theme.surface
+
+                Image {
+                    id: albumArt
+                    width: 76
+                    height: 76
+                    anchors {
+                        left: parent.left
+                        leftMargin: 10
+                        top: parent.top
+                        topMargin: 10
+                    }
+                    source: Media.activePlayer?.trackArtUrl ?? ""
+                    fillMode: Image.PreserveAspectCrop
+                    asynchronous: true
+                }
+
+                Column {
+                    anchors {
+                        left: albumArt.right
+                        leftMargin: 10
+                        right: parent.right
+                        rightMargin: 10
+                        top: parent.top
+                        topMargin: 10
+                    }
+                    spacing: 2
+
+                    Text {
+                        width: parent.width
+                        text: Media.activePlayer?.trackTitle || Media.activePlayer?.identity || "Unknown track"
+                        color: Theme.foreground
+                        font.pixelSize: 12
+                        font.family: Theme.fontFamily
+                        font.bold: true
+                        elide: Text.ElideRight
+                    }
+
+                    Text {
+                        width: parent.width
+                        text: Media.activePlayer?.trackArtist || Media.activePlayer?.trackAlbum || ""
+                        color: Theme.muted
+                        font.pixelSize: 10
+                        font.family: Theme.fontFamily
+                        elide: Text.ElideRight
+                    }
+
+                    Row {
+                        spacing: 14
+
+                        Text {
+                            text: "󰒮"
+                            color: Media.activePlayer?.canGoPrevious ? Theme.foreground : Theme.muted
+                            font.pixelSize: 17
+                            font.family: Theme.fontFamily
+                            MouseArea {
+                                anchors.fill: parent
+                                anchors.margins: -5
+                                onClicked: Media.activePlayer?.previous()
+                            }
+                        }
+
+                        Text {
+                            text: Media.activePlayer?.isPlaying ? "󰏤" : "󰐊"
+                            color: Theme.accent
+                            font.pixelSize: 17
+                            font.family: Theme.fontFamily
+                            MouseArea {
+                                anchors.fill: parent
+                                anchors.margins: -5
+                                onClicked: Media.activePlayer?.togglePlaying()
+                            }
+                        }
+
+                        Text {
+                            text: "󰒭"
+                            color: Media.activePlayer?.canGoNext ? Theme.foreground : Theme.muted
+                            font.pixelSize: 17
+                            font.family: Theme.fontFamily
+                            MouseArea {
+                                anchors.fill: parent
+                                anchors.margins: -5
+                                onClicked: Media.activePlayer?.next()
+                            }
+                        }
+
+                        Text {
+                            visible: Media.activePlayer?.shuffleSupported ?? false
+                            text: "󰒟"
+                            color: Media.activePlayer?.shuffle ? Theme.accent : Theme.muted
+                            font.pixelSize: 15
+                            font.family: Theme.fontFamily
+                            MouseArea {
+                                anchors.fill: parent
+                                anchors.margins: -5
+                                onClicked: Media.activePlayer.shuffle = !Media.activePlayer.shuffle
+                            }
+                        }
+                    }
+                }
+
+                SliderRow {
+                    width: parent.width - 20
+                    height: 26
+                    anchors {
+                        left: parent.left
+                        leftMargin: 10
+                        bottom: parent.bottom
+                        bottomMargin: 2
+                    }
+                    glyph: ""
+                    value: Media.activePlayer?.length > 0 ? Media.activePlayer.position / Media.activePlayer.length : 0
+                    onMoved: value => {
+                        if (Media.activePlayer?.canSeek)
+                            Media.activePlayer.position = value * Media.activePlayer.length;
+                    }
+                }
+            }
+
+            Row {
+                spacing: 12
 
             ToggleChip {
                 glyph: Network.statusIcon
@@ -159,7 +349,7 @@ PopupPanel {
 
                     Text {
                         visible: modelData.secured
-                        text: ""
+                        text: "󰌾"
                         color: Theme.muted
                         font.pixelSize: 10
                         font.family: Theme.fontFamily
@@ -169,8 +359,102 @@ PopupPanel {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        if (!modelData.inUse)
-                            Network.connect(modelData.ssid);
+                        if (modelData.inUse)
+                            return;
+                        if (modelData.secured && !modelData.known) {
+                            root.pendingSsid = modelData.ssid;
+                            wifiPassword.text = "";
+                            Qt.callLater(() => wifiPassword.forceActiveFocus());
+                        } else {
+                            Network.connect(modelData.ssid, "");
+                        }
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            visible: root.pendingSsid !== ""
+            width: parent.width
+            height: 38
+            radius: 8
+            color: Theme.surface
+
+            TextInput {
+                id: wifiPassword
+                anchors {
+                    left: parent.left
+                    right: connectWifi.left
+                    top: parent.top
+                    bottom: parent.bottom
+                    leftMargin: 10
+                    rightMargin: 8
+                }
+                verticalAlignment: TextInput.AlignVCenter
+                echoMode: TextInput.Password
+                color: Theme.foreground
+                font.pixelSize: 11
+                font.family: Theme.fontFamily
+                Keys.onReturnPressed: connectWifi.clicked()
+                Keys.onEscapePressed: root.pendingSsid = ""
+            }
+
+            MiniButton {
+                id: connectWifi
+                width: 78
+                height: 28
+                text: Network.connecting ? "…" : "Connect"
+                anchors {
+                    right: parent.right
+                    rightMargin: 5
+                    verticalCenter: parent.verticalCenter
+                }
+                onClicked: {
+                    Network.connect(root.pendingSsid, wifiPassword.text);
+                    root.pendingSsid = "";
+                }
+            }
+        }
+
+        Text {
+            visible: Network.lastError !== ""
+            width: parent.width
+            text: Network.lastError
+            color: Theme.danger
+            font.pixelSize: 9
+            font.family: Theme.fontFamily
+            wrapMode: Text.Wrap
+            maximumLineCount: 2
+            elide: Text.ElideRight
+        }
+
+        SectionLabel {
+            visible: Network.vpnConnections.length > 0
+            text: "VPN"
+        }
+
+        Flow {
+            visible: Network.vpnConnections.length > 0
+            width: parent.width
+            spacing: 6
+
+            Repeater {
+                model: Network.vpnConnections
+
+                MiniButton {
+                    required property string modelData
+                    width: Math.min(150, Math.max(90, vpnName.implicitWidth + 30))
+                    glyph: "󰦝"
+                    text: modelData
+                    active: Network.activeVpns.includes(modelData)
+                    onClicked: Network.toggleVpn(modelData)
+
+                    Text {
+                        id: vpnName
+                        visible: false
+                        text: parent.modelData
+                        font.pixelSize: 10
+                        font.family: Theme.fontFamily
                     }
                 }
             }
@@ -178,7 +462,7 @@ PopupPanel {
 
         SectionLabel {
             visible: root.adapter?.enabled ?? false
-            text: root.adapter?.discovering ? "BLUETOOTH · scanning…" : "BLUETOOTH"
+            text: root.adapter?.discovering ? "BLUETOOTH · scanning…" : "BLUETOOTH · right-click to forget"
         }
 
         ListView {
@@ -250,11 +534,14 @@ PopupPanel {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: {
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+                    onClicked: mouse => {
                         const device = deviceRow.modelData;
                         if (deviceRow.busy)
                             return;
-                        if (device.connected) {
+                        if (mouse.button === Qt.RightButton) {
+                            device.forget();
+                        } else if (device.connected) {
                             device.disconnect();
                         } else if (device.paired || device.bonded) {
                             device.connect();
@@ -313,6 +600,100 @@ PopupPanel {
             }
         }
 
+        SectionLabel {
+            visible: root.audioInputs.length > 0
+            text: "AUDIO INPUT"
+        }
+
+        ListView {
+            width: parent.width
+            height: Math.min(root.audioInputs.length * 24, 72)
+            clip: true
+            visible: root.audioInputs.length > 0
+            model: root.audioInputs
+
+            delegate: Item {
+                id: inputRow
+
+                required property var modelData
+                readonly property bool isDefault: modelData === Pipewire.defaultAudioSource
+
+                width: parent ? parent.width : 0
+                height: 24
+
+                Row {
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: 8
+
+                    Text {
+                        text: inputRow.isDefault ? "󰄬" : " "
+                        color: Theme.success
+                        font.pixelSize: 12
+                        font.family: Theme.fontFamily
+                    }
+
+                    Text {
+                        width: 280
+                        text: inputRow.modelData.description || inputRow.modelData.name
+                        color: inputRow.isDefault ? Theme.foreground : Theme.muted
+                        font.pixelSize: 11
+                        font.family: Theme.fontFamily
+                        elide: Text.ElideRight
+                    }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: Pipewire.preferredDefaultAudioSource = inputRow.modelData
+                }
+            }
+        }
+
+        SectionLabel {
+            visible: root.audioStreams.length > 0
+            text: "APPLICATION AUDIO"
+        }
+
+        ListView {
+            width: parent.width
+            height: Math.min(root.audioStreams.length * 48, 144)
+            clip: true
+            spacing: 2
+            visible: root.audioStreams.length > 0
+            model: root.audioStreams
+
+            delegate: Item {
+                id: streamRow
+                required property var modelData
+
+                width: parent ? parent.width : 0
+                height: 46
+
+                Text {
+                    width: parent.width
+                    text: modelData.properties["application.name"] || modelData.properties["media.name"] || modelData.description || modelData.name
+                    color: Theme.foreground
+                    font.pixelSize: 10
+                    font.family: Theme.fontFamily
+                    elide: Text.ElideRight
+                }
+
+                SliderRow {
+                    width: parent.width
+                    anchors.bottom: parent.bottom
+                    glyph: streamRow.modelData.audio.muted ? "󰖁" : (streamRow.modelData.isSink ? "󰍬" : "󰕾")
+                    value: streamRow.modelData.audio.volume
+                    onMoved: value => streamRow.modelData.audio.volume = value
+
+                    MouseArea {
+                        width: 24
+                        height: parent.height
+                        onClicked: streamRow.modelData.audio.muted = !streamRow.modelData.audio.muted
+                    }
+                }
+            }
+        }
+
         SliderRow {
             width: parent.width
             glyph: root.sink?.audio.muted ? "󰖁" : "󰕾"
@@ -358,6 +739,156 @@ PopupPanel {
                 root.currentBrightness = Math.round(percent / 100 * root.maxBrightness);
                 Quickshell.execDetached(["brightnessctl", "set", percent + "%"]);
             }
+        }
+
+        SectionLabel {
+            text: "POWER"
+        }
+
+        Rectangle {
+            visible: root.battery.ready && root.battery.isLaptopBattery
+            width: parent.width
+            height: 54
+            radius: 8
+            color: Theme.surface
+
+            Row {
+                anchors {
+                    fill: parent
+                    margins: 9
+                }
+                spacing: 14
+
+                Text {
+                    text: Math.round(root.battery.percentage * 100) + "%"
+                    color: Theme.foreground
+                    font.pixelSize: 15
+                    font.family: Theme.fontFamily
+                    font.bold: true
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+
+                Column {
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: 2
+
+                    Text {
+                        text: root.battery.state === UPowerDeviceState.Charging
+                            ? root.duration(root.battery.timeToFull) + " to full"
+                            : root.duration(root.battery.timeToEmpty) + " remaining"
+                        color: Theme.foreground
+                        font.pixelSize: 10
+                        font.family: Theme.fontFamily
+                    }
+
+                    Text {
+                        text: (root.battery.healthSupported ? Math.round(root.battery.healthPercentage * 100) + "% health · " : "")
+                            + root.battery.changeRate.toFixed(1) + " W"
+                        color: Theme.muted
+                        font.pixelSize: 9
+                        font.family: Theme.fontFamily
+                    }
+                }
+            }
+        }
+
+        Row {
+            spacing: 6
+
+            Repeater {
+                model: [
+                    {label: "Saver", value: PowerProfile.PowerSaver},
+                    {label: "Balanced", value: PowerProfile.Balanced},
+                    {label: "Performance", value: PowerProfile.Performance, hidden: !PowerProfiles.hasPerformanceProfile}
+                ]
+
+                MiniButton {
+                    required property var modelData
+                    visible: !modelData.hidden
+                    width: modelData.hidden ? 0 : 105
+                    glyph: modelData.value === PowerProfile.PowerSaver ? "󰌪" : modelData.value === PowerProfile.Performance ? "󰓅" : "󰾅"
+                    text: modelData.label
+                    active: PowerProfiles.profile === modelData.value
+                    onClicked: PowerProfiles.profile = modelData.value
+                }
+            }
+        }
+
+        Row {
+            spacing: 12
+
+            ToggleChip {
+                glyph: "󰀝"
+                text: "Airplane"
+                active: !Network.networkingEnabled
+                onToggled: {
+                    Network.toggleNetworking();
+                    if (root.adapter && !Network.networkingEnabled)
+                        root.adapter.enabled = false;
+                }
+            }
+
+            ToggleChip {
+                glyph: "󰅶"
+                text: "Keep awake"
+                active: SystemActions.idleInhibited
+                onToggled: SystemActions.idleInhibited = !SystemActions.idleInhibited
+            }
+        }
+
+        Row {
+            spacing: 12
+
+            ToggleChip {
+                glyph: "󰖔"
+                text: "Night light"
+                active: SystemActions.nightLight
+                onToggled: SystemActions.nightLight = !SystemActions.nightLight
+            }
+
+            ToggleChip {
+                glyph: SystemActions.recording ? "󰑊" : "󰻃"
+                text: SystemActions.recording ? "Stop record" : "Record"
+                active: SystemActions.recording
+                onToggled: SystemActions.toggleRecording()
+            }
+        }
+
+        SliderRow {
+            visible: SystemActions.nightLight
+            width: parent.width
+            glyph: "󰖨"
+            fillColor: Theme.warning
+            value: (SystemActions.nightTemperature - 2500) / 4000
+            onMoved: value => SystemActions.setNightTemperature(2500 + value * 4000)
+        }
+
+        SectionLabel {
+            text: "CAPTURE"
+        }
+
+        Row {
+            spacing: 6
+
+            MiniButton {
+                width: 150
+                glyph: "󰹑"
+                text: "Full screen"
+                onClicked: SystemActions.screenshotScreen()
+            }
+
+            MiniButton {
+                width: 150
+                glyph: "󰩭"
+                text: "Region"
+                onClicked: SystemActions.screenshotRegion()
+            }
+        }
+
+        Item {
+            width: 1
+            height: 2
+        }
         }
     }
 }
