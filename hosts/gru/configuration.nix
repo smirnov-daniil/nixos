@@ -70,6 +70,10 @@
         limine = {
           enable = true;
           efiSupport = true;
+          biosSupport = false;
+          efiInstallAsRemovable = false;
+          enableEditor = false;
+          maxGenerations = 10;
         };
         efi.canTouchEfiVariables = true; # let NixOS add a boot entry
       };
