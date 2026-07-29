@@ -4,7 +4,9 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
+import type { Api, Model } from "@earendil-works/pi-ai";
 import { CONFIG_DIR_NAME, getAgentDir, parseFrontmatter } from "@earendil-works/pi-coding-agent";
+import { type AgentComplexity, resolveAgentRuntime } from "../_lib/agent-runtime.ts";
 
 export type AgentScope = "user" | "project" | "both";
 
@@ -13,6 +15,8 @@ export interface AgentConfig {
 	description: string;
 	tools?: string[];
 	model?: string;
+	thinking?: string;
+	complexity?: AgentComplexity;
 	systemPrompt: string;
 	source: "user" | "project";
 	filePath: string;
@@ -23,7 +27,12 @@ export interface AgentDiscoveryResult {
 	projectAgentsDir: string | null;
 }
 
-function loadAgentsFromDir(dir: string, source: "user" | "project"): AgentConfig[] {
+function loadAgentsFromDir(
+	dir: string,
+	source: "user" | "project",
+	models: Model<Api>[],
+	currentModel: Model<Api> | undefined,
+): AgentConfig[] {
 	const agents: AgentConfig[] = [];
 
 	if (!fs.existsSync(dir)) {
@@ -59,12 +68,15 @@ function loadAgentsFromDir(dir: string, source: "user" | "project"): AgentConfig
 			?.split(",")
 			.map((t: string) => t.trim())
 			.filter(Boolean);
+		const runtime = resolveAgentRuntime(frontmatter, { models, currentModel });
 
 		agents.push({
 			name: frontmatter.name,
 			description: frontmatter.description,
 			tools: tools && tools.length > 0 ? tools : undefined,
-			model: frontmatter.model,
+			model: runtime.model,
+			thinking: runtime.thinking,
+			complexity: runtime.complexity,
 			systemPrompt: body,
 			source,
 			filePath,
@@ -94,12 +106,19 @@ function findNearestProjectAgentsDir(cwd: string): string | null {
 	}
 }
 
-export function discoverAgents(cwd: string, scope: AgentScope): AgentDiscoveryResult {
+export function discoverAgents(
+	cwd: string,
+	scope: AgentScope,
+	models: Model<Api>[],
+	currentModel: Model<Api> | undefined,
+): AgentDiscoveryResult {
 	const userDir = path.join(getAgentDir(), "agents");
 	const projectAgentsDir = findNearestProjectAgentsDir(cwd);
 
-	const userAgents = scope === "project" ? [] : loadAgentsFromDir(userDir, "user");
-	const projectAgents = scope === "user" || !projectAgentsDir ? [] : loadAgentsFromDir(projectAgentsDir, "project");
+	const userAgents = scope === "project" ? [] : loadAgentsFromDir(userDir, "user", models, currentModel);
+	const projectAgents = scope === "user" || !projectAgentsDir
+		? []
+		: loadAgentsFromDir(projectAgentsDir, "project", models, currentModel);
 
 	const agentMap = new Map<string, AgentConfig>();
 

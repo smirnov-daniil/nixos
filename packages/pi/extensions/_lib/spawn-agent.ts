@@ -12,6 +12,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { getAgentDir } from "@earendil-works/pi-coding-agent";
+import { type AgentModelContext, resolveAgentRuntime } from "./agent-runtime.ts";
 
 interface AgentRole {
 	model?: string;
@@ -20,13 +21,15 @@ interface AgentRole {
 	systemPrompt: string;
 }
 
+export type SpawnAgentModelContext = AgentModelContext;
+
 export interface SpawnResult {
 	exitCode: number;
 	output: string;
 	stderr: string;
 }
 
-function loadRole(name: string): AgentRole {
+function loadRole(name: string, context: AgentModelContext): AgentRole {
 	const filePath = path.join(getAgentDir(), "agents", `${name}.md`);
 	const content = fs.readFileSync(filePath, "utf-8");
 	const match = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
@@ -41,10 +44,11 @@ function loadRole(name: string): AgentRole {
 		?.split(",")
 		.map((t) => t.trim())
 		.filter(Boolean);
+	const runtime = resolveAgentRuntime(fields, context);
 	return {
-		model: fields.model,
+		model: runtime.model,
 		tools: tools && tools.length > 0 ? tools : undefined,
-		thinking: fields.effort,
+		thinking: runtime.thinking,
 		systemPrompt: body.trim(),
 	};
 }
@@ -64,8 +68,13 @@ function getPiInvocation(args: string[]): { command: string; args: string[] } {
 	return { command: "pi", args };
 }
 
-export async function spawnAgent(roleName: string, task: string, cwd: string): Promise<SpawnResult> {
-	const role = loadRole(roleName);
+export async function spawnAgent(
+	roleName: string,
+	task: string,
+	cwd: string,
+	modelContext: SpawnAgentModelContext,
+): Promise<SpawnResult> {
+	const role = loadRole(roleName, modelContext);
 	const args: string[] = ["--mode", "json", "-p", "--no-session"];
 	if (role.model) args.push("--model", role.model);
 	if (role.tools) args.push("--tools", role.tools.join(","));

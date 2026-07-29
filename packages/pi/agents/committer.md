@@ -2,6 +2,7 @@
 name: committer
 description: Checks whether a repo uses Jujutsu and finalizes commit quality after review
 tools: read,bash
+complexity: low
 ---
 You are a committer. You are invoked in two situations — the prompt tells you which.
 

@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { spawnAgent } from "./_lib/spawn-agent.ts";
+import { type SpawnAgentModelContext, spawnAgent } from "./_lib/spawn-agent.ts";
 
 const MAX_REVIEW_ROUNDS = 3;
 
@@ -120,8 +120,13 @@ function describeItem(item: PlanItem, test: TestResult | undefined, isJujutsu: b
 	return `- ${item.task}.${editHint}${testHint}`;
 }
 
-async function runRole(role: string, prompt: string, cwd: string): Promise<string> {
-	const result = await spawnAgent(role, prompt, cwd);
+async function runRole(
+	role: string,
+	prompt: string,
+	cwd: string,
+	modelContext: SpawnAgentModelContext,
+): Promise<string> {
+	const result = await spawnAgent(role, prompt, cwd, modelContext);
 	if (result.exitCode !== 0) {
 		throw new Error(`${role} failed: ${result.stderr || result.output || `exit ${result.exitCode}`}`);
 	}
@@ -139,25 +144,27 @@ export default function pipelineExtension(pi: ExtensionAPI) {
 			}
 
 			const cwd = ctx.cwd;
+			const modelContext = { models: ctx.modelRegistry.getAvailable(), currentModel: ctx.model };
+			const run = (role: string, prompt: string) => runRole(role, prompt, cwd, modelContext);
 			try {
 				ctx.ui.notify("ship: scout", "info");
-				const scout = await runRole("scout", `Task: ${task}\n\nInvestigate the codebase and write scratchpad/research.md.`, cwd);
+				const scout = await run("scout", `Task: ${task}\n\nInvestigate the codebase and write scratchpad/research.md.`);
 				writeScratch(cwd, "research.md", scout || "(no findings)");
 
 				ctx.ui.notify("ship: plan", "info");
-				const plan = await runRole("planner", `Task: ${task}\n\nScout findings:\n${readScratch(cwd, "research.md")}\n\nWrite scratchpad/plan.md. Include a final ## Batches section with one line per implementation batch, using one-based item numbers such as \`- 1, 2\`.`, cwd);
+				const plan = await run("planner", `Task: ${task}\n\nScout findings:\n${readScratch(cwd, "research.md")}\n\nWrite scratchpad/plan.md. Include a final ## Batches section with one line per implementation batch, using one-based item numbers such as \`- 1, 2\`.`);
 				writeScratch(cwd, "plan.md", plan);
 				const { items, batches } = parsePlan(plan);
 				if (items.length === 0) throw new Error("planner produced no checklist items; see scratchpad/plan.md");
 
 				ctx.ui.notify("ship: repository check", "info");
-				const repoCheck = await runRole("committer", "Check whether the repository root has a .jj directory. Reply Yes or No only.", cwd);
+				const repoCheck = await run("committer", "Check whether the repository root has a .jj directory. Reply Yes or No only.");
 				const isJujutsu = /^yes\b/i.test(repoCheck.trim());
 
 				ctx.ui.notify(`ship: pinning tests for ${items.length} item(s)`, "info");
 				const itemList = items.map((item, index) => `${index + 1}. ${item.task}`).join("\n");
 				const testPrompt = `Plan items, in order:\n${itemList}\n\nThe full plan is in scratchpad/plan.md.${isJujutsu ? " This is a jj repo: open one commit per item before writing its test and report the change ID." : ""} Process every item in one pass. For each output block include ### Target Files and ### Change ID in addition to the documented format.`;
-				const tester = await runRole("tester", testPrompt, cwd);
+				const tester = await run("tester", testPrompt);
 				const tests = parseTests(tester);
 
 				for (const batchIndices of batches) {
@@ -165,7 +172,7 @@ export default function pipelineExtension(pi: ExtensionAPI) {
 					if (batchItems.length === 0) continue;
 					const descriptions = batchItems.map((item) => describeItem(item, tests.find((test) => test.task === item.task), isJujutsu)).join("\n");
 					ctx.ui.notify(`ship: implement ${batchItems.map((item) => item.task).join("; ")}`, "info");
-					let output = await runRole("implementer", `Implement these independent items in order:\n${descriptions}\n\nThe full plan is in scratchpad/plan.md.`, cwd);
+					let output = await run("implementer", `Implement these independent items in order:\n${descriptions}\n\nThe full plan is in scratchpad/plan.md.`);
 					let results = parseResults(output, batchItems);
 					let failing = batchItems.filter((item) => results.find((result) => result.task === item.task)?.status !== "PASS");
 
@@ -174,7 +181,7 @@ export default function pipelineExtension(pi: ExtensionAPI) {
 							const result = results.find((candidate) => candidate.task === item.task);
 							return `${describeItem(item, tests.find((test) => test.task === item.task), isJujutsu)} Previous failure: ${result?.summary}.${result?.filesChanged.length ? ` Files touched: ${result.filesChanged.join(", ")}.` : ""}`;
 						}).join("\n");
-						output = await runRole("implementer", `Retry these failed items without repeating the same approach:\n${failures}\n\nThe full plan is in scratchpad/plan.md.`, cwd);
+						output = await run("implementer", `Retry these failed items without repeating the same approach:\n${failures}\n\nThe full plan is in scratchpad/plan.md.`);
 						results = mergeResults(results, parseResults(output, failing));
 						failing = failing.filter((item) => results.find((result) => result.task === item.task)?.status !== "PASS");
 					}
@@ -184,7 +191,7 @@ export default function pipelineExtension(pi: ExtensionAPI) {
 							const result = results.find((candidate) => candidate.task === item.task);
 							return `${describeItem(item, tests.find((test) => test.task === item.task), isJujutsu)} Two attempts failed. Last failure: ${result?.summary}.${result?.filesChanged.length ? ` Files touched: ${result.filesChanged.join(", ")}.` : ""}`;
 						}).join("\n");
-						output = await runRole("implementer-escalated", `Diagnose and implement these still-failing items:\n${failures}\n\nThe full plan is in scratchpad/plan.md.`, cwd);
+						output = await run("implementer-escalated", `Diagnose and implement these still-failing items:\n${failures}\n\nThe full plan is in scratchpad/plan.md.`);
 						results = mergeResults(results, parseResults(output, failing));
 						failing = failing.filter((item) => results.find((result) => result.task === item.task)?.status !== "PASS");
 					}
@@ -195,19 +202,19 @@ export default function pipelineExtension(pi: ExtensionAPI) {
 				let critical: string[] = [];
 				for (let round = 1; round <= MAX_REVIEW_ROUNDS; round++) {
 					ctx.ui.notify(`ship: review ${round}/${MAX_REVIEW_ROUNDS}`, "info");
-					const review = await runRole("reviewer", "Review all changes against scratchpad/plan.md.", cwd);
+					const review = await run("reviewer", "Review all changes against scratchpad/plan.md.");
 					writeScratch(cwd, "review.md", review);
 					critical = parseCritical(review);
 					if (critical.length === 0) break;
 					if (round === MAX_REVIEW_ROUNDS) throw new Error(`critical review findings remain; see scratchpad/review.md`);
-					await runRole("implementer", `Fix these review findings:\n${critical.join("\n")}\n\nThe full plan is in scratchpad/plan.md.${isJujutsu ? " After fixing, run jj absorb to distribute fixes into their originating commits." : ""}`, cwd);
+					await run("implementer", `Fix these review findings:\n${critical.join("\n")}\n\nThe full plan is in scratchpad/plan.md.${isJujutsu ? " After fixing, run jj absorb to distribute fixes into their originating commits." : ""}`);
 				}
 
 				ctx.ui.notify("ship: finalize", "info");
 				const finalizePrompt = isJujutsu
 					? "Plan is in scratchpad/plan.md and review is in scratchpad/review.md. Verify every per-item commit is atomic and well described, and absorb stray review fixes."
 					: "Plan is in scratchpad/plan.md and review is in scratchpad/review.md. Split the accumulated diff into one commit per semantic block.";
-				const committed = await runRole("committer", finalizePrompt, cwd);
+				const committed = await run("committer", finalizePrompt);
 				ctx.ui.notify(committed || "ship: done", "info");
 			} catch (error) {
 				ctx.ui.notify(`ship: ${error instanceof Error ? error.message : String(error)}`, "error");
