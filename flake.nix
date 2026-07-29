@@ -25,6 +25,14 @@
       url = "github:lukasl-dev/pi.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    pi-review = {
+      url = "github:earendil-works/pi-review/f1de050504936046c0f85b21fec0e0a93ef394eb";
+      flake = false;
+    };
+    pi-review-loop = {
+      url = "github:earendil-works/pi-review-loop/3822e126b8b9ec05d7796b7897512c773ba9a166";
+      flake = false;
+    };
 
     nix-index-database = {
       url = "github:Mic92/nix-index-database";

@@ -1,0 +1,229 @@
+diff -ruN '--exclude=node_modules' pi-review-original/review.ts pi-review-patched/review.ts
+--- pi-review-original/review.ts	2026-07-19 23:31:44.000000000 +0300
++++ pi-review-patched/review.ts	2026-07-29 13:51:29.669855080 +0300
+@@ -133,7 +133,9 @@
+ 	| { type: "uncommitted" }
+ 	| { type: "baseBranch"; branch: string }
+ 	| { type: "commit"; sha: string; title?: string }
++	| { type: "jj"; revset: string }
+ 	| { type: "pullRequest"; prNumber: number; baseBranch: string; title: string }
++	| { type: "pullRequestPatch"; prNumber: number; baseBranch: string; title: string }
+ 	| { type: "folder"; paths: string[] };
+ 
+ // Prompts (adapted from Codex)
+@@ -157,6 +159,12 @@
+ const PULL_REQUEST_PROMPT_FALLBACK =
+ 	'Review pull request #{prNumber} ("{title}") against the base branch \'{baseBranch}\'. Start by finding the merge base between the current branch and {baseBranch} (e.g., `git merge-base HEAD {baseBranch}`), then run `git diff` against that SHA to see the changes that would be merged. Provide prioritized, actionable findings.';
+ 
++const JJ_PROMPT =
++	"Review the Jujutsu changes selected by revset {revset}. Run `jj diff --git -r {quotedRevset}` to inspect the complete selected change and provide prioritized, actionable findings.";
++
++const PULL_REQUEST_PATCH_PROMPT =
++	'Review pull request #{prNumber} ("{title}") without changing the local checkout. Run `gh pr diff {prNumber} --patch` to inspect the proposed changes against \'{baseBranch}\', then read relevant local context where available. Provide prioritized, actionable findings.';
++
+ const FOLDER_REVIEW_PROMPT =
+ 	"Review the code in the following paths: {paths}. This is a snapshot review (not a diff). Read the files directly in these paths and provide prioritized, actionable findings.";
+ 
+@@ -305,6 +313,11 @@
+ 	}
+ }
+ 
++async function isJujutsuRepo(pi: ExtensionAPI): Promise<boolean> {
++	const { code } = await pi.exec("jj", ["root"]);
++	return code === 0;
++}
++
+ /**
+  * Get the merge base between HEAD and a branch
+  */
+@@ -504,6 +517,11 @@
+ 			}
+ 			return COMMIT_PROMPT.replace("{sha}", target.sha);
+ 
++		case "jj":
++			return JJ_PROMPT
++				.replace("{revset}", target.revset)
++				.replace("{quotedRevset}", JSON.stringify(target.revset));
++
+ 		case "pullRequest": {
+ 			const mergeBase = await getMergeBase(pi, target.baseBranch);
+ 			const basePrompt = mergeBase
+@@ -519,6 +537,12 @@
+ 			return basePrompt;
+ 		}
+ 
++		case "pullRequestPatch":
++			return PULL_REQUEST_PATCH_PROMPT
++				.replace(/{prNumber}/g, String(target.prNumber))
++				.replace(/{title}/g, target.title)
++				.replace(/{baseBranch}/g, target.baseBranch);
++
+ 		case "folder":
+ 			return FOLDER_REVIEW_PROMPT.replace("{paths}", target.paths.join(", "));
+ 	}
+@@ -538,7 +562,11 @@
+ 			return target.title ? `commit ${shortSha}: ${target.title}` : `commit ${shortSha}`;
+ 		}
+ 
+-		case "pullRequest": {
++		case "jj":
++			return `jj revset ${target.revset}`;
++
++		case "pullRequest":
++		case "pullRequestPatch": {
+ 			const shortTitle = target.title.length > 30 ? target.title.slice(0, 27) + "..." : target.title;
+ 			return `PR #${target.prNumber}: ${shortTitle}`;
+ 		}
+@@ -552,6 +580,7 @@
+ 
+ // Review preset options for the selector (keep this order stable)
+ const REVIEW_PRESETS = [
++	{ value: "jj", label: "Review a Jujutsu revision set", description: "(jj)" },
+ 	{ value: "uncommitted", label: "Review uncommitted changes", description: "" },
+ 	{ value: "baseBranch", label: "Review against a base branch", description: "(local)" },
+ 	{ value: "commit", label: "Review a commit", description: "" },
+@@ -609,7 +638,8 @@
+ 			return null;
+ 		}
+ 
+-		if (!options.skipInitialPendingChangesCheck && (await hasPendingChanges(pi))) {
++		const usePatch = await isJujutsuRepo(pi);
++		if (!usePatch && !options.skipInitialPendingChangesCheck && (await hasPendingChanges(pi))) {
+ 			ctx.ui.notify(PR_CHECKOUT_BLOCKED_BY_PENDING_CHANGES_MESSAGE, "error");
+ 			return null;
+ 		}
+@@ -631,7 +661,16 @@
+ 			return null;
+ 		}
+ 
+-		// Re-check right before checkout to avoid switching branches with newly introduced changes.
++		if (usePatch) {
++			ctx.ui.notify(`Reviewing PR #${prNumber} without changing the Jujutsu checkout`, "info");
++			return {
++				type: "pullRequestPatch",
++				prNumber,
++				baseBranch: prInfo.baseBranch,
++				title: prInfo.title,
++			};
++		}
++
+ 		if (await hasPendingChanges(pi)) {
+ 			ctx.ui.notify(PR_CHECKOUT_BLOCKED_BY_PENDING_CHANGES_MESSAGE, "error");
+ 			return null;
+@@ -667,7 +706,11 @@
+ 	/**
+ 	 * Determine the smart default review type based on git state
+ 	 */
+-	async function getSmartDefault(): Promise<"uncommitted" | "baseBranch" | "commit"> {
++	async function getSmartDefault(): Promise<"jj" | "uncommitted" | "baseBranch" | "commit"> {
++		if (await isJujutsuRepo(pi)) {
++			return "jj";
++		}
++
+ 		// Priority 1: If there are uncommitted changes, default to reviewing them
+ 		if (await hasUncommittedChanges(pi)) {
+ 			return "uncommitted";
+@@ -690,11 +733,14 @@
+ 	async function showReviewSelector(ctx: ExtensionContext): Promise<ReviewTarget | null> {
+ 		// Determine smart default (but keep the list order stable)
+ 		const smartDefault = await getSmartDefault();
+-		const presetItems: SelectItem[] = REVIEW_PRESETS.map((preset) => ({
+-			value: preset.value,
+-			label: preset.label,
+-			description: preset.description,
+-		}));
++		const jujutsuRepo = await isJujutsuRepo(pi);
++		const presetItems: SelectItem[] = REVIEW_PRESETS
++			.filter((preset) => preset.value !== "jj" || jujutsuRepo)
++			.map((preset) => ({
++				value: preset.value,
++				label: preset.label,
++				description: preset.description,
++			}));
+ 		const smartDefaultIndex = presetItems.findIndex((item) => item.value === smartDefault);
+ 
+ 		while (true) {
+@@ -778,6 +824,12 @@
+ 
+ 			// Handle each preset type
+ 			switch (result) {
++				case "jj": {
++					const target = await showJjInput(ctx);
++					if (target) return target;
++					break;
++				}
++
+ 				case "uncommitted":
+ 					return { type: "uncommitted" };
+ 
+@@ -1032,6 +1084,15 @@
+ 	}
+ 
+ 
++	async function showJjInput(ctx: ExtensionContext): Promise<ReviewTarget | null> {
++		const result = await ctx.ui.editor(
++			"Enter a Jujutsu revset to review:",
++			"@",
++		);
++		const revset = result?.trim();
++		return revset ? { type: "jj", revset } : null;
++	}
++
+ 	function parseReviewPaths(value: string): string[] {
+ 		return value
+ 			.split(/\s+/)
+@@ -1060,7 +1121,7 @@
+ 	 */
+ 	async function showPrInput(ctx: ExtensionContext): Promise<ReviewTarget | null> {
+ 		// First check for pending changes that would prevent branch switching
+-		if (await hasPendingChanges(pi)) {
++		if (!(await isJujutsuRepo(pi)) && (await hasPendingChanges(pi))) {
+ 			ctx.ui.notify(PR_CHECKOUT_BLOCKED_BY_PENDING_CHANGES_MESSAGE, "error");
+ 			return null;
+ 		}
+@@ -1262,6 +1323,11 @@
+ 		const subcommand = parts[0]?.toLowerCase();
+ 
+ 		switch (subcommand) {
++			case "jj": {
++				const revset = parts.slice(1).join(" ") || "@";
++				return { target: { type: "jj", revset }, extraInstruction };
++			}
++
+ 			case "uncommitted":
+ 				return { target: { type: "uncommitted" }, extraInstruction };
+ 
+@@ -1305,7 +1371,7 @@
+ 
+ 	// Register the /review command
+ 	pi.registerCommand("review", {
+-		description: "Review code changes (PR, uncommitted, branch, commit, or folder)",
++		description: "Review code changes (jj, PR, uncommitted, branch, commit, or folder)",
+ 		handler: async (args, ctx) => {
+ 			if (!ctx.hasUI) {
+ 				ctx.ui.notify("Review requires interactive mode", "error");
+@@ -1318,10 +1384,10 @@
+ 				return;
+ 			}
+ 
+-			// Check if we're in a git repository
+ 			const { code } = await pi.exec("git", ["rev-parse", "--git-dir"]);
+-			if (code !== 0) {
+-				ctx.ui.notify("Not a git repository", "error");
++			const jujutsuRepo = await isJujutsuRepo(pi);
++			if (code !== 0 && !jujutsuRepo) {
++				ctx.ui.notify("Not a Git or Jujutsu repository", "error");
+ 				return;
+ 			}
+ 
+@@ -1335,6 +1401,10 @@
+ 				return;
+ 			}
+ 			extraInstruction = parsed.extraInstruction?.trim() || undefined;
++			if (parsed.target?.type === "jj" && !jujutsuRepo) {
++				ctx.ui.notify("Jujutsu review requires a .jj repository", "error");
++				return;
++			}
+ 
+ 			if (parsed.target) {
+ 				if (parsed.target.type === "pr") {

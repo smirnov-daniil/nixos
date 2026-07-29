@@ -24,15 +24,19 @@ export interface ToggleModeConfig {
 export default function registerToggleMode(pi: ExtensionAPI, cfg: ToggleModeConfig) {
 	const label = cfg.label ?? cfg.commandName;
 	const supportsEnforce = Boolean(cfg.blockToolCall);
-	let enabled = cfg.defaultEnabled ?? true;
-	let enforce = cfg.defaultEnforce ?? false;
+	const defaultEnabled = cfg.defaultEnabled ?? true;
+	const defaultEnforce = cfg.defaultEnforce ?? false;
+	let enabled = defaultEnabled;
+	let enforce = defaultEnforce;
 
 	const persistState = () => {
 		pi.appendEntry(cfg.stateType, { enabled, enforce } satisfies ToggleModeState);
 	};
 
-	pi.on("session_start", async (_event, ctx) => {
-		for (const entry of [...ctx.sessionManager.getEntries()].reverse()) {
+	const restoreState = async (ctx: any) => {
+		enabled = defaultEnabled;
+		enforce = defaultEnforce;
+		for (const entry of [...ctx.sessionManager.getBranch()].reverse()) {
 			if (
 				entry.type === "custom" &&
 				entry.customType === cfg.stateType &&
@@ -45,10 +49,11 @@ export default function registerToggleMode(pi: ExtensionAPI, cfg: ToggleModeConf
 				return;
 			}
 		}
-		if (cfg.detectDefault) {
-			enabled = await cfg.detectDefault(ctx);
-		}
-	});
+		if (cfg.detectDefault) enabled = await cfg.detectDefault(ctx);
+	};
+
+	pi.on("session_start", async (_event, ctx) => restoreState(ctx));
+	pi.on("session_tree", async (_event, ctx) => restoreState(ctx));
 
 	pi.registerCommand(cfg.commandName, {
 		description: `Configure ${label}: /${cfg.commandName} [on|off${supportsEnforce ? "|enforce-on|enforce-off" : ""}|status]`,
@@ -109,5 +114,9 @@ export default function registerToggleMode(pi: ExtensionAPI, cfg: ToggleModeConf
 	return {
 		isEnabled: () => enabled,
 		isEnforced: () => enforce,
+		setEnabled: (value: boolean) => {
+			enabled = value;
+			persistState();
+		},
 	};
 }

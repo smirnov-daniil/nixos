@@ -229,6 +229,40 @@
         "type": "github"
       }
     },
+    "pi-review": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1784493104,
+        "narHash": "sha256-bvdJjLudTd9YQF8ip30jIvi6MY3MAcw5GXVONx1DLuQ=",
+        "owner": "earendil-works",
+        "repo": "pi-review",
+        "rev": "f1de050504936046c0f85b21fec0e0a93ef394eb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "earendil-works",
+        "repo": "pi-review",
+        "rev": "f1de050504936046c0f85b21fec0e0a93ef394eb",
+        "type": "github"
+      }
+    },
+    "pi-review-loop": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1785169765,
+        "narHash": "sha256-J7kBW6760dxcQbISzYWXPkzvPz/4X4NVZAVAFaHGVpU=",
+        "owner": "earendil-works",
+        "repo": "pi-review-loop",
+        "rev": "3822e126b8b9ec05d7796b7897512c773ba9a166",
+        "type": "github"
+      },
+      "original": {
+        "owner": "earendil-works",
+        "repo": "pi-review-loop",
+        "rev": "3822e126b8b9ec05d7796b7897512c773ba9a166",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "flake-parts": "flake-parts",
@@ -237,6 +271,8 @@
         "nixos-wsl": "nixos-wsl",
         "nixpkgs": "nixpkgs_2",
         "pi": "pi",
+        "pi-review": "pi-review",
+        "pi-review-loop": "pi-review-loop",
         "sops-nix": "sops-nix",
         "wrapper-modules": "wrapper-modules",
         "wrappers": "wrappers",

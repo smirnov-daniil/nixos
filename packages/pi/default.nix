@@ -11,6 +11,40 @@
     extDir = ./extensions;
     extension = name: "${extDir}/${name}";
 
+    piReviewSource = pkgs.applyPatches {
+      name = "pi-review-f1de050";
+      src = inputs.pi-review;
+      patches = [./patches/pi-review-jj.patch];
+    };
+
+    glimpseChromium = pkgs.writeShellScriptBin "chromium" ''
+      if [[ -x /run/wrappers/bin/__chromium-suid-sandbox ]]; then
+        exec ${lib.getExe pkgs.chromium} "$@"
+      fi
+      if [[ -r /proc/sys/kernel/apparmor_restrict_unprivileged_userns && "$(</proc/sys/kernel/apparmor_restrict_unprivileged_userns)" == 1 ]] \
+        || [[ -r /proc/sys/kernel/unprivileged_userns_clone && "$(</proc/sys/kernel/unprivileged_userns_clone)" == 0 ]] \
+        || [[ -r /proc/sys/user/max_user_namespaces && "$(</proc/sys/user/max_user_namespaces)" == 0 ]]; then
+        exec ${lib.getExe pkgs.chromium} --no-sandbox --test-type "$@"
+      fi
+      exec ${lib.getExe pkgs.chromium} --disable-setuid-sandbox --test-type "$@"
+    '';
+
+    piReviewLoop = pkgs.buildNpmPackage {
+      pname = "pi-review-loop-runtime";
+      version = "0.3.0-3822e12";
+      src = inputs.pi-review-loop;
+      patches = [./patches/pi-review-loop.patch];
+      postPatch = ''
+        cp ${./review-loop-runtime/package.json} package.json
+        cp ${./review-loop-runtime/package-lock.json} package-lock.json
+        ${lib.getExe pkgs.nodejs} ${./review-loop-runtime/inject-ui.mjs} web/dist/index.html
+      '';
+      npmDepsHash = "sha256-GDU9ka2cH3GqAqH5vJ2ABbIPYdZxMyD3MQFXEpXyboU=";
+      npmInstallFlags = ["--ignore-scripts"];
+      dontNpmBuild = true;
+      dontNpmPrune = true;
+    };
+
     agent = inputs.pi.lib.mkCodingAgent {
       inherit pkgs;
       modules = [
@@ -26,8 +60,12 @@
               (extension "prefer-jj.ts")
               (extension "plan-mode.ts")
               (extension "memory.ts")
+              (extension "handoff.ts")
+              (extension "notify.ts")
               (extension "subagent")
               (extension "pipeline.ts")
+              "${piReviewSource}/review.ts"
+              "${piReviewLoop}/lib/node_modules/pi-review-loop-runtime/src/index.ts"
             ];
 
             skills = [
@@ -61,9 +99,18 @@
       inherit pkgs;
       inherit (agent) package;
       runtimeInputs = [
+        glimpseChromium
         pkgs.clang-tools
         pkgs.eza
+        pkgs.gh
+        pkgs.git
+        pkgs.jujutsu
+        pkgs.xdotool
       ];
+      env = {
+        GLIMPSE_BACKEND = "chromium";
+        GLIMPSE_CHROME_PATH = "${glimpseChromium}/bin/chromium";
+      };
       # mkCodingAgent has no option for installing arbitrary resource dirs
       # like ~/.pi/agent/agents/*.md (that's specific to the vendored
       # subagent extension's own discovery, not a pi-core concept), so this
