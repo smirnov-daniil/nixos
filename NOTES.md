@@ -11,3 +11,9 @@ The resolver recognizes common efficiency, balanced, and capability tier names. 
 Review Loop uses Glimpse's Chromium backend because its native WebKit layer-shell backend is unavailable on the Ubuntu workstation. The Nix Chromium sandbox runs normally when the NixOS setuid wrapper exists. Ubuntu's AppArmor policy rejects both the packaged setuid helper and unprivileged user namespaces, so the dedicated local Review Loop browser falls back to `--no-sandbox`; its temporary profile and local immutable UI limit the scope of that tradeoff. The prebuilt UI is patched at build time to expose its dynamic Jujutsu baseline and a compositor-independent close control without rebuilding Monaco assets.
 
 The local plan mode retains its read-only enforcement while adding numbered plan extraction, approval choices, persisted execution progress, `[DONE:n]` completion markers, a `/todos` command, and TUI status widgets. Handoff and terminal notifications remain local extensions so they load declaratively with the packaged Pi configuration.
+
+# Niri login and hybrid graphics startup
+
+The desktop greeter is marked as a text greeter so greetd owns VT1 correctly at boot and tuigreet remains visible instead of leaving an apparently plain console. Its Niri command uses a dedicated launcher that clears PRIME-offload selectors from both the process and the systemd user-manager environment before `niri-session` imports the login environment; this prevents a previous `nvidia-offload niri-session` invocation from affecting later Intel sessions.
+
+The `gru` PRIME configuration keeps modesetting alongside NVIDIA and pins Niri's renderer to the Intel render-node symlink. Niri key bindings use the absolute flake-managed Ghostty path, avoiding profile/PATH ambiguity. NVIDIA remains available explicitly through `nvidia-offload` for individual applications.

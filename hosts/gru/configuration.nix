@@ -18,7 +18,10 @@
       inputs.sops-nix.nixosModules.default
     ];
     system.stateVersion = "25.11";
-    preferences.hostname = "gru";
+    preferences = {
+      hostname = "gru";
+      niri.renderDrmDevice = "/dev/dri/by-path/pci-0000:00:02.0-render";
+    };
     sops = {
       defaultSopsFile = ./secrets/secrets.yaml;
       defaultSopsFormat = "yaml";
@@ -26,7 +29,10 @@
     };
 
     services = {
-      xserver.videoDrivers = ["nvidia"];
+      xserver.videoDrivers = [
+        "modesetting"
+        "nvidia"
+      ];
       fstrim.enable = true;
       fwupd.enable = true;
       thermald.enable = true;

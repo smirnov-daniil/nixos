@@ -21,6 +21,20 @@
           before-sleep '${quickshellExe} ipc call lock lock'
       '';
     };
+    niriSession = pkgs.writeShellScript "niri-session-default-gpu" ''
+      unset __NV_PRIME_RENDER_OFFLOAD
+      unset __NV_PRIME_RENDER_OFFLOAD_PROVIDER
+      unset __GLX_VENDOR_LIBRARY_NAME
+      unset __VK_LAYER_NV_optimus
+      unset DRI_PRIME
+      ${pkgs.systemd}/bin/systemctl --user unset-environment \
+        __NV_PRIME_RENDER_OFFLOAD \
+        __NV_PRIME_RENDER_OFFLOAD_PROVIDER \
+        __GLX_VENDOR_LIBRARY_NAME \
+        __VK_LAYER_NV_optimus \
+        DRI_PRIME || true
+      exec ${config.programs.niri.package}/bin/niri-session
+    '';
   in {
     imports = [
       self.nixosModules.gtk
@@ -36,7 +50,9 @@
     programs.niri.package = inputs.wrapper-modules.wrappers.niri.wrap {
       inherit pkgs;
       imports = [self.wrappersModules.niri];
+      terminal = lib.getExe selfpkgs.terminal;
       autostart = config.preferences.autostart ++ [idle];
+      renderDrmDevice = config.preferences.niri.renderDrmDevice;
     };
 
     security.polkit.enable = true;
@@ -66,8 +82,9 @@
     services = {
       greetd = {
         enable = true;
+        useTextGreeter = true;
         settings.default_session = {
-          command = "${lib.getExe pkgs.tuigreet} --time --remember --cmd niri-session";
+          command = "${lib.getExe pkgs.tuigreet} --time --remember --cmd ${niriSession}";
           user = "greeter";
         };
       };

@@ -44,12 +44,19 @@
       default = [];
       description = "Extra commands/packages to spawn at niri startup.";
     };
+    options.renderDrmDevice = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+    };
     config = {
       # The quickshell bar/launcher/notifications are part of the desktop.
       autostart = [selfpkgs.quickshellWrapped clipboardWatcher];
 
       settings = {
         prefer-no-csd = {};
+        debug = lib.mkIf (config.renderDrmDevice != null) {
+          render-drm-device = config.renderDrmDevice;
+        };
 
         input = {
           focus-follows-mouse = {};
