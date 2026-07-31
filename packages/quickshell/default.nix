@@ -12,8 +12,10 @@
         pkgs.cliphist
         pkgs.gammastep
         pkgs.grim
+        pkgs.iproute2 # ip link, for the Browsec tunnel state
         pkgs.libnotify # notify-send for battery alerts (loops back into the shell)
         pkgs.networkmanager # nmcli for the wifi service
+        pkgs.procps # pkill, to stop browbox
         pkgs.slurp
         pkgs.systemd
         pkgs.wf-recorder

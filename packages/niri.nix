@@ -58,6 +58,13 @@
 
       settings = {
         prefer-no-csd = {};
+
+        # Was a home-manager leftover in ~/.local/share/icons; the theme now
+        # comes from the flake (vanilla-dmz in nixos/features/gtk.nix).
+        cursor = {
+          xcursor-theme = "DMZ-Black";
+          xcursor-size = 24;
+        };
         debug = lib.mkIf (config.renderDrmDevice != null) {
           render-drm-device = config.renderDrmDevice;
         };
@@ -68,7 +75,9 @@
           keyboard = {
             xkb = {
               layout = "us,ru";
-              options = "grp:alt_shift_toggle,caps:escape";
+              # Layout switching is a niri bind (Mod+Space below), not an xkb option: an
+              # xkb toggle still forwards the space to the focused window.
+              options = "caps:escape";
             };
             repeat-rate = 40;
             repeat-delay = 250;
@@ -111,6 +120,7 @@
             "Mod+Shift+K".move-window-up = {};
             "Mod+Shift+J".move-window-down = {};
 
+            "Mod+Space".switch-layout = "next";
             "Mod+S".spawn-sh = "${quickshellExe} ipc call launcher toggle";
             "Mod+N".spawn-sh = "${quickshellExe} ipc call history toggle";
             "Mod+V".spawn-sh = "${quickshellExe} ipc call clipboard toggle";

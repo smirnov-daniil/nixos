@@ -440,12 +440,12 @@ PopupPanel {
         }
 
         SectionLabel {
-            visible: Network.vpnConnections.length > 0
+            visible: Network.vpnConnections.length > 0 || Browsec.available
             text: "VPN"
         }
 
         Flow {
-            visible: Network.vpnConnections.length > 0
+            visible: Network.vpnConnections.length > 0 || Browsec.available
             width: parent.width
             spacing: 6
 
@@ -467,6 +467,25 @@ PopupPanel {
                         font.pixelSize: 10
                         font.family: Theme.fontFamily
                     }
+                }
+            }
+
+            // Not a NetworkManager profile (see Services/Browsec.qml), so it
+            // sits beside the nmcli-driven entries rather than in their model.
+            MiniButton {
+                visible: Browsec.available
+                width: Math.min(150, Math.max(90, browsecName.implicitWidth + 30))
+                glyph: "󰦝"
+                text: Browsec.name
+                active: Browsec.active
+                onClicked: Browsec.toggle()
+
+                Text {
+                    id: browsecName
+                    visible: false
+                    text: Browsec.name
+                    font.pixelSize: 10
+                    font.family: Theme.fontFamily
                 }
             }
         }
