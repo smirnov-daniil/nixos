@@ -78,10 +78,7 @@
 
     roleFiles = builtins.attrNames (builtins.readDir ./agents);
   in {
-    # The pinned pi.nix still uses the old name for nixpkgs' native TypeScript compiler.
-    packages.pi-unwrapped = inputs.pi.packages.${pkgs.stdenv.hostPlatform.system}.coding-agent.override {
-      typescript-go = pkgs.typescript;
-    };
+    packages.pi-unwrapped = inputs.pi.packages.${pkgs.stdenv.hostPlatform.system}.coding-agent;
 
     packages.pi = inputs.wrappers.lib.wrapPackage {
       inherit pkgs;

@@ -23,6 +23,7 @@
         "nix-command"
         "flakes"
       ];
+      max-jobs = "auto";
     };
     nix.optimise.automatic = true;
     nixpkgs.config.allowUnfree = true;
