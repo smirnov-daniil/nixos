@@ -15,6 +15,7 @@
       self.nixosModules.intel
       self.nixosModules.desktop
       self.nixosModules.browsec
+      self.nixosModules.wireguard
       self.nixosModules.deploy-rs-initiator
       inputs.sops-nix.nixosModules.default
     ];
@@ -86,5 +87,6 @@
 
     xdg.portal.extraPortals = [pkgs.xdg-desktop-portal-gtk];
     xdg.portal.enable = true;
+    features.wireguard.interfaces.wg0.envSecret = "wireguard/wg0-env";
   };
 }

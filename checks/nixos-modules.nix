@@ -43,6 +43,7 @@
       wsl = self.nixosModules.wsl;
       zen-browser = self.nixosModules.zen-browser;
       browsec = self.nixosModules.browsec;
+      wireguard = self.nixosModules.wireguard;
       sanctum-core = self.nixosModules.sanctum-core;
       sanctum-bazarr = self.nixosModules.sanctum-bazarr;
       sanctum-croc = self.nixosModules.sanctum-croc;
