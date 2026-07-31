@@ -9,3 +9,7 @@ Moved the `herdr-mirror` package definition into `packages/herdr.nix` so the wra
 ## Herdr version bump
 
 Switched the wrapped Herdr base package from `pkgs.herdr` to the upstream `herdrdev/herdr` v0.7.5 Nix package so the flake gets the latest Herdr release without waiting for nixpkgs to catch up.
+
+## Pi output-semantics role
+
+Added `packages/pi/agents/output-semantics.md` as a provider-portable Pi subagent role for analyzing large shell outputs, logs, and traces when mechanical filtering is not enough. Kept routing neutral with `complexity` and `effort` frontmatter instead of pinning a provider model, and relied on `packages/pi/default.nix` auto-install of every file under `packages/pi/agents/` so no packaging code change was needed.
