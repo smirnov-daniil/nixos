@@ -1,0 +1,1 @@
+- When verifying Herdr upgrades in /home/smirnovd/flake, a previously running Herdr server can cause `protocol_mismatch` between the new client and old socket protocol. For clean checks, use a fresh `HERDR_SOCKET_PATH` and fresh XDG dirs, or stop the old server first.
