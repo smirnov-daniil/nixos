@@ -30,6 +30,7 @@
       pkgs.htop
       pkgs.imagemagick
       pkgs.imv
+      pkgs.jq
       pkgs.killall
       pkgs.microfetch
       pkgs.openspec
@@ -53,6 +54,7 @@
       self'.packages.nix-check-bin
       self'.packages.oh-my-posh
       self'.packages.pi
+      self'.packages.tuicr
     ];
     combinedCompletions = pkgs.buildEnv {
       name = "env-completions";

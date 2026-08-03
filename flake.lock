@@ -246,23 +246,6 @@
         "type": "github"
       }
     },
-    "pi-review-loop": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1785169765,
-        "narHash": "sha256-J7kBW6760dxcQbISzYWXPkzvPz/4X4NVZAVAFaHGVpU=",
-        "owner": "earendil-works",
-        "repo": "pi-review-loop",
-        "rev": "3822e126b8b9ec05d7796b7897512c773ba9a166",
-        "type": "github"
-      },
-      "original": {
-        "owner": "earendil-works",
-        "repo": "pi-review-loop",
-        "rev": "3822e126b8b9ec05d7796b7897512c773ba9a166",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
         "flake-parts": "flake-parts",
@@ -272,8 +255,8 @@
         "nixpkgs": "nixpkgs_2",
         "pi": "pi",
         "pi-review": "pi-review",
-        "pi-review-loop": "pi-review-loop",
         "sops-nix": "sops-nix",
+        "tuicr": "tuicr",
         "wrapper-modules": "wrapper-modules",
         "wrappers": "wrappers",
         "zen-browser": "zen-browser"
@@ -333,6 +316,23 @@
       "original": {
         "owner": "numtide",
         "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "tuicr": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1785683320,
+        "narHash": "sha256-ByeWD4mC1DiH6L971mC7Qv6zUVmaf2lneewK2ZWXxg8=",
+        "owner": "agavra",
+        "repo": "tuicr",
+        "rev": "8b14bb233ab72774446c21dd31ff8e5c3bc115ce",
+        "type": "github"
+      },
+      "original": {
+        "owner": "agavra",
+        "ref": "v0.20.0",
+        "repo": "tuicr",
         "type": "github"
       }
     },

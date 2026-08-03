@@ -6,9 +6,9 @@ The resolver recognizes common efficiency, balanced, and capability tier names. 
 
 # Pi review and workflow extensions
 
-`pi-review` and `pi-review-loop` are pinned as non-flake inputs and patched during the Nix build. The automated reviewer uses native Jujutsu revsets and obtains pull-request patches without changing the checkout. Review Loop compares the current Jujutsu change with `@-`, excludes repository metadata and dependency trees from watching, and omits sensitive, binary, non-UTF-8, symlinked, and oversized files from session checkpoints.
+`pi-review` remains pinned as a non-flake input and patched during the Nix build. The automated reviewer uses native Jujutsu revsets and obtains pull-request patches without changing the checkout.
 
-Review Loop uses Glimpse's Chromium backend because its native WebKit layer-shell backend is unavailable on the Ubuntu workstation. The Nix Chromium sandbox runs normally when the NixOS setuid wrapper exists. Ubuntu's AppArmor policy rejects both the packaged setuid helper and unprivileged user namespaces, so the dedicated local Review Loop browser falls back to `--no-sandbox`; its temporary profile and local immutable UI limit the scope of that tradeoff. The prebuilt UI is patched at build time to expose its dynamic Jujutsu baseline and a compositor-independent close control without rebuilding Monaco assets.
+Human diff review uses pinned `tuicr` v0.20.0 from the `environment` package. Pi loads the upstream tuicr skill and `/diff-review` invokes its official Herdr wrapper, which owns pane creation, completion waiting, and cleanup. The adapter snapshots local draft comments through the Review CLI before and after the TUI session, then inserts only new or changed feedback into the Pi editor. This replaces the Glimpse/Chromium Review Loop and removes its browser sandbox exception, Node runtime, `xdotool`, and patch maintenance.
 
 The local plan mode retains its read-only enforcement while adding numbered plan extraction, approval choices, persisted execution progress, `[DONE:n]` completion markers, a `/todos` command, and TUI status widgets. Handoff and terminal notifications remain local extensions so they load declaratively with the packaged Pi configuration.
 
