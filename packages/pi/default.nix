@@ -46,6 +46,8 @@
               ./skills/simplify
               ./skills/verify
               ./skills/security-review
+              ./skills/skillopt-learned
+              ./skills/skillopt-sleep
               ./skills/run
               ./skills/graphify
               ./skills/jujutsu

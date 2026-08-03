@@ -255,11 +255,29 @@
         "nixpkgs": "nixpkgs_2",
         "pi": "pi",
         "pi-review": "pi-review",
+        "skillopt": "skillopt",
         "sops-nix": "sops-nix",
         "tuicr": "tuicr",
         "wrapper-modules": "wrapper-modules",
         "wrappers": "wrappers",
         "zen-browser": "zen-browser"
+      }
+    },
+    "skillopt": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1785698733,
+        "narHash": "sha256-YBz53C2R9S+FtxyDCxFOXT9ozf/VquHsNRLoa8h9pCA=",
+        "owner": "microsoft",
+        "repo": "SkillOpt",
+        "rev": "8a4c96a23639eee6ce19de7579ac9006b6dd4a2a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "microsoft",
+        "repo": "SkillOpt",
+        "rev": "8a4c96a23639eee6ce19de7579ac9006b6dd4a2a",
+        "type": "github"
       }
     },
     "sops-nix": {

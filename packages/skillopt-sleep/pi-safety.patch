@@ -1,0 +1,153 @@
+diff --git a/skillopt_sleep/config.py b/skillopt_sleep/config.py
+--- a/skillopt_sleep/config.py
++++ b/skillopt_sleep/config.py
+@@ -66,7 +66,7 @@
+     "dream_rollouts": 1,          # >1 => multi-rollout contrastive reflection per task
+     "dream_factor": 0,            # >0 => add N synthetic variants of each task to the dream
+     "recall_k": 0,                # >0 => recall the K most-similar past tasks into the dream
+-    "evolve_memory": True,        # consolidate CLAUDE.md
++    "evolve_memory": False,       # disabled for the Pi integration
+     "evolve_skill": True,         # consolidate the managed SKILL.md
+     "llm_mine": True,             # use the backend to mine checkable tasks (real backends)
+     "target_skill_path": "",      # explicit SKILL.md target for repo-scoped agents
+@@ -161,9 +161,7 @@
+                 base = self.data.get("invoked_project") or os.getcwd()
+                 target = os.path.join(base, target)
+             return os.path.abspath(target)
+-        return os.path.join(
+-            self.skills_dir, self.data["managed_skill_name"], "SKILL.md"
+-        )
++        raise ValueError("target_skill_path is required")
+ 
+ 
+ def _user_config_path() -> Optional[str]:
+@@ -195,6 +193,8 @@
+         except Exception:
+             pass
+     data.update({k: v for k, v in overrides.items() if v is not None})
++    data["evolve_memory"] = False
++    data["auto_adopt"] = False
+     if data.get("projects") == "invoked" and not data.get("invoked_project"):
+         data["invoked_project"] = os.getcwd()
+     return SleepConfig(data=data)
+diff --git a/skillopt_sleep/__main__.py b/skillopt_sleep/__main__.py
+--- a/skillopt_sleep/__main__.py
++++ b/skillopt_sleep/__main__.py
+@@ -100,7 +100,6 @@
+                    help="reviewed TaskRecord JSON file to replay instead of harvesting")
+     p.add_argument("--progress", action="store_true",
+                    help="print phase progress to stderr")
+-    p.add_argument("--auto-adopt", action="store_true")
+     p.add_argument("--preferences", default="",
+                    help="free-text house rules injected into the optimizer's reflect step")
+     p.add_argument("--json", action="store_true")
+@@ -170,6 +169,9 @@
+         # Load once before config so target_skill_path can default from metadata.
+         tasks, task_meta = load_tasks_file(args.tasks_file)
+     cfg = _cfg_from_args(args, task_meta=task_meta)
++    if not getattr(args, "target_skill_path", ""):
++        print("[sleep] explicit --target-skill-path is required", file=sys.stderr)
++        return 2
+     if getattr(args, "tasks_file", ""):
+         tasks, task_meta = load_tasks_file(
+             args.tasks_file,
+@@ -433,11 +435,24 @@
+ 
+ def cmd_adopt(args) -> int:
+     cfg = _cfg_from_args(args)
++    if not getattr(args, "target_skill_path", ""):
++        print("[sleep] explicit --target-skill-path is required", file=sys.stderr)
++        return 2
+     project = cfg.get("invoked_project") or os.getcwd()
+     target = args.staging or latest_staging(project)
+     if not target or not os.path.isdir(target):
+         print("[sleep] nothing to adopt (no staging dir).")
+         return 1
++    with open(os.path.join(target, "manifest.json"), encoding="utf-8") as handle:
++        manifest = json.load(handle)
++    if manifest.get("has_memory"):
++        print("[sleep] refusing a memory-bearing proposal", file=sys.stderr)
++        return 2
++    expected = os.path.realpath(cfg.managed_skill_path())
++    actual = os.path.realpath(str(manifest.get("live_skill_path", "")))
++    if actual != expected:
++        print("[sleep] staged target does not match --target-skill-path", file=sys.stderr)
++        return 2
+     updated = adopt_staging(target)
+     print(f"[sleep] adopted from {target}")
+     for p in updated:
+@@ -449,6 +464,9 @@
+ 
+ def cmd_harvest(args) -> int:
+     cfg = _cfg_from_args(args)
++    if not getattr(args, "target_skill_path", ""):
++        print("[sleep] explicit --target-skill-path is required", file=sys.stderr)
++        return 2
+     session_limit = cfg.get("max_sessions_per_night", 0) or cfg.get("max_tasks_per_night", 40) * 3
+     target_skill_path = cfg.managed_skill_path() if cfg.get("target_skill_path", "") else ""
+     target_skill_text = _read_text(target_skill_path) if target_skill_path else ""
+@@ -477,7 +495,8 @@
+     if getattr(args, "output", ""):
+         output_path = write_tasks_file(args.output, payload)
+     if args.json:
+-        json_payload = dict(payload)
++        json_payload = {key: value for key, value in payload.items() if key != "tasks"}
++        json_payload["n_tasks"] = len(tasks)
+         if output_path:
+             json_payload["output"] = output_path
+         print(json.dumps(json_payload, ensure_ascii=False, indent=2))
+@@ -485,8 +504,6 @@
+         print(f"[sleep] {len(digests)} sessions -> {len(tasks)} tasks")
+         if output_path:
+             print(f"[sleep] wrote reviewed-task draft: {output_path}")
+-        for t in tasks:
+-            print(f"  [{t.split}/{t.outcome}] {t.intent[:90]}")
+     return 0
+ 
+ 
+@@ -516,6 +533,8 @@
+ 
+ 
+ def main(argv=None) -> int:
++    if os.name != "nt":
++        os.umask(0o077)
+     parser = argparse.ArgumentParser(prog="skillopt_sleep", description="SkillOpt-Sleep nightly self-evolution")
+     sub = parser.add_subparsers(dest="cmd", required=True)
+ 
+@@ -531,13 +550,6 @@
+     p_harvest = sub.add_parser("harvest", help="debug: show mined tasks")
+     _add_common(p_harvest)
+     p_harvest.add_argument("--output", default="", help="write mined tasks JSON for review")
+-    p_sched = sub.add_parser("schedule", help="install a nightly cron entry for this project")
+-    _add_common(p_sched)
+-    p_sched.add_argument("--hour", type=int, default=3)
+-    p_sched.add_argument("--minute", type=int, default=17)
+-    p_unsched = sub.add_parser("unschedule", help="remove the nightly cron entry")
+-    _add_common(p_unsched)
+-    p_unsched.add_argument("--all", action="store_true", help="remove all managed entries")
+ 
+     args = parser.parse_args(argv)
+     if args.cmd == "run":
+@@ -550,10 +562,6 @@
+         return cmd_adopt(args)
+     if args.cmd == "harvest":
+         return cmd_harvest(args)
+-    if args.cmd == "schedule":
+-        return cmd_schedule(args)
+-    if args.cmd == "unschedule":
+-        return cmd_unschedule(args)
+     parser.print_help()
+     return 2
+ 
+diff --git a/skillopt_sleep/staging.py b/skillopt_sleep/staging.py
+--- a/skillopt_sleep/staging.py
++++ b/skillopt_sleep/staging.py
+@@ -324,6 +324,8 @@
+     """
+     with open(os.path.join(staging_dir, "manifest.json")) as f:
+         manifest = json.load(f)
++    if manifest.get("has_memory"):
++        raise ValueError("memory proposals are disabled")
+     backup_dir = os.path.join(staging_dir, "backup")
+     updated: List[str] = []
+ 

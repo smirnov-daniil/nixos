@@ -17,3 +17,9 @@ The local plan mode retains its read-only enforcement while adding numbered plan
 The desktop greeter is marked as a text greeter so greetd owns VT1 correctly at boot and tuigreet remains visible instead of leaving an apparently plain console. Its Niri command uses a dedicated launcher that clears PRIME-offload selectors from both the process and the systemd user-manager environment before `niri-session` imports the login environment; this prevents a previous `nvidia-offload niri-session` invocation from affecting later Intel sessions.
 
 The `gru` PRIME configuration keeps modesetting alongside NVIDIA and pins Niri's renderer to the Intel render-node symlink. Niri key bindings use the absolute flake-managed Ghostty path, avoiding profile/PATH ambiguity. NVIDIA remains available explicitly through `nvidia-offload` for individual applications.
+
+# SkillOpt-Sleep for Pi
+
+The flake packages only SkillOpt-Sleep from the first upstream commit containing Pi transcript and backend support. Existing `remember` and `write_skill` workflows remain the online fact and procedure layers; SkillOpt adds bounded cross-session proposals rather than replacing them.
+
+The Pi adaptation requires the exact Nix-managed source skill on every run and adoption, disables `CLAUDE.md` evolution and automatic adoption even when user configuration requests them, rejects stale memory-bearing or mismatched staging manifests, and creates private ignored state. Its textual held-out gate cannot replace tool-enabled `verify` or `/ship`, so learned changes land in a dedicated non-critical skill and require review, real workflow verification, and a successful Pi/environment rebuild before profile activation.

@@ -33,6 +33,10 @@
       url = "github:agavra/tuicr/v0.20.0";
       flake = false;
     };
+    skillopt = {
+      url = "github:microsoft/SkillOpt/8a4c96a23639eee6ce19de7579ac9006b6dd4a2a";
+      flake = false;
+    };
 
     nix-index-database = {
       url = "github:Mic92/nix-index-database";

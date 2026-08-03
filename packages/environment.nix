@@ -54,6 +54,7 @@
       self'.packages.nix-check-bin
       self'.packages.oh-my-posh
       self'.packages.pi
+      self'.packages.skillopt-sleep
       self'.packages.tuicr
     ];
     combinedCompletions = pkgs.buildEnv {
