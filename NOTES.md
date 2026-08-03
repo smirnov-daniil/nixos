@@ -14,7 +14,7 @@ The local plan mode retains its read-only enforcement while adding numbered plan
 
 # Niri login and hybrid graphics startup
 
-The desktop greeter is marked as a text greeter so greetd owns VT1 correctly at boot and tuigreet remains visible instead of leaving an apparently plain console. Its Niri command uses a dedicated launcher that clears PRIME-offload selectors from both the process and the systemd user-manager environment before `niri-session` imports the login environment; this prevents a previous `nvidia-offload niri-session` invocation from affecting later Intel sessions.
+The desktop greeter is marked as a text greeter so greetd owns VT1 correctly at boot and tuigreet remains visible instead of leaving an apparently plain console. It starts `niri-session` directly and leaves PRIME offload selection to explicitly offloaded applications rather than mutating the session-wide systemd user environment.
 
 The `gru` PRIME configuration keeps modesetting alongside NVIDIA and pins Niri's renderer to the Intel render-node symlink. Niri key bindings use the absolute flake-managed Ghostty path, avoiding profile/PATH ambiguity. NVIDIA remains available explicitly through `nvidia-offload` for individual applications.
 
