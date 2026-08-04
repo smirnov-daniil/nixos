@@ -1,0 +1,244 @@
+--- a/src/output-file.ts
++++ b/src/output-file.ts
+@@ -5,7 +5,7 @@
+  * matching Claude Code's task output file format.
+  */
+ 
+-import { appendFileSync, chmodSync, mkdirSync, writeFileSync } from "node:fs";
++import { appendFileSync, chmodSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+ import { tmpdir } from "node:os";
+ import { join } from "node:path";
+ import type { AgentSession, AgentSessionEvent } from "@earendil-works/pi-coding-agent";
+@@ -37,20 +37,31 @@
+     .replace(/^-+/, "");           // strip leading dashes (POSIX root, UNC)
+ }
+ 
+-/** Create the output file path, ensuring the directory exists.
+- *  Mirrors Claude Code's layout: /tmp/{prefix}-{uid}/{encoded-cwd}/{sessionId}/tasks/{agentId}.output */
+-export function createOutputFilePath(cwd: string, agentId: string, sessionId: string): string {
+-  const encoded = encodeCwd(cwd);
++export function createOutputRoot(): string {
+   const root = join(tmpdir(), `pi-subagents-${process.getuid?.() ?? 0}`);
+   mkdirSync(root, { recursive: true, mode: 0o700 });
+-  // chmod is a no-op on Windows and throws on some Windows filesystems.
+-  // On Unix we still want to enforce 0o700 past umask, so only swallow on Windows.
+   try {
+     chmodSync(root, 0o700);
+   } catch (err) {
+     if (process.platform !== "win32") throw err;
+   }
+-  const dir = join(root, encoded, sessionId, "tasks");
++  return root;
++}
++
++export function createOutputSessionDir(cwd: string, sessionId: string): string {
++  const dir = join(createOutputRoot(), "runs", encodeCwd(cwd), sessionId);
++  mkdirSync(dir, { recursive: true });
++  return dir;
++}
++
++export function cleanupOutputSession(cwd: string, sessionId: string): void {
++  rmSync(join(tmpdir(), `pi-subagents-${process.getuid?.() ?? 0}`, "runs", encodeCwd(cwd), sessionId), { recursive: true, force: true });
++}
++
++/** Create the output file path, ensuring the directory exists.
++ *  Mirrors Claude Code's layout: /tmp/{prefix}-{uid}/runs/{encoded-cwd}/{sessionId}/tasks/{agentId}.output */
++export function createOutputFilePath(cwd: string, agentId: string, sessionId: string): string {
++  const dir = join(createOutputSessionDir(cwd, sessionId), "tasks");
+   mkdirSync(dir, { recursive: true });
+   return join(dir, `${agentId}.output`);
+ }
+--- a/src/schedule-store.ts
++++ b/src/schedule-store.ts
+@@ -1,9 +1,8 @@
+ /**
+  * schedule-store.ts — File-backed store for scheduled subagents.
+  *
+- * Session-scoped: each pi session owns its own schedules at
+- * `<cwd>/.pi/subagent-schedules/<sessionId>.json`. `/new` starts a fresh
+- * empty store; `/resume` reloads.
++ * Session-scoped: each pi session owns its own schedules in the private
++ * system temporary directory shared with its subagent transcripts.
+  *
+  * Concurrency model lifted from pi-chonky-tasks/src/task-store.ts: every
+  * mutation acquires a PID-based exclusion lock, re-reads the latest state
+@@ -12,6 +11,7 @@
+ 
+ import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
+ import { dirname, join } from "node:path";
++import { createOutputRoot, encodeCwd } from "./output-file.js";
+ import type { ScheduledSubagent, ScheduleStoreData } from "./types.js";
+ 
+ const LOCK_RETRY_MS = 50;
+@@ -51,7 +51,7 @@
+ 
+ /** Resolve the storage path for a session-scoped store. */
+ export function resolveStorePath(cwd: string, sessionId: string): string {
+-  return join(cwd, ".pi", "subagent-schedules", `${sessionId}.json`);
++  return join(createOutputRoot(), "schedules", encodeCwd(cwd), `${sessionId}.json`);
+ }
+ 
+ export class ScheduleStore {
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -27,7 +27,7 @@
+ import { type ModelRegistry, resolveModel } from "./model-resolver.js";
+ import { checkModelScope, isScopeModelsEnabled, setScopeModelsEnabled } from "./model-scope.js";
+ import { getMaxSubagentDepth, setMaxSubagentDepth } from "./nested-tools.js";
+-import { createOutputFilePath, getOutputTranscriptDefault, setOutputTranscriptDefault, streamToOutputFile, writeInitialEntry } from "./output-file.js";
++import { cleanupOutputSession, createOutputFilePath, getOutputTranscriptDefault, setOutputTranscriptDefault, streamToOutputFile, writeInitialEntry } from "./output-file.js";
+ import { SubagentScheduler } from "./schedule.js";
+ import { resolveStorePath, ScheduleStore } from "./schedule-store.js";
+ import { applyAndEmitLoaded, type SubagentsSettings, saveAndEmitChanged, type ToolDescriptionMode } from "./settings.js";
+@@ -510,6 +510,12 @@
+ 
+   // --- Cross-extension RPC via pi.events ---
+   let currentCtx: ExtensionContext | undefined;
++  let outputSession: { cwd: string; id: string } | undefined;
++  const cleanupTranscripts = () => {
++    if (!ownsManagerRegistry || !outputSession) return;
++    cleanupOutputSession(outputSession.cwd, outputSession.id);
++    outputSession = undefined;
++  };
+   // RPC handlers + the `subagents:ready` broadcast are wired on `session_start`
+   // (a bound lifecycle event), not at factory time. pi runs every extension
+   // factory before the `extensions:` filter and only fires lifecycle events for
+@@ -535,7 +541,7 @@
+       pi.events.emit("subagents:scheduler_ready", { sessionId, jobCount: store.list().length });
+     } catch (err) {
+       // Scheduling is non-essential — log and move on so the rest of the
+-      // extension keeps working if e.g. .pi/ is unwritable.
++      // extension keeps working if temporary storage is unavailable.
+       console.warn("[pi-subagents] Failed to start scheduler:", err);
+     }
+   }
+@@ -546,6 +552,8 @@
+   pi.on("session_start", async (_event, ctx) => {
+     currentCtx = ctx;
+     manager.clearCompleted(true);
++    const sessionId = ctx.sessionManager?.getSessionId?.();
++    if (ownsManagerRegistry && sessionId) outputSession = { cwd: ctx.cwd, id: sessionId };
+     // Guard mirrors the `!scheduler.isActive()` pattern below: session_start
+     // fires once per activation, but a double-bind must not leak listeners.
+     if (!rpcHandle) {
+@@ -572,6 +580,7 @@
+   pi.on("session_before_switch", () => {
+     manager.clearCompleted(true);
+     scheduler.stop();
++    cleanupTranscripts();
+   });
+ 
+   // On shutdown, abort all agents immediately and clean up.
+@@ -593,6 +602,7 @@
+     pendingNudges.clear();
+     fleet.dispose();
+     manager.dispose();
++    cleanupTranscripts();
+   });
+ 
+   // Live widget: show running agents above editor.
+--- a/test/schedule-store.test.ts
++++ b/test/schedule-store.test.ts
+@@ -9,6 +9,7 @@
+ import { tmpdir } from "node:os";
+ import { join } from "node:path";
+ import { afterEach, beforeEach, describe, expect, it } from "vitest";
++import { cleanupOutputSession } from "../src/output-file.js";
+ import { resolveStorePath, ScheduleStore } from "../src/schedule-store.js";
+ import type { ScheduledSubagent } from "../src/types.js";
+ 
+@@ -37,12 +38,15 @@
+   });
+ 
+   afterEach(() => {
++    cleanupOutputSession(tmp, "abc123");
+     rmSync(tmp, { recursive: true, force: true });
+   });
+ 
+-  it("resolveStorePath produces session-scoped path under .pi/subagent-schedules/", () => {
+-    const p = resolveStorePath("/repo", "abc123");
+-    expect(p).toBe("/repo/.pi/subagent-schedules/abc123.json");
++  it("resolveStorePath produces a temporary session-scoped path", () => {
++    const p = resolveStorePath(tmp, "abc123");
++    expect(p).toContain(join(tmpdir(), `pi-subagents-${process.getuid?.() ?? 0}`));
++    expect(p).toMatch(/schedules\/.+\/abc123\.json$/);
++    expect(p).not.toContain(join(tmp, ".pi"));
+   });
+ 
+   it("starts empty and round-trips a job through add/list", () => {
+--- a/test/fallback-subagent-wiring.test.ts
++++ b/test/fallback-subagent-wiring.test.ts
+@@ -9,9 +9,9 @@
+  * spawns would be no fix at all. The fallback tests assert the opposite — that
+  * it ran, and which agent it ran.
+  */
+-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
++import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+ import { tmpdir } from "node:os";
+-import { join } from "node:path";
++import { dirname, join } from "node:path";
+ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+ 
+ vi.mock("../src/agent-runner.js", async () => {
+@@ -22,6 +22,8 @@
+ import { runAgent } from "../src/agent-runner.js";
+ import { getAllTypes, getAvailableTypes, NO_FALLBACK, registerAgents, setFallbackSubagent } from "../src/agent-types.js";
+ import subagentsExtension from "../src/index.js";
++import { cleanupOutputSession } from "../src/output-file.js";
++import { resolveStorePath } from "../src/schedule-store.js";
+ 
+ function makePi() {
+   const tools = new Map<string, any>();
+@@ -92,6 +94,8 @@
+     if (originalHome == null) delete process.env.HOME;
+     else process.env.HOME = originalHome;
+     registerAgents(new Map());
++    cleanupOutputSession(cwd, "s1");
++    rmSync(dirname(resolveStorePath(cwd, "s1")), { recursive: true, force: true });
+     rmSync(cwd, { recursive: true, force: true });
+   });
+ 
+@@ -195,10 +199,7 @@
+     );
+     expect(textOf(result)).toContain("Scheduled");
+ 
+-    const storeDir = join(cwd, ".pi", "subagent-schedules");
+-    const jobs = readdirSync(storeDir).flatMap((f) =>
+-      JSON.parse(readFileSync(join(storeDir, f), "utf-8")).jobs ?? [],
+-    );
++    const jobs = JSON.parse(readFileSync(resolveStorePath(cwd, "s1"), "utf-8")).jobs ?? [];
+     expect(jobs).toHaveLength(1);
+     expect(jobs[0].subagent_type).toBe("general-purpose");
+   });
+--- a/test/output-file.test.ts
++++ b/test/output-file.test.ts
+@@ -1,8 +1,8 @@
+-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
++import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+ import { tmpdir } from "node:os";
+ import { join } from "node:path";
+ import { afterEach, beforeEach, describe, expect, it } from "vitest";
+-import { encodeCwd, streamToOutputFile, writeInitialEntry } from "../src/output-file.js";
++import { cleanupOutputSession, createOutputFilePath, encodeCwd, streamToOutputFile, writeInitialEntry } from "../src/output-file.js";
+ 
+ describe("encodeCwd", () => {
+   it("encodes a POSIX absolute path by stripping the leading slash and replacing separators", () => {
+@@ -83,6 +83,18 @@
+ /** Drain the microtask queue (the compaction re-anchor is deferred one tick). */
+ const microtask = () => Promise.resolve();
+ 
++describe("output session cleanup", () => {
++  it("removes every transcript for one session", () => {
++    const cwd = mkdtempSync(join(tmpdir(), "output-session-test-"));
++    const path = createOutputFilePath(cwd, "agent", "session");
++    writeInitialEntry(path, "agent", "task", cwd);
++    expect(existsSync(path)).toBe(true);
++    cleanupOutputSession(cwd, "session");
++    expect(existsSync(path)).toBe(false);
++    rmSync(cwd, { recursive: true, force: true });
++  });
++});
++
+ describe("streamToOutputFile", () => {
+   let tmp: string;
+   let outPath: string;

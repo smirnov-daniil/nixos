@@ -3,14 +3,15 @@
   lib,
   ...
 }: {
-  perSystem = {pkgs, ...}: let
+  perSystem = {pkgs, self', ...}: let
     # Reference the whole extensions/ tree as one store path so relative
-    # imports between sibling files (./_lib/toggle-mode.ts, subagent's own
-    # ./agents.ts) resolve at runtime — passing individual ./extensions/foo.ts
+    # imports between sibling files resolve at runtime — passing individual
+    # ./extensions/foo.ts
     # paths would each copy only that single file to the store.
     extDir = ./extensions;
     extension = name: "${extDir}/${name}";
     tuicrSkill = inputs.tuicr + "/skills/tuicr";
+    piSubagentsExtension = "${self'.packages.pi-subagents}/lib/node_modules/@tintinweb/pi-subagents/src/index.ts";
 
     piReviewSource = pkgs.applyPatches {
       name = "pi-review-f1de050";
@@ -35,7 +36,8 @@
               (extension "memory.ts")
               (extension "handoff.ts")
               (extension "notify.ts")
-              (extension "subagent")
+              (extension "subagent-routing.ts")
+              piSubagentsExtension
               (extension "pipeline.ts")
               (extension "tuicr-review.ts")
               "${piReviewSource}/review.ts"
@@ -99,12 +101,16 @@
       '';
     };
 
-    checks.pi-subagent-status =
-      pkgs.runCommand "pi-subagent-status-tests" {
+    checks.pi-subagents = self'.packages.pi-subagents;
+
+    checks.pi-subagent-routing =
+      pkgs.runCommand "pi-subagent-routing-tests" {
         nativeBuildInputs = [pkgs.bun];
       } ''
-        mkdir -p "$out"
-        bun test ${./extensions/subagent} >"$out/test.log"
+        mkdir -p "$out" node_modules
+        cp -r ${./extensions} extensions
+        ln -s ${inputs.pi.packages.${pkgs.stdenv.hostPlatform.system}.coding-agent}/lib/node_modules/@earendil-works node_modules/@earendil-works
+        bun test ./extensions/subagent-routing.test.ts >"$out/test.log"
       '';
   };
 }

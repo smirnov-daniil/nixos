@@ -246,6 +246,23 @@
         "type": "github"
       }
     },
+    "pi-subagents": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1785535139,
+        "narHash": "sha256-U/0xMv6UP9fmeKgO1CqSyHZfovmEDevQDIQWdFHwnO8=",
+        "owner": "tintinweb",
+        "repo": "pi-subagents",
+        "rev": "2966cd5a33c0640de9698b56a39c11f83207a835",
+        "type": "github"
+      },
+      "original": {
+        "owner": "tintinweb",
+        "repo": "pi-subagents",
+        "rev": "2966cd5a33c0640de9698b56a39c11f83207a835",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "flake-parts": "flake-parts",
@@ -255,6 +272,7 @@
         "nixpkgs": "nixpkgs_2",
         "pi": "pi",
         "pi-review": "pi-review",
+        "pi-subagents": "pi-subagents",
         "skillopt": "skillopt",
         "sops-nix": "sops-nix",
         "tuicr": "tuicr",

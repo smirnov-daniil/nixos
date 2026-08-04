@@ -1,0 +1,67 @@
+--- a/src/default-agents.ts
++++ b/src/default-agents.ts
+@@ -34,10 +34,6 @@
+       builtinToolNames: READ_ONLY_TOOLS,
+       extensions: true,
+       skills: true,
+-      // Fast/cheap model for read-only search. Provider-preferred but resilient:
+-      // resolveModel matches this fuzzily (date-stamp optional) and falls back to
+-      // the same model under another provider if anthropic doesn't expose it.
+-      model: "anthropic/claude-haiku-4-5",
+       systemPrompt: `# CRITICAL: READ-ONLY MODE - NO FILE MODIFICATIONS
+ You are a file search specialist. You excel at thoroughly navigating and exploring codebases.
+ Your role is EXCLUSIVELY to search and analyze existing code. You do NOT have access to file editing tools.
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -2001,7 +2001,7 @@
+ ---
+ description: <one-line description shown in UI>
+ tools: <comma-separated built-in tools: read, bash, edit, write, grep, find, ls. Use "none" for no tools. Omit for all tools>
+-model: <optional model as "provider/modelId", e.g. "anthropic/claude-haiku-4-5". Omit to inherit parent model>
++model: <optional explicit model as "provider/modelId". Omit to inherit parent model>
+ thinking: <optional thinking level: ${THINKING_LEVELS.join(", ")}. Omit to inherit>
+ max_turns: <optional max agentic turns. 0 or omit for unlimited (default)>
+ prompt_mode: <"replace" (body IS the full system prompt) or "append" (body is appended to default prompt). Default: replace>
+@@ -2079,18 +2079,12 @@
+     // 4. Model
+     const modelChoice = await ctx.ui.select("Model", [
+       "inherit (parent model)",
+-      "haiku",
+-      "sonnet",
+-      "opus",
+       "custom...",
+     ]);
+     if (!modelChoice) return;
+ 
+     let modelLine = "";
+-    if (modelChoice === "haiku") modelLine = "\nmodel: anthropic/claude-haiku-4-5";
+-    else if (modelChoice === "sonnet") modelLine = "\nmodel: anthropic/claude-sonnet-4-6";
+-    else if (modelChoice === "opus") modelLine = "\nmodel: anthropic/claude-opus-4-6";
+-    else if (modelChoice === "custom...") {
++    if (modelChoice === "custom...") {
+       const customModel = await ctx.ui.input("Model (provider/modelId)");
+       if (customModel) modelLine = `\nmodel: ${customModel}`;
+     }
+--- a/test/agent-types.test.ts
++++ b/test/agent-types.test.ts
+@@ -71,7 +71,7 @@
+     it("case-insensitive lookup works for getAgentConfig", () => {
+       const config = getAgentConfig("explore");
+       expect(config?.name).toBe("Explore");
+-      expect(config?.model).toBe("anthropic/claude-haiku-4-5");
++      expect(config?.model).toBeUndefined();
+     });
+ 
+     it("resolveType returns canonical key or undefined", () => {
+@@ -96,9 +96,9 @@
+       expect(config.builtinToolNames).not.toContain("write");
+     });
+ 
+-    it("Explore has haiku model in config", () => {
++    it("Explore inherits its model", () => {
+       const cfg = getAgentConfig("Explore");
+-      expect(cfg?.model).toBe("anthropic/claude-haiku-4-5");
++      expect(cfg?.model).toBeUndefined();
+     });
+ 
+     it("default agents are marked isDefault", () => {

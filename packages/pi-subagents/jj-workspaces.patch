@@ -1,0 +1,385 @@
+--- a/src/worktree.ts
++++ b/src/worktree.ts
+@@ -8,9 +8,9 @@
+ 
+ import { execFileSync } from "node:child_process";
+ import { randomUUID } from "node:crypto";
+-import { existsSync, realpathSync } from "node:fs";
++import { existsSync, realpathSync, rmSync } from "node:fs";
+ import { tmpdir } from "node:os";
+-import { join, relative } from "node:path";
++import { dirname, join, relative } from "node:path";
+ 
+ export interface WorktreeInfo {
+   /** Absolute path to the worktree directory (the copied repo's root). */
+@@ -19,6 +19,9 @@
+   branch: string;
+   /** Commit SHA that the worktree was created from. */
+   baseSha: string;
++  kind?: "git" | "jujutsu";
++  workspaceName?: string;
++  snapshotChangeId?: string;
+   /**
+    * Where the agent should work inside the worktree: the equivalent of the
+    * cwd the worktree was created from. Equals `path` when that cwd was the
+@@ -35,13 +38,138 @@
+   branch?: string;
+   /** Worktree path if it was kept. */
+   path?: string;
++  kind?: "git" | "jujutsu";
++  changeId?: string;
++  changeIds?: string[];
++  baseSha?: string;
++}
++
++function findJujutsuRoot(cwd: string): string | undefined {
++  let current = realpathSync(cwd);
++  while (true) {
++    if (existsSync(join(current, ".jj"))) return current;
++    const parent = dirname(current);
++    if (parent === current) return undefined;
++    current = parent;
++  }
++}
++
++function runJujutsu(args: string[], cwd: string): string {
++  return execFileSync("jj", ["--no-pager", ...args], { cwd, stdio: "pipe", timeout: 30000 })
++    .toString()
++    .trim();
++}
++
++function createJujutsuWorkspace(cwd: string, agentId: string): WorktreeInfo | undefined {
++  const suffix = randomUUID().slice(0, 8);
++  const workspaceName = `pi-agent-${agentId}-${suffix}`;
++  const workspacePath = join(tmpdir(), workspaceName);
++  let snapshotChangeId: string | undefined;
++  try {
++    const topLevel = runJujutsu(["workspace", "root"], cwd);
++    const marker = `pi-agent-snapshot-${agentId}-${suffix}`;
++    runJujutsu(["--config", `templates.duplicate_description='"${marker}"'`, "duplicate", "@"], cwd);
++    const candidates = runJujutsu([
++      "log",
++      "-r",
++      "children(parents(@))",
++      "--no-graph",
++      "-T",
++      `change_id.short() ++ "\\t" ++ commit_id ++ "\\t" ++ description.first_line() ++ "\\n"`,
++    ], cwd)
++      .split("\n")
++      .map((line) => line.split("\t"));
++    const snapshot = candidates.find((candidate) => candidate[2] === marker);
++    if (!snapshot) throw new Error("Cannot identify duplicated Jujutsu snapshot");
++    snapshotChangeId = snapshot[0];
++    const baseSha = snapshot[1];
++    const subdir = relative(realpathSync(topLevel), realpathSync(cwd));
++    runJujutsu(["workspace", "add", "--name", workspaceName, "-r", baseSha, "-m", `pi-agent: ${agentId}`, workspacePath], cwd);
++    const changeId = runJujutsu(["log", "-r", "@", "--no-graph", "-T", "change_id.short()"], workspacePath);
++    return {
++      path: workspacePath,
++      branch: changeId,
++      baseSha,
++      workPath: subdir ? join(workspacePath, subdir) : workspacePath,
++      kind: "jujutsu",
++      workspaceName,
++      snapshotChangeId,
++    };
++  } catch {
++    try { runJujutsu(["workspace", "forget", workspaceName], cwd); } catch { }
++    if (snapshotChangeId) {
++      try { runJujutsu(["abandon", snapshotChangeId], cwd); } catch { }
++    }
++    rmSync(workspacePath, { recursive: true, force: true });
++    return undefined;
++  }
++}
++
++function cleanupJujutsuWorkspace(cwd: string, workspace: WorktreeInfo): WorktreeCleanupResult {
++  if (!workspace.workspaceName || !existsSync(workspace.path)) return { hasChanges: false, kind: "jujutsu" };
++  runJujutsu(["st"], workspace.path);
++  const descendant = runJujutsu([
++    "log",
++    "-r",
++    `@ & descendants(${workspace.baseSha})`,
++    "--no-graph",
++    "-T",
++    "commit_id",
++  ], workspace.path);
++  if (!descendant) throw new Error(`Jujutsu workspace moved outside its isolated stack: ${workspace.path}`);
++  const outsideStack = runJujutsu([
++    "log",
++    "-r",
++    `(${workspace.baseSha}..@) ~ descendants(${workspace.baseSha})`,
++    "--no-graph",
++    "-T",
++    "commit_id",
++  ], workspace.path);
++  if (outsideStack) throw new Error(`Jujutsu workspace merged revisions outside its isolated stack: ${workspace.path}`);
++  const output = runJujutsu([
++    "log",
++    "-r",
++    `${workspace.baseSha}..@`,
++    "--no-graph",
++    "-T",
++    `change_id.short() ++ "\\t" ++ empty ++ "\\n"`,
++  ], workspace.path);
++  const revisions = output
++    .split("\n")
++    .filter(Boolean)
++    .map((line) => {
++      const [changeId, empty] = line.split("\t");
++      return { changeId, empty: empty === "true" };
++    });
++  runJujutsu(["workspace", "forget", workspace.workspaceName], cwd);
++  rmSync(workspace.path, { recursive: true, force: true });
++  const emptyChanges = revisions.filter((revision) => revision.empty).map((revision) => revision.changeId);
++  if (emptyChanges.length > 0) {
++    try { runJujutsu(["abandon", ...emptyChanges], cwd); } catch { }
++  }
++  const changes = revisions.filter((revision) => !revision.empty);
++  if (changes.length === 0) {
++    if (workspace.snapshotChangeId) {
++      try { runJujutsu(["abandon", workspace.snapshotChangeId], cwd); } catch { }
++    }
++    return { hasChanges: false, kind: "jujutsu" };
++  }
++  return {
++    hasChanges: true,
++    branch: changes[0].changeId,
++    kind: "jujutsu",
++    changeId: changes[0].changeId,
++    changeIds: changes.map((revision) => revision.changeId),
++    baseSha: workspace.baseSha,
++  };
+ }
+ 
+ /**
+- * Create a temporary git worktree for an agent.
+- * Returns the worktree path, or undefined if not in a git repo.
++ * Create a temporary git worktree or Jujutsu workspace for an agent.
++ * Returns the isolated working copy, or undefined if the repository is unsupported.
+  */
+ export function createWorktree(cwd: string, agentId: string): WorktreeInfo | undefined {
++  if (findJujutsuRoot(cwd)) return createJujutsuWorkspace(cwd, agentId);
+   // Verify we're in a git repo with at least one commit (HEAD must exist)
+   let baseSha: string;
+   let subdir: string;
+@@ -90,6 +218,7 @@
+   worktree: WorktreeInfo,
+   agentDescription: string,
+ ): WorktreeCleanupResult {
++  if (worktree.kind === "jujutsu") return cleanupJujutsuWorkspace(cwd, worktree);
+   if (!existsSync(worktree.path)) {
+     return { hasChanges: false };
+   }
+@@ -185,6 +314,7 @@
+  * Prune any orphaned worktrees (crash recovery).
+  */
+ export function pruneWorktrees(cwd: string): void {
++  if (findJujutsuRoot(cwd)) return;
+   try {
+     execFileSync("git", ["worktree", "prune"], { cwd, stdio: "pipe", timeout: 5000 });
+   } catch { /* ignore */ }
+--- a/src/agent-manager.ts
++++ b/src/agent-manager.ts
+@@ -235,16 +235,16 @@
+     const customCwd = options.cwd ?? undefined; // null (RPC "unset") → undefined
+     const baseCwd = customCwd ?? ctx.cwd;
+ 
+-    // Worktree isolation: try to create a temporary git worktree. Strict —
+-    // fail loud if not possible (no silent fallback to main tree). Done
++    // Worktree isolation: create a temporary Git worktree or Jujutsu workspace.
++    // Fail loud if not possible (no silent fallback to main tree). Done
+     // BEFORE state mutation so a throw doesn't leave the record half-running.
+     let worktreeCwd: string | undefined;
+     if (options.isolation === "worktree") {
+       const wt = createWorktree(baseCwd, id);
+       if (!wt) {
+         throw new Error(
+-          'Cannot run with isolation: "worktree" — not a git repo, no commits yet, or `git worktree add` failed. ' +
+-          'Initialize git and commit at least once, or omit `isolation`.',
++          'Cannot run with isolation: "worktree" — neither a Jujutsu workspace nor a Git worktree could be created. ' +
++          'Initialize the repository with at least one revision, or omit `isolation`.',
+         );
+       }
+       record.worktree = wt;
+@@ -272,7 +272,11 @@
+     }
+     const detach = () => { detachParentSignal?.(); detachParentSignal = undefined; };
+ 
+-    const promise = runAgent(ctx, type, prompt, {
++    const isolatedPrompt = record.worktree?.kind === "jujutsu"
++      ? `You are running in an isolated Jujutsu workspace. Keep all changes in the workspace working-copy commit or descendants. Never edit, squash, abandon, rebase, or merge revisions outside this workspace stack, and never use Git commands.\n\n${prompt}`
++      : prompt;
++
++    const promise = runAgent(ctx, type, isolatedPrompt, {
+       pi,
+       agentId: id,
+       model: options.model,
+@@ -352,9 +356,12 @@
+         if (record.worktree) {
+           const wtResult = cleanupWorktree(baseCwd, record.worktree, options.description);
+           record.worktreeResult = wtResult;
+-          if (wtResult.hasChanges && wtResult.branch) {
+-            // With a caller-supplied cwd the branch lives in THAT repo, not the
+-            // parent session's — say so, or the orchestrator merges in the wrong repo.
++          if (wtResult.hasChanges && wtResult.kind === "jujutsu" && wtResult.changeId && wtResult.baseSha) {
++            const repoNote = customCwd !== undefined ? ` in \`${baseCwd}\`` : "";
++            const revisions = wtResult.changeIds?.join(", ") ?? wtResult.changeId;
++            record.result = (record.result ?? "") +
++              `\n\n---\nChanges saved to Jujutsu change(s) \`${revisions}\`${repoNote}. Apply to the current change with: \`jj squash --from '${wtResult.baseSha}..${wtResult.changeId}' --into @ -m 'Integrate isolated agent changes' && jj abandon ${wtResult.baseSha}\`${customCwd !== undefined ? ` (run in \`${baseCwd}\`)` : ""}`;
++          } else if (wtResult.hasChanges && wtResult.branch) {
+             const repoNote = customCwd !== undefined ? ` in \`${baseCwd}\`` : "";
+             record.result = (record.result ?? "") +
+               `\n\n---\nChanges saved to branch \`${wtResult.branch}\`${repoNote}. Merge with: \`git merge ${wtResult.branch}\`${customCwd !== undefined ? ` (run in \`${baseCwd}\`)` : ""}`;
+--- a/src/types.ts
++++ b/src/types.ts
+@@ -62,7 +62,7 @@
+   isolated?: boolean;
+   /** Persistent memory scope — agents with memory get a persistent directory and MEMORY.md */
+   memory?: MemoryScope;
+-  /** Isolation mode — "worktree" runs the agent in a temporary git worktree */
++  /** Isolation mode — "worktree" selects a Jujutsu workspace or Git worktree */
+   isolation?: IsolationMode;
+   /** true = this is an embedded default agent (informational) */
+   isDefault?: boolean;
+@@ -102,10 +102,25 @@
+   resultConsumed?: boolean;
+   /** Steering messages queued before the session was ready. */
+   pendingSteers?: string[];
+-  /** Worktree info if the agent is running in an isolated worktree. */
+-  worktree?: { path: string; branch: string; baseSha: string; workPath: string };
+-  /** Worktree cleanup result after agent completion. */
+-  worktreeResult?: { hasChanges: boolean; branch?: string };
++  /** Isolated Git worktree or Jujutsu workspace. */
++  worktree?: {
++    path: string;
++    branch: string;
++    baseSha: string;
++    workPath: string;
++    kind?: "git" | "jujutsu";
++    workspaceName?: string;
++    snapshotChangeId?: string;
++  };
++  /** Isolated working-copy result after agent completion. */
++  worktreeResult?: {
++    hasChanges: boolean;
++    branch?: string;
++    kind?: "git" | "jujutsu";
++    changeId?: string;
++    changeIds?: string[];
++    baseSha?: string;
++  };
+   /** The tool_use_id from the original Agent tool call. */
+   toolCallId?: string;
+   /** Path to the streaming output transcript file. */
+@@ -184,8 +199,8 @@
+ /**
+  * A subagent spawn registered to fire on a schedule.
+  *
+- * Stored at `<cwd>/.pi/subagent-schedules/<sessionId>.json`. Session-scoped:
+- * survives `/resume` but resets on `/new`, mirroring pi-chonky-tasks.
++ * Stored in the private system temporary root. Session-scoped: survives
++ * `/resume` but resets on `/new`, mirroring pi-chonky-tasks.
+  */
+ export interface ScheduledSubagent {
+   id: string;
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -803,7 +803,7 @@
+ - Parallel work: one message, multiple Agent calls, run_in_background: true on each. You are notified when background agents finish — never poll or sleep.
+ - The result is not shown to the user — summarize it for them. Verify an agent's claimed code changes before reporting work done.
+ - resume continues a previous agent by ID; steer_subagent messages a running one.
+-- isolation: "worktree" runs the agent in an isolated git worktree; changes land on a branch.`;
++- isolation: "worktree" uses a Jujutsu workspace in jj repos or a Git worktree elsewhere; changes return as a change ID or branch.`;
+ 
+   const fullAgentToolDescription = `Launch a new agent to handle complex, multi-step tasks autonomously. Each agent type has specific capabilities and tools available to it.
+ 
+@@ -833,7 +833,7 @@
+ - Use model to specify a different model (as "provider/modelId", or fuzzy e.g. "haiku", "sonnet").
+ - Use thinking to control extended thinking level.
+ - Use inherit_context if the agent needs the parent conversation history.
+-- Use isolation: "worktree" to run the agent in an isolated git worktree (safe parallel file modifications). The worktree is automatically cleaned up if the agent makes no changes; otherwise the path and branch are returned in the result.${scheduleGuideline}
++- Use isolation: "worktree" for safe parallel file modifications. Jujutsu repositories use a temporary jj workspace and return change IDs; Git repositories use a temporary worktree and return a branch. Empty isolated working copies are removed automatically.${scheduleGuideline}
+ 
+ ## Writing the prompt
+ 
+@@ -955,7 +955,7 @@
+       ),
+       isolation: Type.Optional(
+         Type.Literal("worktree", {
+-          description: 'Set to "worktree" to run the agent in a temporary git worktree (isolated copy of the repo). Changes are saved to a branch on completion.',
++          description: 'Set to "worktree" for an isolated working copy: a Jujutsu workspace in jj repos or a Git worktree elsewhere. Changes return as change IDs or a branch.',
+         }),
+       ),
+       ...scheduleParam,
+@@ -2013,7 +2013,7 @@
+ output_transcript: <false to write no transcript file or path for this agent. Independent of persist_session. Default: true>
+ isolated: <true for no extension/MCP tools, only built-in tools. Default: false>
+ memory: <"user" (global), "project" (per-project), or "local" (gitignored per-project) for persistent memory. Omit for none>
+-isolation: <"worktree" to run in isolated git worktree. Omit for normal>
++isolation: <"worktree" for a Jujutsu workspace in jj repos or a Git worktree elsewhere. Omit for normal>
+ ---
+ 
+ <system prompt body — instructions for the agent>
+@@ -2026,7 +2026,7 @@
+ - Use prompt_mode: replace for fully custom agents with their own personality/instructions
+ - Set inherit_context: true if the agent needs to know what was discussed in the parent conversation
+ - Set isolated: true if the agent should NOT have access to MCP servers or other extensions
+-- Set output_transcript: false to skip writing this agent's transcript; this alone doesn't keep the run off disk (persist_session, isolation: worktree commits, and memory still write) — set those too if that's the goal
++- Set output_transcript: false to skip writing this agent's transcript; this alone doesn't keep the run off disk (persist_session, isolated VCS changes, and memory still write) — set those too if that's the goal
+ - Only include frontmatter fields that differ from defaults — omit fields where the default is fine
+ 
+ Write the file using the write tool. Only write the file, nothing else.`;
+--- a/test/agent-manager.test.ts
++++ b/test/agent-manager.test.ts
+@@ -768,6 +768,39 @@
+     expect(cleanupWorktree).toHaveBeenCalledWith("/", expect.anything(), "test");
+   });
+ 
++  it("uses a guarded prompt and returns Jujutsu integration instructions", async () => {
++    const { createWorktree, cleanupWorktree } = await import("../src/worktree.js");
++    vi.mocked(createWorktree).mockReturnValueOnce({
++      path: "/wt/copy",
++      branch: "agentchange",
++      baseSha: "basecommit",
++      workPath: "/wt/copy",
++      kind: "jujutsu",
++      workspaceName: "agent-workspace",
++    });
++    vi.mocked(cleanupWorktree).mockReturnValueOnce({
++      hasChanges: true,
++      branch: "agentchange",
++      kind: "jujutsu",
++      changeId: "agentchange",
++      changeIds: ["agentchange"],
++      baseSha: "basecommit",
++    });
++    vi.mocked(runAgent).mockClear();
++    resolvedRun();
++
++    manager = new AgentManager();
++    const id = manager.spawn(mockPi, mockCtx, "general-purpose", "make the change", {
++      description: "test",
++      isolation: "worktree",
++    });
++    await manager.getRecord(id)!.promise;
++
++    expect(vi.mocked(runAgent).mock.lastCall![2]).toContain("isolated Jujutsu workspace");
++    expect(manager.getRecord(id)!.result).toContain("Jujutsu change(s) `agentchange`");
++    expect(manager.getRecord(id)!.result).toContain("jj squash --from 'basecommit..agentchange' --into @ -m 'Integrate isolated agent changes' && jj abandon basecommit");
++  });
++
+   it("plain worktree (no cwd) keeps the historical root working dir even when workPath differs", async () => {
+     // Parent session sitting in a repo subdirectory: workPath would point at
+     // the copied subdir. Without SpawnOptions.cwd the agent must stay at the
+--- a/examples/agent-tool-description.md
++++ b/examples/agent-tool-description.md
+@@ -26,7 +26,7 @@
+ - Use model to specify a different model (as "provider/modelId", or fuzzy e.g. "haiku", "sonnet").
+ - Use thinking to control extended thinking level.
+ - Use inherit_context if the agent needs the parent conversation history.
+-- Use isolation: "worktree" to run the agent in an isolated git worktree (safe parallel file modifications). The worktree is automatically cleaned up if the agent makes no changes; otherwise the path and branch are returned in the result.{{scheduleGuideline}}
++- Use isolation: "worktree" for safe parallel file modifications. Jujutsu repositories use a temporary jj workspace and return change IDs; Git repositories use a temporary worktree and return a branch. Empty isolated working copies are removed automatically.{{scheduleGuideline}}
+ 
+ ## Writing the prompt
+ 
