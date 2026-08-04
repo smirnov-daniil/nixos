@@ -23,3 +23,7 @@ The `gru` PRIME configuration keeps modesetting alongside NVIDIA and pins Niri's
 The flake packages only SkillOpt-Sleep from the first upstream commit containing Pi transcript and backend support. Existing `remember` and `write_skill` workflows remain the online fact and procedure layers; SkillOpt adds bounded cross-session proposals rather than replacing them.
 
 The Pi adaptation requires the exact Nix-managed source skill on every run and adoption, disables `CLAUDE.md` evolution and automatic adoption even when user configuration requests them, rejects stale memory-bearing or mismatched staging manifests, and creates private ignored state. Its textual held-out gate cannot replace tool-enabled `verify` or `/ship`, so learned changes land in a dedicated non-critical skill and require review, real workflow verification, and a successful Pi/environment rebuild before profile activation.
+
+# Subagent lifecycle status
+
+Subagent results carry explicit `pending`, `running`, `done`, `failed`, and `skipped` states instead of overloading process exit codes. Parallel tasks beyond the concurrency limit remain pending, chain failures skip later steps, cancellation does not launch queued work, and every terminal transition is streamed before completion. Historical session results without an explicit state still render through exit-code inference.

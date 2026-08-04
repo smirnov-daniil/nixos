@@ -98,5 +98,13 @@
           roleFiles}
       '';
     };
+
+    checks.pi-subagent-status =
+      pkgs.runCommand "pi-subagent-status-tests" {
+        nativeBuildInputs = [pkgs.bun];
+      } ''
+        mkdir -p "$out"
+        bun test ${./extensions/subagent} >"$out/test.log"
+      '';
   };
 }

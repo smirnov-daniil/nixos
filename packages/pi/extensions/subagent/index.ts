@@ -29,6 +29,7 @@ import {
 import { Container, Markdown, Spacer, Text } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
 import { type AgentConfig, type AgentScope, discoverAgents } from "./agents.ts";
+import { type AgentRunStatus, getResultStatus, summarizeResultStatuses } from "./status.ts";
 
 const MAX_PARALLEL_TASKS = 8;
 const MAX_CONCURRENCY = 4;
@@ -150,6 +151,7 @@ interface SingleResult {
 	agent: string;
 	agentSource: "user" | "project" | "unknown";
 	task: string;
+	status?: AgentRunStatus;
 	exitCode: number;
 	messages: Message[];
 	stderr: string;
@@ -180,7 +182,25 @@ function getFinalOutput(messages: Message[]): string {
 }
 
 function isFailedResult(result: SingleResult): boolean {
-	return result.exitCode !== 0 || result.stopReason === "error" || result.stopReason === "aborted";
+	return getResultStatus(result) === "failed";
+}
+
+function isAbortedResult(result: SingleResult): boolean {
+	return result.stopReason === "aborted";
+}
+
+function makePendingResult(agent: string, task: string, step?: number): SingleResult {
+	return {
+		agent,
+		agentSource: "unknown",
+		task,
+		status: "pending",
+		exitCode: -1,
+		messages: [],
+		stderr: "",
+		usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, cost: 0, contextTokens: 0, turns: 0 },
+		step,
+	};
 }
 
 function getResultOutput(result: SingleResult): string {
@@ -188,6 +208,16 @@ function getResultOutput(result: SingleResult): string {
 		return result.errorMessage || result.stderr || getFinalOutput(result.messages) || "(no output)";
 	}
 	return getFinalOutput(result.messages) || "(no output)";
+}
+
+function getUpdateText(result: SingleResult): string {
+	const output = getFinalOutput(result.messages);
+	const status = getResultStatus(result);
+	if (output) return output;
+	if (status === "failed") return result.errorMessage || result.stderr.trim() || "(failed; no output)";
+	if (status === "done") return "(done; no output)";
+	if (status === "skipped") return "(skipped)";
+	return status === "pending" ? "(pending)" : "(running...)";
 }
 
 function truncateParallelOutput(output: string): string {
@@ -283,6 +313,7 @@ async function runSingleAgent(
 			agent: agentName,
 			agentSource: "unknown",
 			task,
+			status: "failed",
 			exitCode: 1,
 			messages: [],
 			stderr: `Unknown agent: "${agentName}". Available agents: ${available}.`,
@@ -303,7 +334,8 @@ async function runSingleAgent(
 		agent: agentName,
 		agentSource: agent.source,
 		task,
-		exitCode: 0,
+		status: "running",
+		exitCode: -1,
 		messages: [],
 		stderr: "",
 		usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, cost: 0, contextTokens: 0, turns: 0 },
@@ -314,12 +346,13 @@ async function runSingleAgent(
 	const emitUpdate = () => {
 		if (onUpdate) {
 			onUpdate({
-				content: [{ type: "text", text: getFinalOutput(currentResult.messages) || "(running...)" }],
+				content: [{ type: "text", text: getUpdateText(currentResult) }],
 				details: makeDetails([currentResult]),
 			});
 		}
 	};
 
+	emitUpdate();
 	try {
 		if (agent.systemPrompt.trim()) {
 			const tmp = await writePromptToTempFile(agent.name, agent.systemPrompt);
@@ -330,6 +363,7 @@ async function runSingleAgent(
 
 		args.push(`Task: ${task}`);
 		let wasAborted = false;
+		let abortHandler: (() => void) | undefined;
 
 		const exitCode = await new Promise<number>((resolve) => {
 			const invocation = getPiInvocation(args);
@@ -390,28 +424,42 @@ async function runSingleAgent(
 
 			proc.on("close", (code) => {
 				if (buffer.trim()) processLine(buffer);
+				if (abortHandler) signal?.removeEventListener("abort", abortHandler);
 				resolve(code ?? 0);
 			});
 
-			proc.on("error", () => {
+			proc.on("error", (error) => {
+				currentResult.errorMessage = error.message;
+				if (abortHandler) signal?.removeEventListener("abort", abortHandler);
 				resolve(1);
 			});
 
 			if (signal) {
-				const killProc = () => {
+				abortHandler = () => {
 					wasAborted = true;
 					proc.kill("SIGTERM");
 					setTimeout(() => {
-						if (!proc.killed) proc.kill("SIGKILL");
+						if (proc.exitCode === null && proc.signalCode === null) proc.kill("SIGKILL");
 					}, 5000);
 				};
-				if (signal.aborted) killProc();
-				else signal.addEventListener("abort", killProc, { once: true });
+				if (signal.aborted) abortHandler();
+				else signal.addEventListener("abort", abortHandler, { once: true });
 			}
 		});
 
 		currentResult.exitCode = exitCode;
-		if (wasAborted) throw new Error("Subagent was aborted");
+		if (wasAborted) {
+			currentResult.stopReason = "aborted";
+			currentResult.errorMessage ||= "Subagent was aborted";
+		}
+		currentResult.status =
+			exitCode === 0 &&
+			!wasAborted &&
+			currentResult.stopReason !== "error" &&
+			currentResult.stopReason !== "aborted"
+				? "done"
+				: "failed";
+		emitUpdate();
 		return currentResult;
 	} finally {
 		if (tmpPromptPath)
@@ -529,27 +577,23 @@ export default function (pi: ExtensionAPI) {
 			}
 
 			if (params.chain && params.chain.length > 0) {
-				const results: SingleResult[] = [];
+				const results = params.chain.map((step, index) => makePendingResult(step.agent, step.task, index + 1));
 				let previousOutput = "";
 
+				const emitChainUpdate = (content: AgentToolResult<SubagentDetails>["content"]) => {
+					if (onUpdate) onUpdate({ content, details: makeDetails("chain")([...results]) });
+				};
+
 				for (let i = 0; i < params.chain.length; i++) {
+					if (signal?.aborted) {
+						for (let pending = i; pending < results.length; pending++) results[pending].status = "skipped";
+						emitChainUpdate([{ type: "text", text: `Chain canceled before step ${i + 1}; remaining steps skipped` }]);
+						throw new Error("Subagent chain was aborted");
+					}
 					const step = params.chain[i];
 					const taskWithContext = step.task.replace(/\{previous\}/g, previousOutput);
-
-					// Create update callback that includes all previous results
-					const chainUpdate: OnUpdateCallback | undefined = onUpdate
-						? (partial) => {
-								// Combine completed results with current streaming result
-								const currentResult = partial.details?.results[0];
-								if (currentResult) {
-									const allResults = [...results, currentResult];
-									onUpdate({
-										content: partial.content,
-										details: makeDetails("chain")(allResults),
-									});
-								}
-							}
-						: undefined;
+					results[i] = { ...makePendingResult(step.agent, taskWithContext, i + 1), status: "running" };
+					emitChainUpdate([{ type: "text", text: `Chain step ${i + 1}/${params.chain.length} running` }]);
 
 					const result = await runSingleAgent(
 						ctx.cwd,
@@ -559,13 +603,22 @@ export default function (pi: ExtensionAPI) {
 						step.cwd,
 						i + 1,
 						signal,
-						chainUpdate,
+						(partial) => {
+							const currentResult = partial.details?.results[0];
+							if (currentResult) {
+								results[i] = currentResult;
+								emitChainUpdate(partial.content);
+							}
+						},
 						makeDetails("chain"),
 					);
-					results.push(result);
+					results[i] = result;
+					emitChainUpdate([{ type: "text", text: `Chain step ${i + 1}/${params.chain.length} ${result.status}` }]);
 
-					const isError = isFailedResult(result);
-					if (isError) {
+					if (isFailedResult(result)) {
+						for (let pending = i + 1; pending < results.length; pending++) results[pending].status = "skipped";
+						emitChainUpdate([{ type: "text", text: `Chain stopped at step ${i + 1}; remaining steps skipped` }]);
+						if (isAbortedResult(result)) throw new Error("Subagent chain was aborted");
 						const errorMsg = getResultOutput(result);
 						return {
 							content: [{ type: "text", text: `Chain stopped at step ${i + 1} (${step.agent}): ${errorMsg}` }],
@@ -593,29 +646,21 @@ export default function (pi: ExtensionAPI) {
 						details: makeDetails("parallel")([]),
 					};
 
-				// Track all results for streaming updates
-				const allResults: SingleResult[] = new Array(params.tasks.length);
-
-				// Initialize placeholder results
-				for (let i = 0; i < params.tasks.length; i++) {
-					allResults[i] = {
-						agent: params.tasks[i].agent,
-						agentSource: "unknown",
-						task: params.tasks[i].task,
-						exitCode: -1, // -1 = still running
-						messages: [],
-						stderr: "",
-						usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, cost: 0, contextTokens: 0, turns: 0 },
-					};
-				}
+				const allResults = params.tasks.map((task) => makePendingResult(task.agent, task.task));
 
 				const emitParallelUpdate = () => {
 					if (onUpdate) {
-						const running = allResults.filter((r) => r.exitCode === -1).length;
-						const done = allResults.filter((r) => r.exitCode !== -1).length;
+						const pending = allResults.filter((result) => result.status === "pending").length;
+						const running = allResults.filter((result) => result.status === "running").length;
+						const done = allResults.filter((result) => result.status === "done").length;
+						const failed = allResults.filter((result) => result.status === "failed").length;
+						const skipped = allResults.filter((result) => result.status === "skipped").length;
 						onUpdate({
 							content: [
-								{ type: "text", text: `Parallel: ${done}/${allResults.length} done, ${running} running...` },
+								{
+									type: "text",
+									text: `Parallel: ${done} done, ${failed} failed, ${running} running, ${pending} pending, ${skipped} skipped`,
+								},
 							],
 							details: makeDetails("parallel")([...allResults]),
 						});
@@ -623,6 +668,15 @@ export default function (pi: ExtensionAPI) {
 				};
 
 				const results = await mapWithConcurrencyLimit(params.tasks, MAX_CONCURRENCY, async (t, index) => {
+					if (signal?.aborted) {
+						const skipped = makePendingResult(t.agent, t.task);
+						skipped.status = "skipped";
+						allResults[index] = skipped;
+						emitParallelUpdate();
+						return skipped;
+					}
+					allResults[index] = { ...makePendingResult(t.agent, t.task), status: "running" };
+					emitParallelUpdate();
 					const result = await runSingleAgent(
 						ctx.cwd,
 						agents,
@@ -645,7 +699,8 @@ export default function (pi: ExtensionAPI) {
 					return result;
 				});
 
-				const successCount = results.filter((r) => !isFailedResult(r)).length;
+				if (signal?.aborted || results.some(isAbortedResult)) throw new Error("Parallel subagents were aborted");
+				const successCount = results.filter((r) => getResultStatus(r) === "done").length;
 				const summaries = results.map((r) => {
 					const output = truncateParallelOutput(getResultOutput(r));
 					const status = isFailedResult(r)
@@ -676,6 +731,7 @@ export default function (pi: ExtensionAPI) {
 					onUpdate,
 					makeDetails("single"),
 				);
+				if (isAbortedResult(result)) throw new Error("Subagent was aborted");
 				const isError = isFailedResult(result);
 				if (isError) {
 					const errorMsg = getResultOutput(result);
@@ -751,6 +807,28 @@ export default function (pi: ExtensionAPI) {
 
 			const mdTheme = getMarkdownTheme();
 
+			const statusIcon = (status: AgentRunStatus) => {
+				switch (status) {
+					case "pending":
+						return theme.fg("muted", "○");
+					case "running":
+						return theme.fg("warning", "⏳");
+					case "done":
+						return theme.fg("success", "✓");
+					case "failed":
+						return theme.fg("error", "✗");
+					case "skipped":
+						return theme.fg("muted", "−");
+				}
+			};
+
+			const statusBadge = (status: AgentRunStatus) => {
+				if (status === "done") return theme.fg("success", "[done]");
+				if (status === "failed") return theme.fg("error", "[failed]");
+				if (status === "running") return theme.fg("warning", "[running]");
+				return theme.fg("muted", `[${status}]`);
+			};
+
 			const renderDisplayItems = (items: DisplayItem[], limit?: number) => {
 				const toShow = limit ? items.slice(-limit) : items;
 				const skipped = limit && items.length > limit ? items.length - limit : 0;
@@ -769,15 +847,16 @@ export default function (pi: ExtensionAPI) {
 
 			if (details.mode === "single" && details.results.length === 1) {
 				const r = details.results[0];
+				const runStatus = getResultStatus(r);
 				const isError = isFailedResult(r);
-				const icon = isError ? theme.fg("error", "✗") : theme.fg("success", "✓");
+				const icon = statusIcon(runStatus);
 				const displayItems = getDisplayItems(r.messages);
 				const finalOutput = getFinalOutput(r.messages);
 
 				if (expanded) {
 					const container = new Container();
-					let header = `${icon} ${theme.fg("toolTitle", theme.bold(r.agent))}${theme.fg("muted", ` (${r.agentSource})`)}`;
-					if (isError && r.stopReason) header += ` ${theme.fg("error", `[${r.stopReason}]`)}`;
+					let header = `${icon} ${theme.fg("toolTitle", theme.bold(r.agent))}${theme.fg("muted", ` (${r.agentSource})`)} ${statusBadge(runStatus)}`;
+					if (isError && r.stopReason && r.stopReason !== "error") header += ` ${theme.fg("error", `[${r.stopReason}]`)}`;
 					container.addChild(new Text(header, 0, 0));
 					if (isError && r.errorMessage)
 						container.addChild(new Text(theme.fg("error", `Error: ${r.errorMessage}`), 0, 0));
@@ -787,7 +866,8 @@ export default function (pi: ExtensionAPI) {
 					container.addChild(new Spacer(1));
 					container.addChild(new Text(theme.fg("muted", "─── Output ───"), 0, 0));
 					if (displayItems.length === 0 && !finalOutput) {
-						container.addChild(new Text(theme.fg("muted", "(no output)"), 0, 0));
+						const color = isError ? "error" : "muted";
+						container.addChild(new Text(theme.fg(color, getUpdateText(r)), 0, 0));
 					} else {
 						for (const item of displayItems) {
 							if (item.type === "toolCall")
@@ -812,10 +892,12 @@ export default function (pi: ExtensionAPI) {
 					return container;
 				}
 
-				let text = `${icon} ${theme.fg("toolTitle", theme.bold(r.agent))}${theme.fg("muted", ` (${r.agentSource})`)}`;
-				if (isError && r.stopReason) text += ` ${theme.fg("error", `[${r.stopReason}]`)}`;
+				let text = `${icon} ${theme.fg("toolTitle", theme.bold(r.agent))}${theme.fg("muted", ` (${r.agentSource})`)} ${statusBadge(runStatus)}`;
+				if (isError && r.stopReason && r.stopReason !== "error") text += ` ${theme.fg("error", `[${r.stopReason}]`)}`;
 				if (isError && r.errorMessage) text += `\n${theme.fg("error", `Error: ${r.errorMessage}`)}`;
-				else if (displayItems.length === 0) text += `\n${theme.fg("muted", "(no output)")}`;
+				else if (displayItems.length === 0) {
+					text += `\n${theme.fg(isError ? "error" : "muted", getUpdateText(r))}`;
+				}
 				else {
 					text += `\n${renderDisplayItems(displayItems, COLLAPSED_ITEM_COUNT)}`;
 					if (displayItems.length > COLLAPSED_ITEM_COUNT) text += `\n${theme.fg("muted", "(Ctrl+O to expand)")}`;
@@ -839,8 +921,13 @@ export default function (pi: ExtensionAPI) {
 			};
 
 			if (details.mode === "chain") {
-				const successCount = details.results.filter((r) => r.exitCode === 0).length;
-				const icon = successCount === details.results.length ? theme.fg("success", "✓") : theme.fg("error", "✗");
+				const active = details.results.some((result) => {
+					const status = getResultStatus(result);
+					return status === "pending" || status === "running";
+				});
+				const failed = details.results.some((result) => getResultStatus(result) === "failed");
+				const icon = active ? theme.fg("warning", "⏳") : failed ? theme.fg("error", "✗") : theme.fg("success", "✓");
+				const summary = summarizeResultStatuses(details.results);
 
 				if (expanded) {
 					const container = new Container();
@@ -849,21 +936,22 @@ export default function (pi: ExtensionAPI) {
 							icon +
 								" " +
 								theme.fg("toolTitle", theme.bold("chain ")) +
-								theme.fg("accent", `${successCount}/${details.results.length} steps`),
+								theme.fg("accent", summary),
 							0,
 							0,
 						),
 					);
 
 					for (const r of details.results) {
-						const rIcon = r.exitCode === 0 ? theme.fg("success", "✓") : theme.fg("error", "✗");
+						const runStatus = getResultStatus(r);
+						const rIcon = statusIcon(runStatus);
 						const displayItems = getDisplayItems(r.messages);
 						const finalOutput = getFinalOutput(r.messages);
 
 						container.addChild(new Spacer(1));
 						container.addChild(
 							new Text(
-								`${theme.fg("muted", `─── Step ${r.step}: `) + theme.fg("accent", r.agent)} ${rIcon}`,
+								`${theme.fg("muted", `─── Step ${r.step}: `) + theme.fg("accent", r.agent)} ${rIcon} ${statusBadge(runStatus)}`,
 								0,
 								0,
 							),
@@ -887,6 +975,10 @@ export default function (pi: ExtensionAPI) {
 						if (finalOutput) {
 							container.addChild(new Spacer(1));
 							container.addChild(new Markdown(finalOutput.trim(), 0, 0, mdTheme));
+						} else if (displayItems.length === 0 || runStatus === "failed" || runStatus === "skipped") {
+							container.addChild(
+								new Text(theme.fg(runStatus === "failed" ? "error" : "muted", getUpdateText(r)), 0, 0),
+							);
 						}
 
 						const stepUsage = formatUsageStats(r.usage, r.model);
@@ -906,13 +998,15 @@ export default function (pi: ExtensionAPI) {
 					icon +
 					" " +
 					theme.fg("toolTitle", theme.bold("chain ")) +
-					theme.fg("accent", `${successCount}/${details.results.length} steps`);
+					theme.fg("accent", summary);
 				for (const r of details.results) {
-					const rIcon = r.exitCode === 0 ? theme.fg("success", "✓") : theme.fg("error", "✗");
+					const runStatus = getResultStatus(r);
+					const rIcon = statusIcon(runStatus);
 					const displayItems = getDisplayItems(r.messages);
-					text += `\n\n${theme.fg("muted", `─── Step ${r.step}: `)}${theme.fg("accent", r.agent)} ${rIcon}`;
-					if (displayItems.length === 0) text += `\n${theme.fg("muted", "(no output)")}`;
-					else text += `\n${renderDisplayItems(displayItems, 5)}`;
+					text += `\n\n${theme.fg("muted", `─── Step ${r.step}: `)}${theme.fg("accent", r.agent)} ${rIcon} ${statusBadge(runStatus)}`;
+					if (displayItems.length === 0) {
+						text += `\n${theme.fg(runStatus === "failed" ? "error" : "muted", getUpdateText(r))}`;
+					} else text += `\n${renderDisplayItems(displayItems, 5)}`;
 				}
 				const usageStr = formatUsageStats(aggregateUsage(details.results));
 				if (usageStr) text += `\n\n${theme.fg("dim", `Total: ${usageStr}`)}`;
@@ -921,20 +1015,15 @@ export default function (pi: ExtensionAPI) {
 			}
 
 			if (details.mode === "parallel") {
-				const running = details.results.filter((r) => r.exitCode === -1).length;
-				const successCount = details.results.filter((r) => r.exitCode !== -1 && !isFailedResult(r)).length;
-				const failCount = details.results.filter((r) => r.exitCode !== -1 && isFailedResult(r)).length;
-				const isRunning = running > 0;
-				const icon = isRunning
-					? theme.fg("warning", "⏳")
-					: failCount > 0
-						? theme.fg("warning", "◐")
-						: theme.fg("success", "✓");
-				const status = isRunning
-					? `${successCount + failCount}/${details.results.length} done, ${running} running`
-					: `${successCount}/${details.results.length} tasks`;
+				const active = details.results.some((result) => {
+					const status = getResultStatus(result);
+					return status === "pending" || status === "running";
+				});
+				const failed = details.results.some((result) => getResultStatus(result) === "failed");
+				const icon = active ? theme.fg("warning", "⏳") : failed ? theme.fg("error", "✗") : theme.fg("success", "✓");
+				const status = summarizeResultStatuses(details.results);
 
-				if (expanded && !isRunning) {
+				if (expanded && !active) {
 					const container = new Container();
 					container.addChild(
 						new Text(
@@ -945,13 +1034,18 @@ export default function (pi: ExtensionAPI) {
 					);
 
 					for (const r of details.results) {
-						const rIcon = isFailedResult(r) ? theme.fg("error", "✗") : theme.fg("success", "✓");
+						const runStatus = getResultStatus(r);
+						const rIcon = statusIcon(runStatus);
 						const displayItems = getDisplayItems(r.messages);
 						const finalOutput = getFinalOutput(r.messages);
 
 						container.addChild(new Spacer(1));
 						container.addChild(
-							new Text(`${theme.fg("muted", "─── ") + theme.fg("accent", r.agent)} ${rIcon}`, 0, 0),
+							new Text(
+								`${theme.fg("muted", "─── ") + theme.fg("accent", r.agent)} ${rIcon} ${statusBadge(runStatus)}`,
+								0,
+								0,
+							),
 						);
 						container.addChild(new Text(theme.fg("muted", "Task: ") + theme.fg("dim", r.task), 0, 0));
 
@@ -972,6 +1066,10 @@ export default function (pi: ExtensionAPI) {
 						if (finalOutput) {
 							container.addChild(new Spacer(1));
 							container.addChild(new Markdown(finalOutput.trim(), 0, 0, mdTheme));
+						} else if (displayItems.length === 0 || runStatus === "failed" || runStatus === "skipped") {
+							container.addChild(
+								new Text(theme.fg(runStatus === "failed" ? "error" : "muted", getUpdateText(r)), 0, 0),
+							);
 						}
 
 						const taskUsage = formatUsageStats(r.usage, r.model);
@@ -989,19 +1087,15 @@ export default function (pi: ExtensionAPI) {
 				// Collapsed view (or still running)
 				let text = `${icon} ${theme.fg("toolTitle", theme.bold("parallel "))}${theme.fg("accent", status)}`;
 				for (const r of details.results) {
-					const rIcon =
-						r.exitCode === -1
-							? theme.fg("warning", "⏳")
-							: isFailedResult(r)
-								? theme.fg("error", "✗")
-								: theme.fg("success", "✓");
+					const runStatus = getResultStatus(r);
+					const rIcon = statusIcon(runStatus);
 					const displayItems = getDisplayItems(r.messages);
-					text += `\n\n${theme.fg("muted", "─── ")}${theme.fg("accent", r.agent)} ${rIcon}`;
-					if (displayItems.length === 0)
-						text += `\n${theme.fg("muted", r.exitCode === -1 ? "(running...)" : "(no output)")}`;
-					else text += `\n${renderDisplayItems(displayItems, 5)}`;
+					text += `\n\n${theme.fg("muted", "─── ")}${theme.fg("accent", r.agent)} ${rIcon} ${statusBadge(runStatus)}`;
+					if (displayItems.length === 0) {
+						text += `\n${theme.fg(runStatus === "failed" ? "error" : "muted", getUpdateText(r))}`;
+					} else text += `\n${renderDisplayItems(displayItems, 5)}`;
 				}
-				if (!isRunning) {
+				if (!active) {
 					const usageStr = formatUsageStats(aggregateUsage(details.results));
 					if (usageStr) text += `\n\n${theme.fg("dim", `Total: ${usageStr}`)}`;
 				}
