@@ -1,41 +1,44 @@
-{...}: {
-  flake.nixosModules.sanctum-jellyseerr = {
+{self, ...}: {
+  flake.nixosModules.sanctum-sonarr = {
     config,
     lib,
     ...
   }: let
-    service = "jellyseerr";
+    service = "sonarr";
     cfg = config.sanctum."${service}";
     sanctum = config.sanctum;
   in {
+    imports = [self.nixosModules.sanctum-core];
+
     options.sanctum."${service}" = {
       enable = lib.mkEnableOption {
         description = "Enable ${service}";
       };
-      port = lib.mkOption {
-        type = lib.types.port;
-        default = 5055;
-      };
     };
 
     config = lib.mkIf cfg.enable {
+      users.groups.media = {};
+
       sanctum.services."${service}" = {
         enable = true;
         domain = "${service}.${sanctum.domain}";
-        port = cfg.port;
-        description = "Media request manager";
+        port = 8989;
+        description = "TV show manager";
         homepage = {
           enable = true;
           category = "Media";
           name = "${service}";
           icon = "${service}.svg";
-          description = "Media request and discovery manager";
+          description = "TV show collection manager";
         };
       };
 
       services."${service}" = {
         enable = true;
-        port = cfg.port;
+        dataDir = "/srv/${service}";
+        openFirewall = false;
+        user = "${service}";
+        group = "media";
       };
     };
   };

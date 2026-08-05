@@ -40,6 +40,7 @@
       inputs.nix-minecraft.nixosModules.minecraft-servers
       inputs.sops-nix.nixosModules.default
       self.nixosModules.base
+      self.nixosModules.deploy-rs-server
       # self.nixosModules.general
       self.nixosModules.intel
       self.nixosModules.net
@@ -71,6 +72,13 @@
       hostname = "tai-lung";
       user.name = "server";
     };
+    features.deploy-rs.server = {
+      enable = true;
+      user = config.preferences.user.name;
+      authorizedKeys = [
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICYiSyVSoFTBjqwodwPM+2Qgcmr9kLmdNVTnljag3Q0t dsmirnov.ds2+github@yandex.com"
+      ];
+    };
     users.users.${config.preferences.user.name} = {
       isNormalUser = true;
       description = "${config.preferences.user.name}'s account";
@@ -78,7 +86,6 @@
       # hashedPasswordFile = "/persist/passwd";
       # initialPassword = "12345";
     };
-
 
     boot.loader = {
       systemd-boot.enable = true;
@@ -88,6 +95,7 @@
     environment = {
       sessionVariables.EDITOR = "hx";
       systemPackages = with pkgs; [
+        ghostty.terminfo
         git
         jujutsu
         jjui
@@ -116,7 +124,6 @@
         };
       };
     };
-
 
     networking = {
       networkmanager.enable = true;

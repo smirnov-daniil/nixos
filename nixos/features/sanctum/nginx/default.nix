@@ -1,4 +1,4 @@
-{...}: {
+{self, ...}: {
   flake.nixosModules.sanctum-nginx = {
     config,
     pkgs,
@@ -47,6 +47,8 @@
 
       allVirtualHosts = mainVirtualHost // serviceVirtualHosts;
     in {
+      imports = [self.nixosModules.sanctum-core];
+
       options.sanctum.nginx = {
         enable = mkEnableOption "nginx web server";
 

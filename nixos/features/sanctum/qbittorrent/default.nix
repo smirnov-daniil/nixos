@@ -1,4 +1,4 @@
-{...}: {
+{self, ...}: {
   flake.nixosModules.sanctum-qbittorrent = {
     config,
     lib,
@@ -9,6 +9,8 @@
     cfg = config.sanctum."${service}";
     sanctum = config.sanctum;
   in {
+    imports = [self.nixosModules.sanctum-core];
+
     options.sanctum."${service}" = {
       enable = lib.mkEnableOption {
         description = "Enable ${service}";
@@ -20,6 +22,8 @@
     };
 
     config = lib.mkIf cfg.enable {
+      users.groups.media = {};
+
       sanctum.services."${service}" = {
         enable = true;
         domain = "${service}.${sanctum.domain}";

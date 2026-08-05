@@ -20,5 +20,6 @@
       networkmanager.enable = true;
     };
     preferences.hostname = "aku";
+    features.vm.adminUser = config.preferences.user.name;
   };
 }

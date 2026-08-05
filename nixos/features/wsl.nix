@@ -1,10 +1,17 @@
-{inputs, ...}: {
+{
+  inputs,
+  self,
+  ...
+}: {
   flake.nixosModules.wsl = {
     pkgs,
     config,
     ...
   }: {
-    imports = [inputs.nixos-wsl.nixosModules.default];
+    imports = [
+      self.nixosModules.preferences
+      inputs.nixos-wsl.nixosModules.default
+    ];
     wsl = {
       enable = true;
       interop.register = true;

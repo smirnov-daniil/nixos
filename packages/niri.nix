@@ -10,7 +10,7 @@
     ...
   }: let
     selfpkgs = self.packages.${config.pkgs.stdenv.hostPlatform.system};
-    quickshellExe = lib.getExe selfpkgs.quickshellWrapped;
+    quickshellExe = lib.getExe config.quickshell;
     # Media keys must not depend on session PATH — bare `wpctl` silently
     # fails when wireplumber's bin isn't in systemPackages.
     wpctl = "${config.pkgs.wireplumber}/bin/wpctl";
@@ -39,6 +39,10 @@
       type = lib.types.str;
       default = "ghostty";
     };
+    options.quickshell = lib.mkOption {
+      type = lib.types.package;
+      default = selfpkgs.quickshellWrapped;
+    };
     options.autostart = lib.mkOption {
       type = lib.types.listOf (lib.types.either lib.types.str lib.types.package);
       default = [];
@@ -50,7 +54,7 @@
     };
     config = {
       # The quickshell bar/launcher/notifications are part of the desktop.
-      autostart = [selfpkgs.quickshellWrapped clipboardWatcher];
+      autostart = [config.quickshell clipboardWatcher];
 
       settings = {
         prefer-no-csd = {};

@@ -125,29 +125,44 @@
   flake.nixosModules.browsec = {
     pkgs,
     config,
+    lib,
     ...
   }: let
-    browsec = self.packages.${pkgs.stdenv.hostPlatform.system}.browsec;
+    cfg = config.programs.browsec;
+    browsec = cfg.package;
     browbox = "${browsec}/share/browsec/resources/xray/browbox";
   in {
-    environment.systemPackages = [browsec];
+    options.programs.browsec = {
+      package = lib.mkOption {
+        type = lib.types.package;
+        default = self.packages.${pkgs.stdenv.hostPlatform.system}.browsec;
+      };
+      users = lib.mkOption {
+        type = lib.types.listOf lib.types.str;
+        default = [];
+      };
+    };
 
-    security.sudo.extraRules = [
-      {
-        users = [config.preferences.user.name];
-        commands = [
-          {
-            command = browbox;
-            options = ["NOPASSWD"];
-          }
-          {
-            # The app invokes the pkill it detects on PATH, so the rule must
-            # name that exact path, not a store path.
-            command = "/run/current-system/sw/bin/pkill -2 -U 0 browbox";
-            options = ["NOPASSWD"];
-          }
-        ];
-      }
-    ];
+    config = {
+      environment.systemPackages = [browsec];
+
+      security.sudo.extraRules = [
+        {
+          users = cfg.users;
+          commands = [
+            {
+              command = browbox;
+              options = ["NOPASSWD"];
+            }
+            {
+              # The app invokes the pkill it detects on PATH, so the rule must
+              # name that exact path, not a store path.
+              command = "/run/current-system/sw/bin/pkill -2 -U 0 browbox";
+              options = ["NOPASSWD"];
+            }
+          ];
+        }
+      ];
+    };
   };
 }

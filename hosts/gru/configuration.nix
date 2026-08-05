@@ -15,6 +15,7 @@
       self.nixosModules.intel
       self.nixosModules.desktop
       self.nixosModules.browsec
+      self.nixosModules.deploy-rs-initiator
       inputs.sops-nix.nixosModules.default
     ];
     system.stateVersion = "25.11";
@@ -22,6 +23,8 @@
       hostname = "gru";
       niri.renderDrmDevice = "/dev/dri/by-path/pci-0000:00:02.0-render";
     };
+    programs.browsec.users = [config.preferences.user.name];
+    features.deploy-rs.initiator.enable = true;
     sops = {
       defaultSopsFile = ./secrets/secrets.yaml;
       defaultSopsFormat = "yaml";

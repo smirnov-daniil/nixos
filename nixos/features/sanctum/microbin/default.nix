@@ -1,4 +1,8 @@
-{...}: {
+{
+  self,
+  inputs,
+  ...
+}: {
   flake.nixosModules.sanctum-microbin = {
     config,
     pkgs,
@@ -21,6 +25,11 @@
       cfg = config.sanctum."${service}";
       sanctum = config.sanctum;
     in {
+      imports = [
+        self.nixosModules.sanctum-core
+        inputs.sops-nix.nixosModules.default
+      ];
+
       options.sanctum."${service}" = {
         enable = mkEnableOption {
           description = "Enable ${service}";

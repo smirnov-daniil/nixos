@@ -4,6 +4,8 @@
     config,
     ...
   }: {
+    imports = [self.nixosModules.preferences];
+
     networking = {
       networkmanager = {
         plugins = with pkgs; [networkmanager-l2tp];

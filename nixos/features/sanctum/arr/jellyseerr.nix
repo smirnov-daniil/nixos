@@ -1,16 +1,22 @@
-{...}: {
-  flake.nixosModules.sanctum-bazarr = {
+{self, ...}: {
+  flake.nixosModules.sanctum-jellyseerr = {
     config,
     lib,
     ...
   }: let
-    service = "bazarr";
+    service = "jellyseerr";
     cfg = config.sanctum."${service}";
     sanctum = config.sanctum;
   in {
+    imports = [self.nixosModules.sanctum-core];
+
     options.sanctum."${service}" = {
       enable = lib.mkEnableOption {
         description = "Enable ${service}";
+      };
+      port = lib.mkOption {
+        type = lib.types.port;
+        default = 5055;
       };
     };
 
@@ -18,22 +24,20 @@
       sanctum.services."${service}" = {
         enable = true;
         domain = "${service}.${sanctum.domain}";
-        port = config.services."${service}".listenPort;
-        description = "Subtitle manager";
+        port = cfg.port;
+        description = "Media request manager";
         homepage = {
           enable = true;
           category = "Media";
           name = "${service}";
           icon = "${service}.svg";
-          description = "Subtitle manager";
+          description = "Media request and discovery manager";
         };
       };
 
-      services."${service}" = {
+      services.seerr = {
         enable = true;
-        user = "${service}";
-        group = "media";
-        dataDir = "/srv/${service}";
+        port = cfg.port;
       };
     };
   };

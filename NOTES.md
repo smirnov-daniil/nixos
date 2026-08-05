@@ -41,3 +41,13 @@ Sanctum is a shared opt-in NixOS feature under `nixos/features/sanctum/`. Its ac
 The `nix-minecraft` input is retained because Tai Lung consumes it, while master's existing `sops-nix` input is reused. The SSH source rule uses nftables and limits access to the intended `/32` address. The previously unimported, internally inconsistent Telegram module stays absent rather than becoming a new public module accidentally.
 
 ARR state paths are asserted against the pre-refactor `/srv` layout so a future module change cannot silently start services with fresh configuration directories. Lidarr and qBittorrent explicitly require their state paths before systemd starts them; the other enabled services already receive equivalent mount requirements from their NixOS modules. The encrypted Tai Lung SOPS file and creation rules are byte-identical to the pre-dendritic revision, the age key remains `/home/server/.config/sops/age/keys.txt`, and evaluation asserts that the Croc, Microbin, and Vaultwarden secret declarations remain present.
+
+Tai Lung installs only Ghostty's standalone terminfo output, not the terminal application. SSH propagates the client's `TERM=xterm-ghostty`, so remote terminal-aware commands need that database entry even though this server has no graphical environment.
+
+# Independent NixOS module boundaries
+
+Preferences now form a foundational leaf, feature leaves import their own prerequisites, and `base`, `general`, `desktop`, and `sanctum` remain compatibility aggregates. Desktop, user-environment, browser, and Browsec packages expose override options while preserving their prior defaults; Sanctum leaves import only the shared core and only secret-using leaves import SOPS.
+
+# deploy-rs roles
+
+Deploy-rs is split into independent server and initiator NixOS features. The target role adds no deploy client package and grants no passwordless sudo by default; Tai Lung uses its existing `server` account with interactive sudo. Gru installs the pinned deploy-rs client and can activate Tai Lung through the flake deployment profile with deploy-rs rollback protection.

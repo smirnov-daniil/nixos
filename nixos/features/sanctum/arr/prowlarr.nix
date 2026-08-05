@@ -1,13 +1,15 @@
-{...}: {
-  flake.nixosModules.sanctum-radarr = {
+{self, ...}: {
+  flake.nixosModules.sanctum-prowlarr = {
     config,
     lib,
     ...
   }: let
-    service = "radarr";
+    service = "prowlarr";
     cfg = config.sanctum."${service}";
     sanctum = config.sanctum;
   in {
+    imports = [self.nixosModules.sanctum-core];
+
     options.sanctum."${service}" = {
       enable = lib.mkEnableOption {
         description = "Enable ${service}";
@@ -18,14 +20,14 @@
       sanctum.services."${service}" = {
         enable = true;
         domain = "${service}.${sanctum.domain}";
-        port = 7878;
-        description = "Movie collection manager";
+        port = 9696;
+        description = "Indexer manager";
         homepage = {
           enable = true;
           category = "Media";
           name = "${service}";
           icon = "${service}.svg";
-          description = "Movie collection manager";
+          description = "PVR indexer manager";
         };
       };
 
@@ -33,8 +35,6 @@
         enable = true;
         dataDir = "/srv/${service}";
         openFirewall = false;
-        user = "${service}";
-        group = "media";
       };
     };
   };

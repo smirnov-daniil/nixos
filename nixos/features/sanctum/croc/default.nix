@@ -1,4 +1,8 @@
-{...}: {
+{
+  self,
+  inputs,
+  ...
+}: {
   flake.nixosModules.sanctum-croc = {
     config,
     pkgs,
@@ -9,6 +13,11 @@
       cfg = config.sanctum.croc;
       sanctumCfg = config.sanctum;
     in {
+      imports = [
+        self.nixosModules.sanctum-core
+        inputs.sops-nix.nixosModules.default
+      ];
+
       options.sanctum.croc = {
         enable = mkEnableOption "Croc file transfer";
         port = mkOption {

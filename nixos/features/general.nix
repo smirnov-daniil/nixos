@@ -1,39 +1,11 @@
 {self, ...}: {
   flake.nixosModules.general = {
-    pkgs,
-    config,
-    ...
-  }: {
     imports = [
+      self.nixosModules.user-environment
       self.nixosModules.nix
       self.nixosModules.net
     ];
 
-    users.users.${config.preferences.user.name} = {
-      isNormalUser = true;
-      description = "${config.preferences.user.name}'s account";
-      extraGroups = ["wheel" "networkmanager"];
-      shell = self.packages.${pkgs.stdenv.hostPlatform.system}.environment;
-
-      # hashedPasswordFile = "/persist/passwd";
-      # initialPassword = "12345";
-    };
-
-    programs.nh = {
-      enable = true;
-      package = self.packages.${pkgs.stdenv.hostPlatform.system}.nh;
-      clean = {
-        enable = true;
-        extraArgs = "--keep 5 --keep-since 7d";
-      };
-    };
-    environment.variables = {
-      "GIT_AUTHOR_NAME" = "${config.preferences.user.fullname}";
-      "GIT_AUTHOR_EMAIL" = "${config.preferences.user.email}";
-      "GIT_COMMITTER_NAME" = "${config.preferences.user.fullname}";
-      "GIT_COMMITTER_EMAIL" = "${config.preferences.user.email}";
-      "JJ_USER" = "${config.preferences.user.fullname}";
-      "JJ_EMAIL" = "${config.preferences.user.email}";
-    };
+    user-environment.extraGroups = ["wheel" "networkmanager"];
   };
 }

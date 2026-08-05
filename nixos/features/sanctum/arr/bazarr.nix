@@ -1,13 +1,15 @@
-{...}: {
-  flake.nixosModules.sanctum-lidarr = {
+{self, ...}: {
+  flake.nixosModules.sanctum-bazarr = {
     config,
     lib,
     ...
   }: let
-    service = "lidarr";
+    service = "bazarr";
     cfg = config.sanctum."${service}";
     sanctum = config.sanctum;
   in {
+    imports = [self.nixosModules.sanctum-core];
+
     options.sanctum."${service}" = {
       enable = lib.mkEnableOption {
         description = "Enable ${service}";
@@ -15,17 +17,19 @@
     };
 
     config = lib.mkIf cfg.enable {
+      users.groups.media = {};
+
       sanctum.services."${service}" = {
         enable = true;
         domain = "${service}.${sanctum.domain}";
-        port = 8686;
-        description = "Music collection manager";
+        port = config.services."${service}".listenPort;
+        description = "Subtitle manager";
         homepage = {
           enable = true;
           category = "Media";
           name = "${service}";
           icon = "${service}.svg";
-          description = "Music collection manager";
+          description = "Subtitle manager";
         };
       };
 

@@ -1,4 +1,4 @@
-{...}: {
+{self, ...}: {
   flake.nixosModules.sanctum-homepage = {
     config,
     lib,
@@ -49,6 +49,8 @@
     in
       lib.attrsets.attrValues homepageServices;
   in {
+    imports = [self.nixosModules.sanctum-core];
+
     options.sanctum."${service}" = {
       enable = lib.mkEnableOption {
         description = "Enable ${service} dashboard";

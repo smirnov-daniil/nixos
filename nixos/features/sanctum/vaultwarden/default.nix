@@ -1,4 +1,8 @@
-{...}: {
+{
+  self,
+  inputs,
+  ...
+}: {
   flake.nixosModules.sanctum-vaultwarden = {
     config,
     pkgs,
@@ -9,6 +13,11 @@
       cfg = config.sanctum.vaultwarden;
       sanctumCfg = config.sanctum;
     in {
+      imports = [
+        self.nixosModules.sanctum-core
+        inputs.sops-nix.nixosModules.default
+      ];
+
       options.sanctum.vaultwarden = {
         enable = mkEnableOption "Vaultwarden password manager";
         port = mkOption {
