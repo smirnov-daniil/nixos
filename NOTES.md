@@ -31,3 +31,13 @@ The blocking vendored subagent executor is replaced by pinned `@tintinweb/pi-sub
 Managed roles return research, plans, reviews, and other handoffs in their final response. The `/ship` pipeline passes those responses in memory instead of creating `scratchpad/` files. Roles that edit code or tests may still modify their assigned product files, and Graphify retains its explicit absolute chunk-output exception.
 
 A local adapter preserves provider-portable complexity routing for managed and built-in roles. The packaged upstream source removes its Anthropic-specific default and wizard presets. `isolation: "worktree"` selects the repository-native backend: a temporary Jujutsu workspace for `.jj/` repositories or a Git worktree otherwise. Jujutsu results survive workspace cleanup as change IDs and include a `jj squash --from '<snapshot>..<agent-change>' --into @ -m 'Integrate isolated agent changes' && jj abandon <snapshot>` integration command; empty workspace commits are abandoned.
+
+# Dendritic tai-lung and Sanctum migration
+
+Tai Lung and Sanctum follow master's flake-parts/import-tree architecture. The host uses the standard `default.nix`, `configuration.nix`, and `hardware.nix` layout; machine-specific settings remain in its configuration rather than creating a second feature hierarchy under the host.
+
+Sanctum is a shared opt-in NixOS feature under `nixos/features/sanctum/`. Its active service files contribute named `flake.nixosModules` outputs and the aggregate `sanctum` module composes them through `self`. Tai Lung imports that feature alongside master's `base`, `general`, `intel`, and `pipewire` features.
+
+The `nix-minecraft` input is retained because Tai Lung consumes it, while master's existing `sops-nix` input is reused. The SSH source rule uses nftables and limits access to the intended `/32` address. The previously unimported, internally inconsistent Telegram module stays absent rather than becoming a new public module accidentally.
+
+ARR state paths are asserted against the pre-refactor `/srv` layout so a future module change cannot silently start services with fresh configuration directories. Lidarr and qBittorrent explicitly require their state paths before systemd starts them; the other enabled services already receive equivalent mount requirements from their NixOS modules. The encrypted Tai Lung SOPS file and creation rules are byte-identical to the pre-dendritic revision, the age key remains `/home/server/.config/sops/age/keys.txt`, and evaluation asserts that the Croc, Microbin, and Vaultwarden secret declarations remain present.
