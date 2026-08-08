@@ -40,9 +40,10 @@
       inputs.nix-minecraft.nixosModules.minecraft-servers
       inputs.sops-nix.nixosModules.default
       self.nixosModules.base
-      self.nixosModules.general
+      # self.nixosModules.general
       self.nixosModules.intel
-      self.nixosModules.pipewire
+      self.nixosModules.net
+      self.nixosModules.nix
       self.nixosModules.sanctum
     ];
 
@@ -58,6 +59,7 @@
             "croc"
             "microbin"
             "vaultwarden"
+            "xray"
           ];
           message = "Tai Lung Sanctum secrets are not fully declared";
         }
@@ -69,6 +71,14 @@
       hostname = "tai-lung";
       user.name = "server";
     };
+    users.users.${config.preferences.user.name} = {
+      isNormalUser = true;
+      description = "${config.preferences.user.name}'s account";
+      extraGroups = ["wheel" "networkmanager"];
+      # hashedPasswordFile = "/persist/passwd";
+      # initialPassword = "12345";
+    };
+
 
     boot.loader = {
       systemd-boot.enable = true;
@@ -79,6 +89,8 @@
       sessionVariables.EDITOR = "hx";
       systemPackages = with pkgs; [
         git
+        jujutsu
+        jjui
         helix
       ];
     };
@@ -105,17 +117,14 @@
       };
     };
 
+
     networking = {
       networkmanager.enable = true;
       wireless.iwd.enable = true;
       firewall = {
         enable = true;
-        allowedTCPPorts = [1234 25565];
+        allowedTCPPorts = [22 1234 25565];
         allowedUDPPorts = [500 4500 1701];
-        extraInputRules = ''
-          ip saddr 192.168.31.6/32 tcp dport 22 accept
-          ip saddr 192.168.31.6/32 udp dport 22 accept
-        '';
       };
       interfaces = {
         enp3s0.useDHCP = true;
@@ -131,9 +140,22 @@
       age.keyFile = "/home/${config.preferences.user.name}/.config/sops/age/keys.txt";
     };
 
+    sops.secrets.xray = {};
+
     services = {
       blueman.enable = true;
-      openssh.enable = true;
+      openssh = {
+        enable = true;
+        settings = {
+          PasswordAuthentication = false;
+          KbdInteractiveAuthentication = false;
+        };
+      };
+      flaresolverr.enable = true;
+      xray = {
+        enable = true;
+        settingsFile = config.sops.secrets.xray.path;
+      };
       openvpn.servers.somevpn = {
         config = "config /root/nixos/openvpn/be.ovpn";
         autoStart = false;
@@ -250,7 +272,7 @@
       };
       microbin.enable = true;
       bazarr.enable = true;
-      jellyseerr.enable = false;
+      jellyseerr.enable = true;
       lidarr.enable = true;
       prowlarr.enable = true;
       radarr.enable = true;
