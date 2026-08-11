@@ -3,7 +3,7 @@
   self,
   ...
 }: {
-  flake.nixosModules.lich = {
+  flake.nixosModules.lich-configuration = {
     pkgs,
     lib,
     ...

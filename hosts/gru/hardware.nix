@@ -1,5 +1,5 @@
 {
-  flake.nixosModules.gru = {
+  flake.nixosModules.gru-hardware = {
     config,
     lib,
     pkgs,

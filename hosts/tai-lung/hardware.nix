@@ -2,7 +2,7 @@
 # and may be overwritten by future invocations.  Please make changes
 # to /etc/nixos/configuration.nix instead.
 {...}: {
-  flake.nixosModules.tai-lung = {
+  flake.nixosModules.tai-lung-hardware = {
     config,
     lib,
     pkgs,

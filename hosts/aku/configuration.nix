@@ -3,7 +3,7 @@
   self,
   ...
 }: {
-  flake.nixosModules.aku = {
+  flake.nixosModules.aku-configuration = {
     pkgs,
     lib,
     config,

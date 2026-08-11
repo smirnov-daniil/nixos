@@ -3,7 +3,7 @@
   inputs,
   ...
 }: {
-  flake.nixosModules.gru = {
+  flake.nixosModules.gru-configuration = {
     pkgs,
     config,
     lib,

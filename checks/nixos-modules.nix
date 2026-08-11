@@ -24,8 +24,8 @@
       builtins.seq (evaluate module).config.system.build.toplevel.drvPath (
         pkgs.runCommand "nixos-module-${name}" {} "touch $out"
       );
-    hostEvaluationCheck = name:
-      builtins.seq self.nixosConfigurations.${name}.config.system.build.toplevel.drvPath (
+    hostEvaluationCheck = name: host:
+      builtins.seq host.config.system.build.toplevel.drvPath (
         pkgs.runCommand "nixos-host-${name}" {} "touch $out"
       );
     leaves = {
@@ -114,7 +114,9 @@
         features.deploy-rs.initiator.enable = true;
       };
     };
+    hostsForSystem = lib.filterAttrs (_: host: host.pkgs.stdenv.hostPlatform.system == system) self.nixosConfigurations;
     taiLung = self.nixosConfigurations.tai-lung.config;
+    isTaiLungSystem = self.nixosConfigurations.tai-lung.pkgs.stdenv.hostPlatform.system == system;
     gru = self.nixosConfigurations.gru.config;
     deployPackage = inputs.deploy-rs.packages.${system}.default;
     hasPasswordlessSudo = lib.any (rule:
@@ -184,8 +186,8 @@
         value = evaluationCheck "enabled-${name}" module;
       })
       enabledLeaves
-      // lib.genAttrs ["aku" "gru" "lich" "tai-lung"] (name: hostEvaluationCheck name)
-      // {
+      // lib.mapAttrs hostEvaluationCheck hostsForSystem
+      // lib.optionalAttrs isTaiLungSystem {
         tai-lung-toplevel = taiLung.system.build.toplevel;
         tai-lung-invariants = taiLungInvariants;
       };

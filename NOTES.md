@@ -51,3 +51,11 @@ Preferences now form a foundational leaf, feature leaves import their own prereq
 # deploy-rs roles
 
 Deploy-rs is split into independent server and initiator NixOS features. The target role adds no deploy client package and grants no passwordless sudo by default; Tai Lung uses its existing `server` account with interactive sudo. Gru installs the pinned deploy-rs client and can activate Tai Lung through the flake deployment profile with deploy-rs rollback protection.
+
+## Explicit host composition and contributor workflow
+
+Host configuration and hardware modules now have distinct public names and are composed explicitly through an underscore-excluded `mkHost` helper. This removes reliance on flake-parts merging two unrelated files into the same output while retaining the existing `nixosModules.<host>` compatibility outputs. Host evaluation checks are generated from `nixosConfigurations`, so a newly exported host cannot be omitted from the basic check matrix. The root README is now the authoritative guide for feature, package, and host additions; package access remains context-specific and Sanctum membership remains explicit to avoid hiding system selection or silently enabling production services.
+
+## Co-located Pi implementation
+
+Pi-owned implementation assets now live under `packages/pi/`, including the patched `pi-subagents` and Pi-safe `skillopt-sleep` package modules and tests. Their public package and check names remain unchanged because recursive flake-parts discovery is path-independent. Repository-wide flake inputs and environment selection, standalone tuicr/Herdr packages, project `.pi/` runtime state, and root `graphify-out/` remain outside because they have broader ownership or location-dependent behavior.

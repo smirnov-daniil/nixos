@@ -3,7 +3,11 @@
   lib,
   ...
 }: {
-  perSystem = {pkgs, self', ...}: let
+  perSystem = {
+    pkgs,
+    self',
+    ...
+  }: let
     # Reference the whole extensions/ tree as one store path so relative
     # imports between sibling files resolve at runtime — passing individual
     # ./extensions/foo.ts

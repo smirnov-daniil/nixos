@@ -1,5 +1,13 @@
-{inputs, lib, ...}: {
-  perSystem = {pkgs, ...}: let
+{
+  inputs,
+  lib,
+  ...
+}: {
+  perSystem = {
+    pkgs,
+    self',
+    ...
+  }: let
     herdrSrc = pkgs.fetchFromGitHub {
       owner = "herdrdev";
       repo = "herdr";
@@ -82,6 +90,14 @@
           focus_pane_down = "alt+j"
           focus_pane_up = "alt+k"
           zoom = "alt+f"
+
+          [[keys.command]]
+          key = "prefix+shift+a"
+          type = "popup"
+          command = "${self'.packages.sysq}/bin/sysq"
+          description = "ask Codex Spark"
+          width = "80%"
+          height = "65%"
 
           [[keys.command]]
           key = "prefix+shift+m"

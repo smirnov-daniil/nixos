@@ -53,7 +53,17 @@
             ignoreSpace = true;
           };
         };
-        extraRC = "source ${pkgs.zsh-fast-syntax-highlighting}/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh";
+        extraRC = ''
+          path=(${pkgs.sqlite}/bin ${self'.packages.sysq}/bin $path)
+          source ${pkgs.zsh-histdb}/share/zsh-histdb/sqlite-history.zsh
+          source ${pkgs.zsh-histdb}/share/zsh-histdb/histdb-interactive.zsh
+          bindkey '^[r' _histdb-isearch
+          source ${self'.packages.sysq}/share/zsh/site-functions/sysq.zsh
+          autoload -Uz edit-command-line
+          zle -N edit-command-line
+          bindkey '^X^E' edit-command-line
+          source ${pkgs.zsh-fast-syntax-highlighting}/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
+        '';
       }).wrapper;
   };
 }

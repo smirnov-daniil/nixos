@@ -1,62 +1,35 @@
-# Modular NixOS Configuration
+# Repository guidance
 
-This repository contains a comprehensive, modular NixOS configuration managed via Nix Flakes. It is designed to provide a consistent yet flexible environment across multiple hardware targets, incorporating a wide array of modern tools and an integrated AI coding assistant.
+Use [README.md](README.md) as the authoritative guide for adding features, packages, and hosts. Use [nixos/README.md](nixos/README.md) for the module catalog and deploy-rs workflow.
 
-## 🚀 Core Architecture
+## Architecture
 
-The project utilizes a modern Nix stack for maximum reproducibility and maintainability:
+- `flake.nix` recursively imports every `.nix` file except `flake.nix` and files beginning with `_`.
+- Every ordinary `.nix` file must therefore be a valid `flake-parts` module.
+- `_*.nix` files are plain helpers and require explicit imports.
+- Hosts are `aku`, `gru`, `lich`, and `tai-lung`.
+- A host exports separate `<host>-configuration` and `<host>-hardware` modules, composes them in `hosts/<host>/default.nix`, and retains `nixosModules.<host>` as an aggregate.
+- Shared NixOS modules live in `nixos/base/` and `nixos/features/`. Leaves should remain independently usable; aggregates are compatibility and convenience boundaries.
+- Packages and wrappers live under `packages/` and are exported from `perSystem`.
+- Pi lives in `packages/pi/` and is included through `packages.environment`; it is not a NixOS feature.
 
-- **Nix Flakes**: The primary mechanism for dependency management and system reproducibility.
-- **`flake-parts`**: Used to structure the flake outputs and imports cleanly.
-- **Auto-import**: `flake.nix` collects every `.nix` file in the tree (via `lib.fileset`) as a flake-parts module — no manual import lists.
-- **`sops-nix`**: Handles encrypted secrets management, ensuring sensitive data is not stored in plaintext.
-- **`nh`**: Used for streamlined system management and switching.
+## Change workflow
 
-## 📁 Project Structure
+- Feature: export a named `flake.nixosModules` leaf, add standalone and enabled checks as appropriate, then import it from the selected host.
+- Package: export it under `perSystem.packages`, then add it explicitly to a feature, wrapper, or package bundle when installation is intended.
+- Host: use the three-file host pattern and `hosts/_lib.nix`; host evaluation checks are generated automatically.
+- Keep Sanctum aggregate membership explicit in `nixos/features/sanctum/default.nix`.
+- Keep encrypted secrets under each host's `secrets/` directory and never add plaintext credentials.
 
-The configuration is split into three main areas:
+## Validation
 
-### 1. Hosts (`/hosts`)
-Contains machine-specific configurations. Each host folder (e.g., `aku`, `gru`, `lich`) contains:
-- `default.nix`: The host's entry point.
-- `configuration.nix`: Host-specific system settings.
-- `hardware.nix`: Generated hardware configuration.
+Run formatting and evaluation with uncommitted files included:
 
-### 2. NixOS Modules (`/nixos`)
-Shared logic divided into:
-- **`base/`**: Fundamental system settings such as user accounts, keymaps, and monitor configurations.
-- **`features/`**: Modular "opt-in" components. These include networking, desktop environments, hardware-specific optimizations (e.g., Intel), and the AI agent integration.
-
-### 3. Packages (`/packages`)
-Custom package definitions and application-specific configurations:
-- **Environment**: Core toolsets (`git`, `zsh`, `helix`).
-- **UI/UX**: Modern tooling like `ghostty` (terminal), `niri` (tiling compositor), and `zen-browser`.
-- **QuickShell**: A custom-built shell and OSD (On-Screen Display) implemented in QML, providing a tailored status bar and system widgets.
-
-## 🤖 AI Agent Integration (`pi`)
-
-This project integrates [pi](https://github.com/earendil-works/pi), an AI coding agent, directly into the system configuration.
-
-Located in `nixos/features/pi/`, the integration includes:
-- **Module**: `default.nix` handles the agent's installation and system-level configuration.
-- **Models**: `models.json` manages the AI models used by the agent.
-- **Extensions**: Custom TypeScript extensions (e.g., `prefer-rg.ts`) extend the agent's native capabilities within this specific environment.
-
-## 🛠️ Management Workflow
-
-### Applying Changes
-The project prefers the use of `nh` for applying configurations:
 ```bash
-nh os switch
+alejandra --check .
+nix flake check path:. --no-build --show-trace
+nix flake check path:. --show-trace
+nix build path:.#nixosConfigurations.<host>.config.system.build.toplevel
 ```
 
-### Updating Dependencies
-To update all flake inputs (nixpkgs, etc.):
-```bash
-nix flake update
-```
-
-### Adding New Features
-1. Create a new `.nix` file in `nixos/features/`.
-2. Include the module in the `configuration.nix` of the desired host.
-3. Rebuild the system.
+Use `statix check .` for advisory lint review. Use `nh os switch` for a local host and `deploy .#tai-lung` from Gru for Tai Lung.

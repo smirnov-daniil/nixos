@@ -12,10 +12,10 @@
       src = inputs.pi-subagents;
 
       patches = [
-        ./pi-subagents/jj-workspaces.patch
-        ./pi-subagents/lock-integrity.patch
-        ./pi-subagents/provider-portable.patch
-        ./pi-subagents/temp-job-storage.patch
+        ./jj-workspaces.patch
+        ./lock-integrity.patch
+        ./provider-portable.patch
+        ./temp-job-storage.patch
       ];
 
       npmDepsHash = "sha256-H1f6FXgLDjaZy6mdQN5Ax5bud6FS6N7dnIRNx5BrvzM=";
@@ -30,7 +30,7 @@
       checkPhase = ''
         runHook preCheck
         ln -s ${basePi}/lib/node_modules/@earendil-works node_modules/@earendil-works
-        cp ${./pi-subagents/jj-workspaces.test.ts} test/jj-workspaces.test.ts
+        cp ${./jj-workspaces.test.ts} test/jj-workspaces.test.ts
         npx vitest run \
           --exclude test/env.test.ts \
           --exclude test/nested-delegation-e2e.test.ts \

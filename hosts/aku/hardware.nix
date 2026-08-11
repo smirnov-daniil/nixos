@@ -1,5 +1,5 @@
 {
-  flake.nixosModules.aku = {
+  flake.nixosModules.aku-hardware = {
     config,
     lib,
     pkgs,

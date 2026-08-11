@@ -2,9 +2,16 @@
   inputs,
   self,
   ...
-}: {
+}: let
+  inherit (import ../_lib.nix {inherit inputs;}) mkHost;
+  modules = [
+    self.nixosModules.tai-lung-configuration
+    self.nixosModules.tai-lung-hardware
+  ];
+in {
   flake = {
-    nixosConfigurations.tai-lung = inputs.nixpkgs.lib.nixosSystem {
+    nixosModules.tai-lung.imports = modules;
+    nixosConfigurations.tai-lung = mkHost {
       modules = [self.nixosModules.tai-lung];
     };
 

@@ -3,7 +3,7 @@
   self,
   ...
 }: {
-  flake.nixosModules.tai-lung = {
+  flake.nixosModules.tai-lung-configuration = {
     config,
     lib,
     pkgs,

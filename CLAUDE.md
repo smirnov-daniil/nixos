@@ -5,9 +5,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-nix flake check                  # evaluate the whole flake (fast sanity check)
-nix build .#<name>               # build one package, e.g. .#environment, .#ghostty, .#desktop
-nix build .#nixosConfigurations.<host>.config.system.build.toplevel   # build a full host (aku, gru, lich)
+nix flake check path:. --no-build # evaluate the whole flake (fast sanity check)
+nix build path:.#<name>           # build one package, e.g. .#environment, .#ghostty, .#desktop
+nix build path:.#nixosConfigurations.<host>.config.system.build.toplevel   # build a full host (aku, gru, lich, tai-lung)
 alejandra .                      # format Nix files
 statix check .                   # lint Nix files
 nh os switch                     # apply config on a NixOS host (no sudo needed; nh is wrapped with NH_FLAKE=$HOME/flake)
@@ -28,26 +28,28 @@ Commit messages follow conventional-commit style, e.g. `fix(omp): jujutsu`, `fea
 
 `parts.nix` sets `systems = ["x86_64-linux"]` and declares the custom `flake.wrappersModules` option (see below).
 
-### NixOS modules are defined piecewise and merged
+### NixOS modules are named leaves and aggregates
 
-Files under `nixos/` define entries in `flake.nixosModules.<name>`. The same module name may be defined in several files — e.g. `flake.nixosModules.base` is spread across `nixos/base/user.nix` and `start.nix` and merged by the flake-parts `modules` flakeModule. Host-independent knobs live in the custom `preferences.*` option namespace (`preferences.hostname`, `preferences.user.{name,fullname,email}`, `preferences.autostart`, ...) declared in `nixos/base/`.
+Files under `nixos/` export entries in `flake.nixosModules.<name>`. Independently usable leaves are composed by compatibility aggregates such as `base`, `general`, `desktop`, `deploy-rs`, and `sanctum`. Host-independent knobs live in the custom `preferences.*` namespace declared by `nixos/base/_preferences-options.nix` and exported through `preferences.nix` and `default.nix`.
 
-- `nixos/base/` — option declarations and fundamentals.
-- `nixos/features/` — opt-in named modules (`general`, `desktop`, `intel`, `net`, `nix`, `wsl`, `pi`, ...) that hosts import explicitly.
+- `nixos/base/` — shared option declarations and minimal foundations.
+- `nixos/features/` — opt-in named leaves and explicit compatibility aggregates.
+
+See `README.md` for the required feature, package, and host workflows.
 
 ### Hosts
 
 Each `hosts/<name>/` has three files:
 
-- `configuration.nix` — defines `flake.nixosModules.<host>`: imports the base/feature modules it wants plus host-specific settings (bootloader, GPU, sops).
-- `default.nix` — one-liner turning that module into `flake.nixosConfigurations.<host>`.
-- `hardware.nix` — generated hardware config.
+- `configuration.nix` exports `flake.nixosModules.<host>-configuration` with selected features and host policy.
+- `hardware.nix` wraps generated hardware settings as `flake.nixosModules.<host>-hardware`.
+- `default.nix` explicitly composes both modules, retains `nixosModules.<host>`, and constructs the host through `hosts/_lib.nix`.
 
-Secrets use sops-nix; `hosts/gru/secrets/` holds the encrypted yaml, decrypted with an age key at `~/.config/sops/age/keys.txt`.
+Secrets use sops-nix. Gru and Tai Lung keep encrypted YAML and SOPS policy under their host `secrets/` directories; age key paths are host configuration.
 
 ### No home-manager — apps are configured via wrappers
 
-All per-app configuration (ghostty, zsh, helix, git, jujutsu, zellij, fzf, oh-my-posh, niri, ...) lives in `packages/*.nix` as `perSystem` packages built with two wrapper libraries:
+All per-app configuration (ghostty, zsh, helix, git, jujutsu, fzf, oh-my-posh, niri, ...) lives in `packages/*.nix` as `perSystem` packages built with two wrapper libraries:
 
 - `inputs.wrappers` (Lassulus) — `wrapPackage` (inject env/flags/runtimeInputs) and `wrapModule`; also provides pre-made `wrapperModules.<app>.apply { settings = ...; }`.
 - `inputs.wrapper-modules` (BirdeeHub) — used for the niri desktop wrapper.
@@ -83,4 +85,4 @@ Git/jj identity comes from environment variables (`GIT_AUTHOR_*`, `GIT_COMMITTER
 
 ### AI agent integration
 
-`packages/pi/` builds the `pi` coding agent (github.com/earendil-works/pi, packaged via the `pi` flake input `github:lukasl-dev/pi.nix`) as a portable package via `inputs.pi.lib.mkCodingAgent` + `wrapPackage`, shipped through `packages/environment.nix`'s `myTools` like every other tool — not a NixOS module, so it works on the non-NixOS host too. `models.json` adds local Ollama models; the default and all subagents use OpenAI Codex, tiered as Spark for small tasks, GPT-5.4 Mini for implementation/recon/testing, and GPT-5.4 for planning/review/escalation. In-house TypeScript extensions (`extensions/`) add VCS-aware tool preferences (`prefer-rg.ts`, `prefer-fd.ts`, `prefer-jj.ts`), `/plan-mode`, layered memory, the vendored subagent tool, and a deterministic `/ship` scout→plan→test-pin→batched-implement→review→finalize pipeline. `skills/` includes the code-quality workflows plus the global Claude skills (`graphify`, `jujutsu`, and `markitdown`); `APPEND_SYSTEM.md` mirrors global response, code-style, shell, VCS-attribution, and skill-trigger preferences. `clang-tools` is a Pi runtime input corresponding to Claude's enabled clangd plugin. Community Pi extensions are not installed at runtime; executable integration remains flake-managed and vendored into the Nix store.
+`packages/pi/` co-locates the Pi coding agent, managed roles, extensions, prompts, skills, Pi-specific patches and tests, and the supporting `pi-subagents` and `skillopt-sleep` package modules. Its `default.nix` builds the `pi` coding agent (github.com/earendil-works/pi, packaged via the `pi` flake input `github:lukasl-dev/pi.nix`) as a portable package via `inputs.pi.lib.mkCodingAgent` + `wrapPackage`, shipped through `packages/environment.nix`'s `myTools` like every other tool — not a NixOS module, so it works on the non-NixOS host too. `models.json` adds local Ollama models; managed subagents select authenticated provider models at runtime according to role complexity rather than pinning provider-specific model IDs. In-house TypeScript extensions (`extensions/`) add VCS-aware tool preferences (`prefer-rg.ts`, `prefer-fd.ts`, `prefer-jj.ts`), `/plan-mode`, layered memory, the vendored subagent tool, and a deterministic `/ship` scout→plan→test-pin→batched-implement→review→finalize pipeline. `skills/` includes the code-quality workflows plus the global Claude skills (`graphify`, `jujutsu`, and `markitdown`); `APPEND_SYSTEM.md` mirrors global response, code-style, shell, VCS-attribution, and skill-trigger preferences. `clang-tools` is a Pi runtime input corresponding to Claude's enabled clangd plugin. Community Pi extensions are not installed at runtime; executable integration remains flake-managed and vendored into the Nix store.

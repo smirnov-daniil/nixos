@@ -1,163 +1,175 @@
-# Graph Report - /tmp/graphify-flake-corpus  (2026-07-22)
+# Graph Report - .  (2026-08-13)
 
 ## Corpus Check
-- Corpus is ~8,407 words - fits in a single context window. You may not need a graph.
+- 62 files · ~29,774 words
+- Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 145 nodes · 119 edges · 41 communities (12 shown, 29 thin omitted)
-- Extraction: 89% EXTRACTED · 11% INFERRED · 0% AMBIGUOUS · INFERRED: 13 edges (avg confidence: 0.9)
-- Token cost: 30,300 input · 26,000 output
+- 257 nodes · 340 edges · 23 communities (21 shown, 2 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 10 edges (avg confidence: 0.73)
+- Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
-- Desktop App Wrappers
-- Lich User Networking
-- Host Configurations
-- Desktop Session Modules
-- Gru Secrets NVIDIA
-- Shell CLI Wrappers
-- Nix Tooling Module
-- Flake Parts Wrappers
-- Auto Import Flake
-- CI Workflow
-- Intel Graphics
-- Zen Browser
-- NixGL Host
-- WSL Mounts
-- Herdr Wrapper
-- Agent Instructions
-- Architecture Overview
-- NixOS Modules
-- Packages Overview
-- Pi Integration
-- Development Commands
-- Claude Guidance
-- Host Pattern
-- Preferences Namespace
-- QuickShell Shell
-- Theme Exports
-- No Home Manager
-- Claude Settings
-- Claude Permissions
-- Flake Root
-- Wrapper Modules Input
-- Wrappers Input
-- Workflow File
-- Aku Configuration
-- Gru Boot Kernel
-- Gru Imports
-- Gru Filesystems
-- Pi Sync Note
-- Nix Check App
-- Git Wrapper
-- Readme Summary
+- Graphify Pipeline
+- Agent Discovery
+- Agent Execution
+- Repository Configuration
+- Review and Jujutsu
+- Plan Mode
+- Pi Roles and Prompts
+- Tuicr Review
+- Graph Querying
+- Pi Memory
+- SkillOpt Safety Tests
+- Runtime Verification
+- Notifications
+- SkillOpt Workflow
+- NixOS Deployment
+- Conversation Handoff
+- Status Babysitting
+- OpenSpec Workflow
+- Herdr Integration
+- Graph Watch Mode
+- Graph Extraction Role
+- Learned Guidance
 
 ## God Nodes (most connected - your core abstractions)
-1. `flake.wrappersModules.niri Niri wrapper module` - 7 edges
-2. `preferences.user identity options` - 6 edges
-3. `NixOS module desktop (nixos/features/desktop.nix)` - 6 edges
-4. `theme.nix base16 theme palette` - 6 edges
-5. `flake.nixosModules.aku` - 5 edges
-6. `flake.nixosModules.gru` - 5 edges
-7. `flake.nixosModules.lich` - 4 edges
-8. `NixOS module net (nixos/features/net.nix)` - 4 edges
-9. `Zsh integrations for fzf oh-my-posh zoxide completions autosuggestions and history` - 4 edges
-10. `flake.wrappersModules option submodule namespace` - 4 edges
+1. `registerToggleMode()` - 12 edges
+2. `resolveAgentRuntime()` - 10 edges
+3. `pipelineExtension()` - 8 edges
+4. `invoke()` - 7 edges
+5. `Graphify full pipeline` - 7 edges
+6. `Graphify extraction subagent prompt` - 7 edges
+7. `selectModelForComplexity()` - 6 edges
+8. `Graphify outputs` - 6 edges
+9. `Graph query traversal` - 6 edges
+10. `Security review` - 6 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `aku imports wsl, base, general, vm modules` --semantically_similar_to--> `lich imports wsl, base, general modules`  [INFERRED] [semantically similar]
-  hosts__aku__configuration.nix.md → hosts__lich__configuration.nix.md
-- `myTools CLI and wrapped package toolset` --semantically_similar_to--> `Nix tooling packages nil nixd statix alejandra manix nix-inspect`  [INFERRED] [semantically similar]
-  packages__environment.nix.md → nixos__features__nix.nix.md
-- `normal user account from preferences.user.name` --references--> `preferences.user identity options`  [EXTRACTED]
-  nixos__features__general.nix.md → nixos__base__user.nix.md
-- `Oh My Posh jujutsu prompt segment showing change ID bookmarks and working changes` --conceptually_related_to--> `packages.jujutsu wrapper with log alias default command and snapshot limit`  [INFERRED]
-  packages__oh-my-posh.nix.md → packages__jujutsu.nix.md
-- `flake.wrappersModules option submodule namespace` --conceptually_related_to--> `flake.wrappersModules.niri Niri wrapper module`  [INFERRED]
-  parts.nix.md → packages__niri.nix.md
+- `Project memory` ----> `Pi package integration`  [EXTRACTED]
+  .pi/memory/MEMORY.md → packages/pi/README.md
+- `Pi package integration` ----> `Environment package`  [EXTRACTED]
+  packages/pi/README.md → CLAUDE.md
+- `selectModelForComplexity()` --indirect_call--> `model()`  [INFERRED]
+  packages/pi/extensions/_lib/agent-runtime.ts → packages/pi/extensions/subagent-routing.test.ts
+- `Dendritic Nix flake extension skill` ----> `Explicit host composition`  [EXTRACTED]
+  .pi/skills/extend-dendritic-nix-flake/SKILL.md → README.md
+- `Dendritic Nix flake extension skill` ----> `Independent NixOS feature leaf`  [EXTRACTED]
+  .pi/skills/extend-dendritic-nix-flake/SKILL.md → README.md
+
+## Import Cycles
+- None detected.
 
 ## Hyperedges (group relationships)
-- **flake.nix auto-imports repository .nix files into flake-parts mkFlake** — flake_nix_mkflake_structure, flake_nix_import_tree, agents_md_auto_import_flake_parts, claude_md_auto_import_contract [INFERRED 0.95]
-- **Host files define module plus nixosConfiguration and generated hardware** — claude_md_hosts_pattern, hosts_aku_configuration_nix_module_aku, hosts_aku_default_nix_nixos_configuration_aku, hosts_aku_hardware_nix_aku_hardware_module, hosts_gru_configuration_nix_module_gru, hosts_gru_default_nix_nixos_configuration_gru, hosts_gru_hardware_nix_gru_hardware_module, hosts_lich_configuration_nix_module_lich, hosts_lich_default_nix_nixos_configuration_lich [INFERRED 0.95]
-- **aku and lich share WSL/base/general host module imports** — hosts_aku_configuration_nix_module_aku, hosts_aku_configuration_nix_aku_imports, hosts_lich_configuration_nix_module_lich, hosts_lich_configuration_nix_lich_imports, flake_nix_input_nixos_wsl [INFERRED 0.85]
-- **Pi integration aligns Claude instructions, skills, runtime inputs, and workflow tiers** — agents_md_pi_agent_integration, claude_md_pi_package_integration, notes_md_pi_claude_sync_rationale, flake_nix_input_pi [INFERRED 0.85]
-- **desktop module composes GTK, PipeWire, and Zen Browser modules** — nixos_features_desktop_nixos_module_desktop, nixos_features_gtk_nixos_module_gtk, nixos_features_pipewire_nixos_module_pipewire, nixos_features_zen_browser_nixos_module_zen_browser [EXTRACTED 1.00]
-- **general module composes nix and net modules** — nixos_features_general_nixos_module_general, nixos_features_nix_nixos_module_nix, nixos_features_net_nixos_module_net [EXTRACTED 1.00]
-- **user identity preferences feed account, VCS env, WSL, VM, and Browsec sudo rules** — nixos_base_user_preferences_user_identity, nixos_features_general_user_account, nixos_features_general_git_jj_identity_environment, nixos_features_wsl_configuration, nixos_features_vm_nixos_module_vm, packages_browsec_nixos_module_browsec [EXTRACTED 1.00]
-- **Browsec derivation supplies VPN app while module installs it and grants helper sudo** — packages_browsec_package_browsec, packages_browsec_nixos_module_browsec, packages_browsec_apparmor_sandbox_profile [EXTRACTED 1.00]
-- **environment package wraps zsh with myTools and exposes related desktop terminal completions utilities** — packages_environment_package_environment, packages_environment_mytools_toolset, packages_environment_package_desktop, packages_environment_package_terminal, packages_environment_package_nix_check_bin [EXTRACTED 1.00]
-- **Theme shared by terminal editor shell compositor launcher and quickshell** — theme_base16_palette, packages_ghostty, packages_helix_flake_theme, packages_quickshell_theme_env, packages_wlr_which_key_mkwhichkeyexe, packages_niri_wrappers_modules_niri, packages_zsh_integrations [INFERRED 0.95]
-- **Interactive shell workflow links zsh fzf oh-my-posh jujutsu and nh switch** — packages_zsh, packages_fzf_history, packages_fzf_files, packages_oh_my_posh, packages_oh_my_posh_jujutsu_segment, packages_jujutsu, packages_nh, packages_zsh_workflow_aliases [INFERRED 0.85]
-- **Desktop session stack combines niri ghostty quickshell which-key media controls and Zen Browser** — packages_niri, packages_niri_wrappers_modules_niri, packages_ghostty, packages_quickshell_wrapped, packages_wlr_which_key_mkwhichkeyexe, packages_niri_media_screenshot_binds, packages_zen_browser [INFERRED 0.85]
+- **h-flake-extension-contract** — recursive-flake-parts, nixos-module-leaf, nixos-aggregate, per-system-package, explicit-host-composition, flake-validation [INFERRED]
+- **h-pi-agent-pipeline** — doc-scout, doc-planner, doc-tester, doc-implementer, doc-reviewer, doc-committer, ship-pipeline, structured-handoff [INFERRED]
+- **h-pi-package-boundaries** — pi-integration, provider-portable-routing, tuicr-review, environment-package, graphify-chunk-output [INFERRED]
+- **h-herdr-verification** — herdr-plugin-bundle, clean-herdr-verification, tuicr-review [INFERRED]
+- **h-read-write-separation** — read-only-role-boundary, doc-scout, doc-planner, doc-reviewer, doc-ai-review, doc-implementer, doc-tester, graphify-chunk-output [INFERRED]
+- **h-nixos-deployment** — nixos-module-leaf, nixos-aggregate, explicit-host-composition, deploy-rs-roles, sanctum-explicit-membership, host-set [INFERRED]
+- **Graphify extraction pipeline** — packages_pi_skills_graphify_full_pipeline, packages_pi_skills_graphify_structural_ast_extraction, packages_pi_skills_graphify_semantic_extraction [EXTRACTED 1.00]
+- **Review and quality workflow** — packages_pi_skills_code_review_code_review, packages_pi_skills_security_review_security_review, packages_pi_skills_simplify_simplify_skill [INFERRED 0.85]
+- **Runtime verification workflow** — packages_pi_skills_run_run_skill, packages_pi_skills_run_golden_path, packages_pi_skills_verify_verify_skill [INFERRED 0.85]
 
-## Communities (41 total, 29 thin omitted)
+## Communities (23 total, 2 thin omitted)
 
-### Community 0 - "Desktop App Wrappers"
-Cohesion: 0.14
-Nodes (18): packages/ghostty.nix Ghostty terminal wrapper, Ghostty nixglhost entrypoint with NixOS skip logic and desktop Exec rewrite, packages/helix.nix Helix editor wrapper, Helix base16 flake theme generated from self.theme, Helix language servers and formatters for nix rust haskell c cpp cmake json markdown, packages.niri built with wrapper-modules niri wrapper, Niri media brightness audio and screenshot key bindings, Niri option autostart for extra startup commands or packages (+10 more)
+### Community 0 - "Graphify Pipeline"
+Cohesion: 0.06
+Nodes (36): Graphify URL ingestion, Graph build merge, Cluster-only rebuild, Code-only incremental update, Community detection, Extraction confidence rubric, Cross-repository graph merge, Graphify extraction subagent prompt (+28 more)
 
-### Community 1 - "Lich User Networking"
-Cohesion: 0.13
-Nodes (17): NixOS module lich (hosts/lich/hardware.nix), lich WSL-oriented filesystems and mounts, x86_64-linux host platform for lich, NixOS module base user options (nixos/base/user.nix), preferences.hostname option default nixos, preferences.user identity options, Git and Jujutsu identity environment variables, hostname, DNS nameservers, and nftables networking (+9 more)
+### Community 1 - "Agent Discovery"
+Cohesion: 0.12
+Nodes (27): AgentConfig, AgentDiscoveryResult, AgentScope, discoverAgents(), findNearestProjectAgentsDir(), isDirectory(), loadAgentsFromDir(), AGENT_COMPLEXITIES (+19 more)
 
-### Community 2 - "Host Configurations"
-Cohesion: 0.14
-Nodes (14): Hosts area /hosts with aku, gru, lich, aku imports wsl, base, general, vm modules, aku networking.networkmanager.enable = true, NixOS host aku, flake.nixosModules.aku, flake.nixosConfigurations.aku via nixpkgs.lib.nixosSystem, aku generated hardware module, NixOS host gru (+6 more)
+### Community 2 - "Agent Execution"
+Cohesion: 0.17
+Nodes (21): AgentModelContext, AgentRole, getPiInvocation(), loadRole(), spawnAgent(), SpawnAgentModelContext, SpawnResult, describeItem() (+13 more)
 
-### Community 3 - "Desktop Session Modules"
-Cohesion: 0.14
-Nodes (14): NixOS module base autostart options (nixos/base/start.nix), preferences.autostart option, greetd tuigreet login for niri-session, swayidle quickshell lock and monitor power workflow, niri desktop session wrapped with autostart, NixOS module desktop (nixos/features/desktop.nix), Gruvbox GTK theme and icon configuration, NixOS module gtk (nixos/features/gtk.nix) (+6 more)
+### Community 3 - "Repository Configuration"
+Cohesion: 0.12
+Nodes (21): Push and pull-request CI, Clean Herdr protocol verification, Repository agent guidance, Pi appended system prompt, GitHub check workflow, Claude repository guide, Project memory, Pi package README (+13 more)
 
-### Community 4 - "Gru Secrets NVIDIA"
+### Community 4 - "Review and Jujutsu"
+Cohesion: 0.10
+Nodes (21): Code review, Correctness bug, Code review finding report, Pending diff, Simplification and efficiency cleanup, Review verdict, Jujutsu git diff, Jujutsu version-control workflow (+13 more)
+
+### Community 5 - "Plan Mode"
 Cohesion: 0.18
-Nodes (11): Pi coding agent packaged via packages/pi and environment tools, flake input nixpkgs github:NixOS/nixpkgs/nixos-unstable, flake input pi github:lukasl-dev/pi.nix follows nixpkgs, flake input sops-nix follows nixpkgs, flake.nixosModules.gru, gru NVIDIA PRIME offload configuration, gru sops secrets configuration with age keyFile, flake.nixosConfigurations.gru via nixpkgs.lib.nixosSystem (+3 more)
+Nodes (14): registerToggleMode(), ToggleModeConfig, ToggleModeState, extractTodos(), markCompleted(), planModeExtension(), ProgressState, textFromMessage() (+6 more)
 
-### Community 5 - "Shell CLI Wrappers"
-Cohesion: 0.22
-Nodes (10): packages.fzf-files wrapper with bat preview and editor bind, packages.fzf wraps pkgs.fzf with fd default command and fzf options, packages.fzf-history wrapper with history-oriented fzf flags, packages/fzf.nix fzf wrapper package set, packages/nh.nix nh wrapper with NH_FLAKE=$HOME/flake, packages/oh-my-posh.nix Oh My Posh wrapper with TOML prompt config, Oh My Posh jujutsu prompt segment showing change ID bookmarks and working changes, packages/zsh.nix Zsh wrapper shell configuration (+2 more)
+### Community 6 - "Pi Roles and Prompts"
+Cohesion: 0.15
+Nodes (16): AI review prompt, Committer role, Implementer role, Escalated implementer role, Project notes, Output semantics role, Planner role, Reviewer role (+8 more)
 
-### Community 6 - "Nix Tooling Module"
-Cohesion: 0.25
-Nodes (8): nh enable and cleanup workflow, NixOS module general (nixos/features/general.nix), normal user account from preferences.user.name, Nix settings for cachix, trusted users, nix-command and flakes, NixOS module nix tooling (nixos/features/nix.nix), Nix tooling packages nil nixd statix alejandra manix nix-inspect, myTools CLI and wrapped package toolset, wrapped shell environment package with primary tools
-
-### Community 7 - "Flake Parts Wrappers"
+### Community 7 - "Tuicr Review"
 Cohesion: 0.29
-Nodes (7): packages.jujutsu wrapper with log alias default command and snapshot limit, packages.jjui wrapper using defaultRevset all(), flake.wrappersModules.jjui wrapModule defining settings option and JJUI_CONFIG_DIR, perSystem formatter is pkgs.alejandra, parts.nix flake-parts structure imports wrapper modules and flake modules, flake.wrappersModules option submodule namespace, flake systems includes x86_64-linux
+Nodes (11): commentFingerprint(), commentKey(), CommentRecord, CommentSnapshot, formatFeedback(), formatLocation(), parseJson(), ReviewComment (+3 more)
 
-### Community 8 - "Auto Import Flake"
-Cohesion: 0.40
-Nodes (5): Auto-import every .nix file as flake-parts module, Auto-import contract: every .nix file must be valid flake-parts module unless prefixed _, importTree filters .nix files excluding flake.nix and _-prefixed files, flake input flake-parts github:hercules-ci/flake-parts, flake-parts mkFlake imports = importTree ./. structure
+### Community 8 - "Graph Querying"
+Cohesion: 0.20
+Nodes (11): Breadth-first graph traversal, Native CLAUDE.md integration, Depth-first graph traversal, Existing graph fast path, Graph reflection lessons, Graphify MCP server, Node explanation, Query result feedback (+3 more)
 
-### Community 9 - "CI Workflow"
+### Community 9 - "Pi Memory"
+Cohesion: 0.31
+Nodes (8): findProjectRoot(), globalMemoryDir(), memoryExtension(), projectMemoryDir(), projectSkillsDir(), readBounded(), RememberParams, WriteSkillParams
+
+### Community 10 - "SkillOpt Safety Tests"
+Cohesion: 0.33
+Nodes (7): invoke(), test_harvest_artifacts_are_private(), test_memory_proposal_cannot_be_adopted(), test_missing_target_is_rejected(), test_staged_target_must_match_explicit_target(), test_task_metadata_cannot_select_target(), test_unsafe_commands_are_unavailable()
+
+### Community 11 - "Runtime Verification"
+Cohesion: 0.33
+Nodes (7): Golden-path exercise, Run-process cleanup, Project type detection, Run skill, Edge-case regression check, End-to-end exercise, Verify skill
+
+### Community 12 - "Notifications"
+Cohesion: 0.80
+Nodes (4): notifyExtension(), notifyOsc777(), notifyOsc99(), oscText()
+
+### Community 13 - "SkillOpt Workflow"
+Cohesion: 0.50
+Nodes (5): SkillOpt harvest and dry-run, Declarative Nix boundary, Reviewed skill adoption, SkillOpt safety contract, SkillOpt-Sleep
+
+### Community 14 - "NixOS Deployment"
+Cohesion: 0.50
+Nodes (4): Independent deploy-rs roles, NixOS module README, Compatibility aggregate module, Explicit Sanctum service membership
+
+### Community 15 - "Conversation Handoff"
+Cohesion: 0.83
+Nodes (3): entryToMessage(), handoffExtension(), handoffMessages()
+
+### Community 16 - "Status Babysitting"
+Cohesion: 0.50
+Nodes (4): Babysit status-check prompt, Open PR, CI, and deploy status, Read-only status reporting, Systemd user timer
+
+### Community 17 - "OpenSpec Workflow"
+Cohesion: 0.50
+Nodes (4): OpenSpec directory layout, openspec init command, OpenSpec spec-driven workflow, OpenSpec opsx commands
+
+### Community 18 - "Herdr Integration"
+Cohesion: 0.50
+Nodes (4): Herdr mirror integration, Herdr plugin colocation, Herdr version bump, Pi output-semantics role
+
+### Community 19 - "Graph Watch Mode"
 Cohesion: 0.67
-Nodes (3): CI step: nix build .#environment, GitHub Actions workflow check, CI step: nix flake check
-
-### Community 10 - "Intel Graphics"
-Cohesion: 1.00
-Nodes (3): custom-hardware.intelgpu options, NixOS module intel hardware graphics (nixos/features/intel.nix), Intel VAAPI, media, OpenCL, compute runtime graphics packages
-
-### Community 11 - "Zen Browser"
-Cohesion: 0.67
-Nodes (3): packages.zen-browser nixglhost wrapper for Zen Browser, packages.zen-browser-plain wrapped Zen Browser for NixOS hosts, Zen Browser locked prefs policies extensions and Nix search engines
+Nodes (3): Code-only watch rebuild, Document watch update flag, Graphify folder watch
 
 ## Knowledge Gaps
-- **67 isolated node(s):** `.claude/settings.local.json`, `Claude local permission: Read //home/smirnovd/.claude/plugins/**`, `.github/workflows/check.yml`, `CI step: nix flake check`, `CI step: nix build .#environment` (+62 more)
+- **79 isolated node(s):** `AgentScope`, `AgentDiscoveryResult`, `AgentThinkingLevel`, `AgentRuntime`, `AgentRole` (+74 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **29 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **2 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `theme.nix base16 theme palette` connect `Desktop App Wrappers` to `Shell CLI Wrappers`?**
-  _High betweenness centrality (0.030) - this node is a cross-community bridge._
-- **Why does `Zsh integrations for fzf oh-my-posh zoxide completions autosuggestions and history` connect `Shell CLI Wrappers` to `Desktop App Wrappers`?**
-  _High betweenness centrality (0.023) - this node is a cross-community bridge._
-- **What connects `.claude/settings.local.json`, `Claude local permission: Read //home/smirnovd/.claude/plugins/**`, `.github/workflows/check.yml` to the rest of the system?**
-  _67 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Desktop App Wrappers` be split into smaller, more focused modules?**
-  _Cohesion score 0.13725490196078433 - nodes in this community are weakly interconnected._
-- **Should `Lich User Networking` be split into smaller, more focused modules?**
-  _Cohesion score 0.1323529411764706 - nodes in this community are weakly interconnected._
-- **Should `Host Configurations` be split into smaller, more focused modules?**
-  _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
-- **Should `Desktop Session Modules` be split into smaller, more focused modules?**
-  _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
+- **Why does `resolveAgentRuntime()` connect `Agent Discovery` to `Agent Execution`?**
+  _High betweenness centrality (0.010) - this node is a cross-community bridge._
+- **What connects `AgentScope`, `AgentDiscoveryResult`, `AgentThinkingLevel` to the rest of the system?**
+  _79 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Graphify Pipeline` be split into smaller, more focused modules?**
+  _Cohesion score 0.05873015873015873 - nodes in this community are weakly interconnected._
+- **Should `Agent Discovery` be split into smaller, more focused modules?**
+  _Cohesion score 0.11693548387096774 - nodes in this community are weakly interconnected._
+- **Should `Repository Configuration` be split into smaller, more focused modules?**
+  _Cohesion score 0.11904761904761904 - nodes in this community are weakly interconnected._
+- **Should `Review and Jujutsu` be split into smaller, more focused modules?**
+  _Cohesion score 0.10476190476190476 - nodes in this community are weakly interconnected._

@@ -1,5 +1,5 @@
 {
-  flake.nixosModules.lich = {
+  flake.nixosModules.lich-hardware = {
     config,
     lib,
     pkgs,
