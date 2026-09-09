@@ -28,6 +28,7 @@
       modules = [
         {
           pi.coding-agent = {
+            package = self'.packages.pi-unwrapped;
             models = ./models.json;
             rules = ./APPEND_SYSTEM.md;
 
@@ -77,6 +78,11 @@
 
     roleFiles = builtins.attrNames (builtins.readDir ./agents);
   in {
+    # The pinned pi.nix still uses the old name for nixpkgs' native TypeScript compiler.
+    packages.pi-unwrapped = inputs.pi.packages.${pkgs.stdenv.hostPlatform.system}.coding-agent.override {
+      typescript-go = pkgs.typescript;
+    };
+
     packages.pi = inputs.wrappers.lib.wrapPackage {
       inherit pkgs;
       inherit (agent) package;
@@ -113,7 +119,7 @@
       } ''
         mkdir -p "$out" node_modules
         cp -r ${./extensions} extensions
-        ln -s ${inputs.pi.packages.${pkgs.stdenv.hostPlatform.system}.coding-agent}/lib/node_modules/@earendil-works node_modules/@earendil-works
+        ln -s ${self'.packages.pi-unwrapped}/lib/node_modules/@earendil-works node_modules/@earendil-works
         bun test ./extensions/subagent-routing.test.ts >"$out/test.log"
       '';
   };

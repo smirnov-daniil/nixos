@@ -3,8 +3,12 @@
   lib,
   ...
 }: {
-  perSystem = {pkgs, ...}: let
-    basePi = inputs.pi.packages.${pkgs.stdenv.hostPlatform.system}.coding-agent;
+  perSystem = {
+    pkgs,
+    self',
+    ...
+  }: let
+    basePi = self'.packages.pi-unwrapped;
   in {
     packages.pi-subagents = pkgs.buildNpmPackage {
       pname = "pi-subagents";
@@ -16,6 +20,7 @@
         ./lock-integrity.patch
         ./provider-portable.patch
         ./temp-job-storage.patch
+        ./model-runtime.patch
       ];
 
       npmDepsHash = "sha256-H1f6FXgLDjaZy6mdQN5Ax5bud6FS6N7dnIRNx5BrvzM=";

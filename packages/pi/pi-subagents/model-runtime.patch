@@ -1,0 +1,77 @@
+--- a/test/output-file-compaction-e2e.test.ts
++++ b/test/output-file-compaction-e2e.test.ts
+@@ -9,17 +9,17 @@
+ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+ import { tmpdir } from "node:os";
+ import { join } from "node:path";
+-import { fauxAssistantMessage, fauxText } from "@earendil-works/pi-ai";
++import { fauxAssistantMessage, fauxProvider, fauxText } from "@earendil-works/pi-ai";
+ import {
+   createAgentSession,
+   DefaultResourceLoader,
+   getAgentDir,
++  ModelRuntime,
+   SessionManager,
+   SettingsManager,
+ } from "@earendil-works/pi-coding-agent";
+ import { afterEach, beforeEach, describe, expect, it } from "vitest";
+ import { streamToOutputFile, writeInitialEntry } from "../src/output-file.js";
+-import { registerFauxProvider } from "./helpers/pi-ai.js";
+ 
+ const TURNS_BEFORE_COMPACT = 6;
+ 
+@@ -41,7 +41,7 @@
+ 
+   it("keeps writing post-compaction messages to the output file", async () => {
+     const cwd = tmp;
+-    const faux = registerFauxProvider({
++    const faux = fauxProvider({
+       provider: "faux",
+       models: [{ id: "faux-1", contextWindow: 200_000 }],
+     });
+@@ -84,20 +84,19 @@
+     });
+     await loader.reload();
+ 
++    const modelRuntime = await ModelRuntime.create({
++      authPath: join(tmp, "auth.json"),
++      modelsPath: null,
++      refreshOnCreate: false,
++    });
++    modelRuntime.registerNativeProvider(faux.provider);
++    await modelRuntime.refresh({ allowNetwork: false });
++
+     const { session } = await createAgentSession({
+       cwd,
+       agentDir,
+       model,
+-      modelRegistry: {
+-        find: () => model,
+-        getAll: () => [model],
+-        getAvailable: () => [model],
+-        hasConfiguredAuth: () => true,
+-        isUsingOAuth: () => false,
+-        getApiKeyAndHeaders: async () => ({ ok: true, apiKey: "faux", headers: {} }),
+-        registerProvider: () => {},
+-        unregisterProvider: () => {},
+-      } as never,
++      modelRuntime,
+       resourceLoader: loader,
+       sessionManager: SessionManager.inMemory(cwd),
+       settingsManager: SettingsManager.inMemory({
+--- a/src/agent-runner.ts
++++ b/src/agent-runner.ts
+@@ -837,10 +837,11 @@
+   // Pi 0.80.8 replaced createAgentSession's modelRegistry option with
+   // modelRuntime, but ExtensionContext still exposes only the registry facade.
+   // Pass both so the full supported Pi range retains the parent's providers.
+-  const parentModelRuntime = (ctx.modelRegistry as unknown as { runtime?: unknown }).runtime;
++  const parentModelRuntime = (ctx.modelRegistry as unknown as {
++    runtime?: NonNullable<Parameters<typeof createAgentSession>[0]>["modelRuntime"];
++  }).runtime;
+   const sessionOpts: Parameters<typeof createAgentSession>[0] & {
+     modelRegistry: ExtensionContext["modelRegistry"];
+-    modelRuntime?: unknown;
+   } = {
+     cwd: effectiveCwd,
+     agentDir,
