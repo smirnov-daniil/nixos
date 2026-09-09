@@ -42,11 +42,8 @@
       };
       environment.variables = {
         "GIT_AUTHOR_NAME" = "${config.preferences.user.fullname}";
-        "GIT_AUTHOR_EMAIL" = "${config.preferences.user.email}";
         "GIT_COMMITTER_NAME" = "${config.preferences.user.fullname}";
-        "GIT_COMMITTER_EMAIL" = "${config.preferences.user.email}";
         "JJ_USER" = "${config.preferences.user.fullname}";
-        "JJ_EMAIL" = "${config.preferences.user.email}";
       };
     };
   };

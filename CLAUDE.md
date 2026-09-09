@@ -81,7 +81,7 @@ Key aggregate packages in `packages/environment.nix`:
 
 The flake also serves a non-NixOS Ubuntu machine. GUI apps needing OpenGL are wrapped with `nix-gl-host` (see `packages/ghostty.nix`): the entrypoint is a dispatcher that execs the app directly on NixOS (`/etc/NIXOS` present) and through `nixglhost -- <app>` elsewhere, injecting the host's NVIDIA driver at runtime. Keep this wrapping intact when touching ghostty — and keep the NixOS bypass: nixglhost also scans `/run/opengl-driver/lib`, so without the bypass it pins an NVIDIA-only EGL vendor on NixOS and breaks GL on PRIME-offload hosts (gru).
 
-Git/jj identity comes from environment variables (`GIT_AUTHOR_*`, `GIT_COMMITTER_*`, `JJ_USER`, `JJ_EMAIL`) set in `nixos/features/general.nix`, not from `user.*` config in the wrapped git/jujutsu packages.
+Git/jj author names come from environment variables (`GIT_AUTHOR_NAME`, `GIT_COMMITTER_NAME`, `JJ_USER`) set in `nixos/features/user-environment.nix`. Email addresses are configured through Git/jj configuration; the flake does not set email environment variables.
 
 ### AI agent integration
 

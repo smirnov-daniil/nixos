@@ -84,12 +84,18 @@
         HERDR_CONFIG_PATH = pkgs.writeText "herdr-config.toml" ''
           onboarding = false
 
+          [theme]
+          name = "terminal"
+
           [keys]
-          focus_pane_left = "alt+h"
-          focus_pane_right = "alt+l"
-          focus_pane_down = "alt+j"
-          focus_pane_up = "alt+k"
-          zoom = "alt+f"
+          focus_pane_left = ["prefix+h", "alt+h"]
+          focus_pane_down = ["prefix+j", "alt+j"]
+          focus_pane_up = ["prefix+k", "alt+k"]
+          focus_pane_right = ["prefix+l", "alt+l"]
+          zoom = ["prefix+z", "alt+f"]
+          switch_tab = ["prefix+1..9", "alt+1..9"]
+          next_tab = ["prefix+n", "alt+]"]
+          previous_tab = ["prefix+p", "alt+["]
 
           [[keys.command]]
           key = "prefix+shift+a"

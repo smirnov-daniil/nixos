@@ -48,14 +48,41 @@
             selection-background = self.themeNoHash.base02;
             selection-foreground = self.themeNoHash.base05;
 
-            # Multiplexing (splits/tabs) is herdr's job; alt binds here would
-            # shadow herdr and helix defaults. Font size stays on ghostty's
-            # default ctrl+equal/ctrl+minus.
+            # Multiplexing (splits/tabs/zoom) and scrollback are herdr's job,
+            # so ghostty's defaults for them are dropped wholesale: "clear"
+            # removes every binding set up to this point, including ghostty's
+            # own defaults, and only the entries below survive.
             keybind = [
+              "clear"
+
+              # clipboard and selection
+              "copy=copy_to_clipboard:mixed"
+              "paste=paste_from_clipboard"
               "performable:ctrl+c=copy_to_clipboard"
               "performable:ctrl+v=paste_from_clipboard"
+              "ctrl+shift+c=copy_to_clipboard:mixed"
+              "ctrl+shift+v=paste_from_clipboard"
+              "ctrl+insert=copy_to_clipboard:mixed"
+              "shift+insert=paste_from_selection"
+              "ctrl+shift+a=select_all"
+              "shift+arrow_left=adjust_selection:left"
+              "shift+arrow_right=adjust_selection:right"
+              "shift+arrow_up=adjust_selection:up"
+              "shift+arrow_down=adjust_selection:down"
 
+              # font size, as W3C physical key codes so no "=" needs escaping
+              "ctrl+equal=increase_font_size:1"
+              "ctrl+minus=decrease_font_size:1"
+              "ctrl+digit_0=reset_font_size"
+
+              # window and ghostty-local UI
               "alt+t=toggle_quick_terminal"
+              "ctrl+enter=toggle_fullscreen"
+              "ctrl+shift+q=quit"
+              "alt+f4=close_window"
+              "ctrl+shift+comma=reload_config"
+              "ctrl+shift+i=inspector:toggle"
+              "ctrl+shift+p=toggle_command_palette"
             ];
           };
         }).wrapper;
