@@ -14,6 +14,7 @@
       self.nixosModules.sanctum-qbittorrent
       self.nixosModules.sanctum-radarr
       self.nixosModules.sanctum-sonarr
+      self.nixosModules.sanctum-skinem
       self.nixosModules.sanctum-vaultwarden
     ];
   };

@@ -11,7 +11,7 @@
 
       sanctumServices =
         lib.attrsets.filterAttrs (
-          _name: value: value.enable
+          _name: value: value.enable && value.reverseProxy
         )
         sanctum.services;
 
@@ -47,6 +47,8 @@
 
       allVirtualHosts = mainVirtualHost // serviceVirtualHosts;
     in {
+      # Imported both by the aggregate and by independently usable service leaves.
+      key = toString ./default.nix;
       imports = [self.nixosModules.sanctum-core];
 
       options.sanctum.nginx = {

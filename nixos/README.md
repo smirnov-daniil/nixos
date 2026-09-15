@@ -10,4 +10,8 @@ Package defaults can be overridden through `user-environment.shellPackage`, `use
 
 Deploy Tai Lung from Gru with `deploy .#tai-lung`. The deployment profile connects to `tai-lung.ssmirnovd.online`, activates `nixosConfigurations.tai-lung` as root through the SSH user `server`, and preserves deploy-rs magic rollback and automatic rollback defaults. Tai Lung authorizes Gru's personal Ed25519 key declaratively; its matching private key must remain at `~/.ssh/personal` on Gru, and interactive activation asks for the existing `server` sudo password.
 
-`sanctum-core` supplies the shared Sanctum schema. Every `sanctum-*` service leaf imports it, while `sanctum` aggregates the core and every service leaf. Only `sanctum-croc`, `sanctum-microbin`, and `sanctum-vaultwarden` import SOPS themselves; hosts using other leaves do not need SOPS unless they configure it independently.
+`sanctum-core` supplies the shared Sanctum schema. Every `sanctum-*` service leaf imports it, while `sanctum` aggregates the core and every service leaf. `sanctum-croc`, `sanctum-microbin`, `sanctum-vaultwarden`, and `sanctum-skinem` import SOPS themselves; hosts using other leaves do not need SOPS unless they configure it independently.
+
+[skinem](features/sanctum/skinem/README.md) provides independent web access, nginx TLS,
+optional Telegram credentials, and read-only Homepage availability probes. It is
+disabled by default and obtains private source through the SSH flake input.

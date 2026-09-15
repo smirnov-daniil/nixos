@@ -56,6 +56,7 @@
       sanctum-qbittorrent = self.nixosModules.sanctum-qbittorrent;
       sanctum-radarr = self.nixosModules.sanctum-radarr;
       sanctum-sonarr = self.nixosModules.sanctum-sonarr;
+      sanctum-skinem = self.nixosModules.sanctum-skinem;
       sanctum-vaultwarden = self.nixosModules.sanctum-vaultwarden;
     };
     aggregates = {
@@ -90,6 +91,17 @@
       sanctum-qbittorrent = enableSanctum "qbittorrent" self.nixosModules.sanctum-qbittorrent;
       sanctum-radarr = enableSanctum "radarr" self.nixosModules.sanctum-radarr;
       sanctum-sonarr = enableSanctum "sonarr" self.nixosModules.sanctum-sonarr;
+      sanctum-skinem = enableSanctum "skinem" self.nixosModules.sanctum-skinem;
+      sanctum-skinem-credentials = {
+        imports = [self.nixosModules.sanctum-skinem];
+        sanctum.skinem = {
+          enable = true;
+          localDatabase = false;
+          secrets.DATABASE_URL = "skinem/database-url";
+        };
+        sops.defaultSopsFile = ../hosts/tai-lung/secrets/secrets.yaml;
+        sops.age.keyFile = "/tmp/test-age-key";
+      };
       sanctum-vaultwarden = enableSecretSanctum "vaultwarden" self.nixosModules.sanctum-vaultwarden;
       vm-admin = {
         imports = [self.nixosModules.vm];

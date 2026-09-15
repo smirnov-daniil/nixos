@@ -29,12 +29,19 @@
                   (acc.${category} or [])
                   ++ [
                     {
-                      "${serviceCfg."${service}".name or serviceCfg.description}" = {
-                        icon = serviceCfg."${service}".icon or "${serviceName}.svg";
-                        description = serviceCfg."${service}".description or serviceCfg.description;
-                        href = "https://${serviceCfg.domain}";
-                        siteMonitor = "https://${serviceCfg.domain}";
-                      };
+                      "${serviceCfg."${service}".name or serviceCfg.description}" =
+                        {
+                          icon = serviceCfg."${service}".icon or "${serviceName}.svg";
+                          description = serviceCfg."${service}".description or serviceCfg.description;
+                          href = "https://${serviceCfg.domain}";
+                          siteMonitor =
+                            if serviceCfg.homepage.siteMonitor == null
+                            then "https://${serviceCfg.domain}"
+                            else serviceCfg.homepage.siteMonitor;
+                        }
+                        // lib.optionalAttrs (serviceCfg.homepage.widget != null) {
+                          widget = serviceCfg.homepage.widget;
+                        };
                     }
                   ];
               }

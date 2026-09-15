@@ -1,8 +1,4 @@
-{
-  inputs,
-  lib,
-  ...
-}: {
+{inputs, ...}: {
   perSystem = {
     pkgs,
     self',
@@ -11,73 +7,12 @@
     herdrSrc = pkgs.fetchFromGitHub {
       owner = "herdrdev";
       repo = "herdr";
-      rev = "ef4c23f5775bb8cfec05f05d0844226ff959a07a";
-      hash = "sha256-3BA8eredGku+vsL2Af7sUf43QiArR5XTHNrI+X11vFM=";
+      rev = "cca4af8dfad160bc5fb5ae133b70882b5fe28f61";
+      hash = "sha256-SUYF4bbaYwNgoe498VoCUzuLPcjBLQXR0o0DWjjoSnI=";
     };
     herdrBase = pkgs.callPackage "${herdrSrc}/nix/package.nix" {};
-    herdrMirrorVersion = "0.1.15";
-    herdrMirrorSrc = pkgs.fetchFromGitHub {
-      owner = "nikok6";
-      repo = "herdr-mirror";
-      rev = "ac72ab54689fd63fbd13cd0eaca525c7f3ab7f81";
-      hash = "sha256-29PS68pDy5B5LCvTR31wUcRVNAzGP4menVBBEl7WSMo=";
-    };
-    hostsTemplate = pkgs.writeText "herdr-mirror-hosts.toml" ''
-      [hosts.work]
-      target = "user@workbox"
-    '';
-    herdrMirrorInit = pkgs.writeShellApplication {
-      name = "herdr-mirror-init";
-      runtimeInputs = [pkgs.coreutils];
-      text = ''
-        config_dir="''${XDG_CONFIG_HOME:-$HOME/.config}/herdr-mirror"
-        config_file="$config_dir/hosts.toml"
-
-        mkdir -p "$config_dir"
-
-        if [ -e "$config_file" ]; then
-          printf '%s\n' "$config_file already exists"
-          exit 0
-        fi
-
-        cp ${hostsTemplate} "$config_file"
-        printf '%s\n' "Wrote $config_file"
-      '';
-    };
-    herdrMirrorBin = pkgs.rustPlatform.buildRustPackage {
-      pname = "herdr-mirror-bin";
-      version = herdrMirrorVersion;
-      src = herdrMirrorSrc;
-      cargoLock = {
-        lockFile = "${herdrMirrorSrc}/Cargo.lock";
-      };
-    };
-    herdrMirror = pkgs.stdenvNoCC.mkDerivation {
-      pname = "herdr-mirror";
-      version = herdrMirrorVersion;
-      dontUnpack = true;
-      nativeBuildInputs = [pkgs.makeWrapper];
-      installPhase = ''
-        runHook preInstall
-        mkdir -p $out/bin $out/target/release $out/share/herdr-mirror
-        cp ${herdrMirrorSrc}/herdr-plugin.toml $out/herdr-plugin.toml
-        cp ${herdrMirrorSrc}/README.md $out/share/herdr-mirror/README.md
-        cp ${hostsTemplate} $out/share/herdr-mirror/hosts.toml.example
-        ln -s ${herdrMirrorInit}/bin/herdr-mirror-init $out/bin/herdr-mirror-init
-        makeWrapper ${herdrMirrorBin}/bin/herdr-mirror $out/target/release/herdr-mirror \
-          --prefix PATH : ${lib.makeBinPath [pkgs.openssh]}
-        ln -s ../target/release/herdr-mirror $out/bin/herdr-mirror
-        runHook postInstall
-      '';
-      meta = {
-        description = "Herdr plugin that mirrors remote Herdr workspaces into a local session";
-        homepage = "https://github.com/nikok6/herdr-mirror";
-        license = lib.licenses.mit;
-        mainProgram = "herdr-mirror";
-        platforms = lib.platforms.linux ++ lib.platforms.darwin;
-      };
-    };
-    herdrWrapped = inputs.wrappers.lib.wrapPackage {
+  in {
+    packages.herdr = inputs.wrappers.lib.wrapPackage {
       inherit pkgs;
       package = herdrBase;
       env = {
@@ -96,6 +31,14 @@
           switch_tab = ["prefix+1..9", "alt+1..9"]
           next_tab = ["prefix+n", "alt+]"]
           previous_tab = ["prefix+p", "alt+["]
+          next_workspace = ["prefix+}", "alt+}"]
+          previous_workspace = ["prefix+{", "alt+{"]
+          switch_workspace = ["prefix+shift+1..9", "alt+shift+1..9"]
+          workspace_picker = ["prefix+w", "alt+w"]
+          goto = ["prefix+g", "alt+g"]
+          next_agent = ["prefix+alt+]", "ctrl+alt+]"]
+          previous_agent = ["prefix+alt+[", "ctrl+alt+["]
+          focus_agent = ["prefix+alt+1..9", "ctrl+alt+1..9"]
 
           [[keys.command]]
           key = "prefix+shift+a"
@@ -104,68 +47,7 @@
           description = "ask Codex Spark"
           width = "80%"
           height = "65%"
-
-          [[keys.command]]
-          key = "prefix+shift+m"
-          type = "plugin_action"
-          command = "mirror.start"
-
-          [[keys.command]]
-          key = "prefix+shift+s"
-          type = "plugin_action"
-          command = "mirror.pause"
-
-          [[keys.command]]
-          key = "prefix+shift+b"
-          type = "plugin_action"
-          command = "mirror.restore"
-
-          [[keys.command]]
-          key = "prefix+alt+d"
-          type = "plugin_action"
-          command = "mirror.teardown"
-
-          [[keys.command]]
-          key = "prefix+alt+n"
-          type = "plugin_action"
-          command = "mirror.remote-new-workspace"
-
-          [[keys.command]]
-          key = "prefix+alt+c"
-          type = "plugin_action"
-          command = "mirror.remote-new-tab"
-
-          [[keys.command]]
-          key = "prefix+alt+v"
-          type = "plugin_action"
-          command = "mirror.remote-split-right"
-
-          [[keys.command]]
-          key = "prefix+alt+minus"
-          type = "plugin_action"
-          command = "mirror.remote-split-down"
         '';
-      };
-    };
-  in {
-    packages = {
-      herdr-mirror = herdrMirror;
-      herdr = pkgs.symlinkJoin {
-        name = "herdr";
-        paths = [
-          herdrWrapped
-          herdrMirror
-        ];
-        postBuild = ''
-          rm $out/bin/herdr
-          cat > $out/bin/herdr <<EOF
-          #!${pkgs.runtimeShell}
-          ${herdrWrapped}/bin/herdr plugin link ${herdrMirror} >/dev/null 2>&1 || true
-          exec ${herdrWrapped}/bin/herdr "\$@"
-          EOF
-          chmod +x $out/bin/herdr
-        '';
-        meta = (herdrWrapped.meta or {}) // {mainProgram = "herdr";};
       };
     };
   };

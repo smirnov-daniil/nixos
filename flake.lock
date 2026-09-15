@@ -282,6 +282,18 @@
         "type": "github"
       }
     },
+    "nixpkgs_3": {
+      "locked": {
+        "lastModified": 1788039129,
+        "narHash": "sha256-pa4Q0qErvCvzCaaUph7Sm37RhR4xvPrYI8Lgz6k85+A=",
+        "type": "tarball",
+        "url": "https://github.com/NixOS/nixpkgs/archive/d2f67949798825fe853f7c5d0492b8bf016d3f88.tar.gz"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://github.com/NixOS/nixpkgs/archive/d2f67949798825fe853f7c5d0492b8bf016d3f88.tar.gz"
+      }
+    },
     "pi": {
       "inputs": {
         "bun2nix": "bun2nix",
@@ -352,6 +364,7 @@
         "pi-review": "pi-review",
         "pi-subagents": "pi-subagents",
         "skillopt": "skillopt",
+        "skinem": "skinem",
         "sops-nix": "sops-nix",
         "tuicr": "tuicr",
         "wrapper-modules": "wrapper-modules",
@@ -374,6 +387,25 @@
         "repo": "SkillOpt",
         "rev": "8a4c96a23639eee6ce19de7579ac9006b6dd4a2a",
         "type": "github"
+      }
+    },
+    "skinem": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_3"
+      },
+      "locked": {
+        "lastModified": 1788969110,
+        "narHash": "sha256-mtqxL/qBI9sWklvUkVUMokHTGwduXxdjndOW917G/h4=",
+        "ref": "refs/heads/master",
+        "rev": "d161a7cc307f005404523c69eba61f53182436a8",
+        "revCount": 24,
+        "type": "git",
+        "url": "ssh://git@github.com/smirnov-daniil/tributum.git"
+      },
+      "original": {
+        "rev": "d161a7cc307f005404523c69eba61f53182436a8",
+        "type": "git",
+        "url": "ssh://git@github.com/smirnov-daniil/tributum.git"
       }
     },
     "sops-nix": {
