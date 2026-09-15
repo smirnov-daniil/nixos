@@ -14,10 +14,10 @@
     };
 
     fileSystems = {
-      "/lib/modules/6.6.114.1-microsoft-standard-WSL2" = {
-        device = "none";
-        fsType = "overlay";
-      };
+      # "/lib/modules/6.6.114.1-microsoft-standard-WSL2" = {
+      #   device = "none";
+      #   fsType = "overlay";
+      # };
 
       "/mnt/wsl" = {
         device = "none";

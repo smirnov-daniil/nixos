@@ -14,6 +14,7 @@
       self.nixosModules.base
       self.nixosModules.general
       self.nixosModules.vm
+      self.nixosModules.deploy-rs-initiator
     ];
     system.stateVersion = "25.11";
     networking = {
@@ -21,5 +22,6 @@
     };
     preferences.hostname = "aku";
     features.vm.adminUser = config.preferences.user.name;
+    features.deploy-rs.initiator.enable = true;
   };
 }
