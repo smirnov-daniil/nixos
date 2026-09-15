@@ -53,6 +53,13 @@
             ignoreSpace = true;
           };
         };
+        ".zshenv".content = ''
+          if [ -e /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]; then
+            . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+          fi
+          path=($HOME/.local/bin $path)
+          typeset -U path
+        '';
         extraRC = ''
           path=(${pkgs.sqlite}/bin ${self'.packages.sysq}/bin $path)
           source ${pkgs.zsh-histdb}/share/zsh-histdb/sqlite-history.zsh

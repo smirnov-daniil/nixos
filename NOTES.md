@@ -1,3 +1,9 @@
+# Login environment from the zsh wrapper
+
+The user login shell is the flake-wrapped zsh from the `environment` package. The wrapper pins `ZDOTDIR` to a store directory, so `~/.profile`, `~/.zprofile` and `~/.zshrc` are never read, and the system `/etc/zsh/zprofile` on Ubuntu is empty. GDM launches the GNOME session through that login shell, so the session lost `~/.local/bin`, `~/.nix-profile/bin` and the `~/.nix-profile/share` entry of `XDG_DATA_DIRS`; launcher entries for Zen and Ghostty disappeared with it.
+
+The wrapper's `.zshenv` is the only user-controlled file every zsh instance reads, including the non-interactive login shell GDM uses, so the login environment is restored there: it sources the single-user `nix-daemon.sh` profile script (idempotent, provides PATH and `XDG_DATA_DIRS`) and prepends `~/.local/bin`. Overriding `.zshenv` content also replaces the module default, which concatenates `EXAMPLE=TRUE` and the fzf plugin `path+=` onto one line.
+
 # Provider-independent agent model routing
 
 Agent role files now declare only a complexity tier. The Pi extensions resolve that tier at invocation time against authenticated models from the currently selected provider and product family, so the same role files do not depend on Claude, OpenAI, or another provider-specific model ID.
