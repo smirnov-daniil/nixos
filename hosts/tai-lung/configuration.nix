@@ -300,6 +300,9 @@
           SKINEM_TELEGRAM_GROUPS = "1";
           TELEGRAM_API_BASE = "https://skinem-telegram-relay.danogun.workers.dev";
           WEBHOOK_URL = "https://skinem-telegram-relay.danogun.workers.dev/tg/webhook";
+          TELEGRAM_LOGIN_API_BASE = "https://skinem-telegram-relay.danogun.workers.dev";
+          TELEGRAM_LOGIN_CLIENT_ID = "7528531098";
+          TELEGRAM_LOGIN_REDIRECT_URI = "https://split.ssmirnovd.online/";
         };
       };
     };
