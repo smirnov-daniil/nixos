@@ -394,11 +394,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1789592561,
-        "narHash": "sha256-wX0e/cFMW5bCSsAV9jiAPDNuHVaH5hb3RdAnrdWq4k4=",
+        "lastModified": 1789593542,
+        "narHash": "sha256-mowoIUq5LEeY3UwzD7yH2joyILsr5gWOPNXinK+OP4I=",
         "ref": "master",
-        "rev": "736b9ad76f5b75c00b3a611b6282e074e09f53a3",
-        "revCount": 37,
+        "rev": "a4e7e5362dccbd66ba53370af6a520242b3d5efb",
+        "revCount": 38,
         "type": "git",
         "url": "ssh://git@github.com/smirnov-daniil/tributum.git"
       },
