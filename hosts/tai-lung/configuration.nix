@@ -289,7 +289,6 @@
       skinem = {
         enable = true;
         secrets = {
-          TELEGRAM_BOT_TOKEN = "skinem/bot-token";
           WEBHOOK_SECRET = "skinem/webhook-secret";
           TELEGRAM_GROUPS_SECRET = "skinem/groups-secret";
           TELEGRAM_LOGIN_CLIENT_SECRET = "skinem/login-client-secret";
@@ -297,9 +296,7 @@
           PROVERKACHEKA_TOKEN = "skinem/proverkacheka-token";
         };
         environment = {
-          SKINEM_TELEGRAM_GROUPS = "1";
-          TELEGRAM_LOGIN_CLIENT_ID = "7528531098";
-          TELEGRAM_LOGIN_REDIRECT_URI = "https://split.ssmirnovd.online/";
+          SKINEM_TELEGRAM_GROUPS = "0";
         };
       };
     };
