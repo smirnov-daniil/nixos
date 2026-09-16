@@ -22,6 +22,10 @@ the leaf does not open these ports in the firewall. The backend runs as the
 dedicated `skinem` user. Local PostgreSQL uses Unix-socket peer authentication:
 no database password or SOPS key is needed for the basic web deployment.
 
+Hashed assets are cached as immutable for one year. Core assets and the application
+shell revalidate with `no-cache` and ETag, while API responses remain uncacheable
+with `no-store`.
+
 Do not upgrade an existing PostgreSQL cluster's major version by changing its
 package. Back up the `skinem` database; the application migrates its schema at
 startup. This module does not configure backups or deploy itself automatically.

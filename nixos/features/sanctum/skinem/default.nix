@@ -13,6 +13,10 @@
     upstream = inputs.skinem;
     packages = upstream.packages.${pkgs.stdenv.hostPlatform.system};
     definitions = builtins.fromTOML (builtins.readFile "${upstream}/secretspec.toml");
+    securityHeaders = ''
+      add_header Referrer-Policy "no-referrer" always;
+      add_header X-Content-Type-Options "nosniff" always;
+    '';
     environment =
       {
         SKINEM_PUBLIC_ORIGIN = "https://${cfg.domain}";
@@ -277,11 +281,44 @@
         extraConfig = ''
           client_max_body_size 8m;
           access_log off;
-          add_header Referrer-Policy "no-referrer" always;
-          add_header X-Content-Type-Options "nosniff" always;
+          ${securityHeaders}
           add_header Cache-Control "no-store" always;
         '';
-        locations."/".tryFiles = "$uri $uri/ =404";
+        locations."/" = {
+          tryFiles = "$uri $uri/ =404";
+          extraConfig = ''
+            ${securityHeaders}
+            add_header Cache-Control "no-cache" always;
+          '';
+        };
+        locations."/assets/" = {
+          tryFiles = "$uri =404";
+          extraConfig = ''
+            ${securityHeaders}
+            add_header Cache-Control "public, max-age=31536000, immutable" always;
+          '';
+        };
+        locations."/core/" = {
+          tryFiles = "$uri =404";
+          extraConfig = ''
+            ${securityHeaders}
+            add_header Cache-Control "no-cache" always;
+          '';
+        };
+        locations."= /sw.js" = {
+          tryFiles = "$uri =404";
+          extraConfig = ''
+            ${securityHeaders}
+            add_header Cache-Control "no-cache" always;
+          '';
+        };
+        locations."= /manifest.webmanifest" = {
+          tryFiles = "$uri =404";
+          extraConfig = ''
+            ${securityHeaders}
+            add_header Cache-Control "no-cache" always;
+          '';
+        };
         locations."/skinem.v1.SplitService/" = {
           proxyPass = "http://127.0.0.1:${toString cfg.gatewayPort}";
           extraConfig = ''
