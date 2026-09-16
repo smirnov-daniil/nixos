@@ -173,7 +173,7 @@
     assert lib.elem deployPackage gru.environment.systemPackages;
     assert !taiLung.features.deploy-rs.server.passwordlessSudo;
     assert !hasPasswordlessSudo;
-    assert self.deploy.nodes.tai-lung.hostname == "tai-lung.ssmirnovd.online";
+    assert self.deploy.nodes.tai-lung.hostname == "ssmirnovd.online";
       pkgs.runCommand "tai-lung-invariants" {
         systemPath = taiLung.system.build.toplevel;
       } ''

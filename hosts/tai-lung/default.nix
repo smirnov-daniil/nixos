@@ -16,14 +16,8 @@ in {
     };
 
     deploy.nodes.tai-lung = {
-      hostname = "tai-lung.ssmirnovd.online";
+      hostname = "ssmirnovd.online";
       sshUser = "server";
-      sshOpts = [
-        "-i"
-        "~/.ssh/personal"
-        "-o"
-        "IdentitiesOnly=yes"
-      ];
       interactiveSudo = true;
       profiles.system = {
         user = "root";
