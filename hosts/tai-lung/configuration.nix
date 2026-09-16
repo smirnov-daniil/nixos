@@ -289,6 +289,7 @@
       skinem = {
         enable = true;
         secrets = {
+          TELEGRAM_BOT_TOKEN = "skinem/bot-token";
           WEBHOOK_SECRET = "skinem/webhook-secret";
           TELEGRAM_GROUPS_SECRET = "skinem/groups-secret";
           TELEGRAM_LOGIN_CLIENT_SECRET = "skinem/login-client-secret";
@@ -296,7 +297,9 @@
           PROVERKACHEKA_TOKEN = "skinem/proverkacheka-token";
         };
         environment = {
-          SKINEM_TELEGRAM_GROUPS = "0";
+          SKINEM_TELEGRAM_GROUPS = "1";
+          TELEGRAM_API_BASE = "https://skinem-telegram-relay.danogun.workers.dev";
+          WEBHOOK_URL = "https://skinem-telegram-relay.danogun.workers.dev/tg/webhook";
         };
       };
     };

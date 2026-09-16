@@ -3,7 +3,7 @@
 
   inputs = {
     # Private source: fetched by the invoking user's SSH agent, never at runtime.
-    skinem.url = "git+ssh://git@github.com/smirnov-daniil/tributum.git?rev=d161a7cc307f005404523c69eba61f53182436a8";
+    skinem.url = "git+ssh://git@github.com/smirnov-daniil/tributum.git?rev=24da55eb54f68ab36cd086e5fa0becfe0cf25833";
     flake-parts.url = "github:hercules-ci/flake-parts";
     deploy-rs = {
       url = "github:serokell/deploy-rs";
