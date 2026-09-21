@@ -27,6 +27,17 @@ PopupPanel {
     property int currentBrightness: 0
     property string pendingSsid: ""
 
+    // A network can look known (a NetworkManager profile exists) and still have
+    // no usable secret, which nmcli only discovers on the failed attempt.
+    Connections {
+        target: Network
+        function onSecretsRequired(ssid) {
+            root.pendingSsid = ssid;
+            wifiPassword.text = "";
+            Qt.callLater(() => wifiPassword.forceActiveFocus());
+        }
+    }
+
     onShownChanged: {
         if (shown) {
             Network.refresh();

@@ -14,6 +14,7 @@
       self.nixosModules.general
       self.nixosModules.intel
       self.nixosModules.desktop
+      self.nixosModules.apps
       self.nixosModules.browsec
       self.nixosModules.wireguard
       self.nixosModules.deploy-rs-initiator
@@ -24,7 +25,7 @@
       hostname = "gru";
       niri.renderDrmDevice = "/dev/dri/by-path/pci-0000:00:02.0-render";
     };
-    programs.browsec.users = [config.preferences.user.name];
+    features.apps.enable = true;
     features.deploy-rs.initiator.enable = true;
     sops = {
       defaultSopsFile = ./secrets/secrets.yaml;

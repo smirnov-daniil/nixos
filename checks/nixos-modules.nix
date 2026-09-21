@@ -43,6 +43,7 @@
       wsl = self.nixosModules.wsl;
       zen-browser = self.nixosModules.zen-browser;
       browsec = self.nixosModules.browsec;
+      apps = self.nixosModules.apps;
       wireguard = self.nixosModules.wireguard;
       sanctum-core = self.nixosModules.sanctum-core;
       sanctum-bazarr = self.nixosModules.sanctum-bazarr;
@@ -107,11 +108,6 @@
       vm-admin = {
         imports = [self.nixosModules.vm];
         features.vm.adminUser = "operator";
-        users.users.operator.isNormalUser = true;
-      };
-      browsec-user = {
-        imports = [self.nixosModules.browsec];
-        programs.browsec.users = ["operator"];
         users.users.operator.isNormalUser = true;
       };
       deploy-rs-server = {

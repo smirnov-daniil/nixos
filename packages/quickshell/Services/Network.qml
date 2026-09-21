@@ -70,11 +70,22 @@ Singleton {
 
     property bool connecting: false
 
+    // A saved NetworkManager profile does not imply a usable secret: with the
+    // iwd backend the PSK lives in iwd, so NM shows an empty psk even for
+    // networks that connect fine. When nmcli reports it needs one anyway, the
+    // UI has to fall back to asking.
+    signal secretsRequired(string ssid)
+
+    property string _connectSsid: ""
+    property bool _askedForSecrets: false
+
     function connect(ssid, password) {
         if (connecting)
             return;
         connecting = true;
         lastError = "";
+        _connectSsid = ssid;
+        _askedForSecrets = !!password;
         connectProc.command = ["nmcli", "device", "wifi", "connect", ssid];
         if (password)
             connectProc.command = connectProc.command.concat(["password", password]);
@@ -223,7 +234,18 @@ Singleton {
         id: connectProc
         environment: ({LC_ALL: "C"})
         stderr: StdioCollector {
-            onStreamFinished: root.lastError = text.trim()
+            onStreamFinished: {
+                const err = text.trim();
+                // nmcli cannot prompt non-interactively, so a missing secret
+                // surfaces as this message instead of a password prompt.
+                const needsSecret = /password not given|Secrets were required/i.test(err);
+                if (needsSecret && !root._askedForSecrets) {
+                    root.lastError = "";
+                    root.secretsRequired(root._connectSsid);
+                } else {
+                    root.lastError = err;
+                }
+            }
         }
         onRunningChanged: {
             if (!running) {

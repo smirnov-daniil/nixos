@@ -21,7 +21,9 @@
 
       # other
       pkgs.bat
+      pkgs.brightnessctl
       pkgs.btop
+      pkgs.cliphist
       pkgs.eza
       pkgs.fd
       pkgs.ffmpeg-full
@@ -29,6 +31,7 @@
       pkgs.glow
       pkgs.htop
       pkgs.imagemagick
+      pkgs.impala
       pkgs.imv
       pkgs.jq
       pkgs.killall
@@ -41,6 +44,9 @@
       pkgs.tree-sitter
       pkgs.unzip
       pkgs.wget
+      pkgs.wiremix
+      pkgs.wl-clipboard
+      pkgs.wtype
       pkgs.zip
       pkgs.zoxide
 

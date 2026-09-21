@@ -46,8 +46,15 @@
         renderDrmDevice = config.preferences.niri.renderDrmDevice;
       };
 
-      security.polkit.enable = true;
-      security.soteria.enable = true;
+      security = {
+        polkit = {
+          enable = true;
+          # The setuid pkexec wrapper became opt-in in nixpkgs; without it the
+          # only pkexec on PATH is the plain non-setuid binary, exiting 127.
+          enablePkexecWrapper = true;
+        };
+        soteria.enable = true;
+      };
 
       environment.systemPackages = [
         cfg.terminalPackage

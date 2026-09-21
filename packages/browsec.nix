@@ -49,15 +49,36 @@
         libxscrnsaver
       ];
 
-      # libglvnd: ANGLE dlopens libGL.so.1 at runtime; without it the GPU
-      # process dies and the app falls back to software rendering.
-      runtimeDependencies = [
-        pkgs.systemd
-        pkgs.libglvnd
-      ];
+      runtimeDependencies = [pkgs.systemd]; # libudev
+
+      # ANGLE's bundled libGLESv2.so dlopens libEGL.so.1 by soname, and a
+      # dlopen from a library searches that library's own RUNPATH rather than
+      # the executable's. libglvnd therefore has to land on every ELF here:
+      # via runtimeDependencies it only reached the main binary, so the GPU
+      # process failed EGL init and fell back to software rendering.
+      appendRunpaths = ["${pkgs.lib.getLib pkgs.libglvnd}/lib"];
 
       # Bundled swiftshader/EGL libs resolve at runtime, not link time.
       autoPatchelfIgnoreMissingDeps = ["libvulkan.so.1"];
+
+      # browbox is a dynamically linked Go binary that autoPatchelfHook rewrites
+      # into something which SIGSEGVs on startup, so the sweep is driven by hand
+      # here and browbox is installed after it with nothing but its ELF
+      # interpreter repointed -- it links only libc, libdl and libpthread.
+      # (browray is statically linked, so the hook never touched it.)
+      dontAutoPatchelf = true;
+
+      postFixup = ''
+        autoPatchelf -- $out
+
+        xray=$out/share/browsec/resources/xray
+        install -Dm755 opt/Browsec/resources/xray/browbox $xray/browbox-real
+        # Only the interpreter: adding an rpath makes patchelf rewrite the
+        # program headers, which is what corrupts it. glibc's own loader
+        # already finds libc, libdl and libpthread beside itself.
+        patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" \
+          $xray/browbox-real
+      '';
 
       unpackPhase = ''
         runHook preUnpack
@@ -71,6 +92,19 @@
         mkdir -p $out/share/browsec $out/share/applications $out/bin $out/share/apparmor.d
         cp -r opt/Browsec/* $out/share/browsec/
         cp -r usr/share/icons $out/share/icons
+
+        # Manual privilege mode (BROWSEC_PRIVILEGE_MODE below): the app spawns
+        # browbox itself rather than through sudo/pkexec. File capabilities
+        # cannot be set inside the nix store, so the real binary is set aside
+        # for nixosModules.browsec to wrap with setcap, and the path the app
+        # spawns becomes a shim that execs that wrapper.
+        xray=$out/share/browsec/resources/xray
+        rm "$xray/browbox"
+        cat > "$xray/browbox" <<'SHIM'
+        #!/bin/sh
+        exec /run/wrappers/bin/browsec-browbox "$@"
+        SHIM
+        chmod +x "$xray/browbox"
 
         # The SUID sandbox can't work from the nix store; user namespaces
         # handle sandboxing on NixOS.
@@ -96,6 +130,11 @@
 
         cat > $out/bin/browsec-desktop <<WRAPPER
         #!${pkgs.runtimeShell}
+        # Skip the app's sudo/pkexec provisioning: its sudoers check parses
+        # 'sudo -n -l' and needs NOPASSWD and the browbox path on one line,
+        # which a ~105-char store path can never satisfy at sudo's 80-column
+        # no-tty width. browbox carries cap_net_admin itself instead.
+        export BROWSEC_PRIVILEGE_MODE=manual
         extra=""
         if [ "\$(cat /proc/sys/kernel/apparmor_restrict_unprivileged_userns 2>/dev/null)" = "1" ] && [ ! -e /etc/apparmor.d/browsec-nix ]; then
           echo "browsec: AppArmor blocks unprivileged user namespaces on this host; starting with --no-sandbox." >&2
@@ -118,10 +157,12 @@
     };
   };
 
-  # Opt-in host module: installs the app and grants the bundled root helper
-  # passwordless sudo (mirrors what the .deb postinst writes to sudoers.d;
-  # without this every VPN toggle tries pkexec, and no polkit agent runs
-  # under niri).
+  # Opt-in host module: installs the app and gives browbox the capabilities it
+  # needs to run unprivileged. The app is built with BROWSEC_PRIVILEGE_MODE=manual
+  # so it spawns browbox directly; its sudo/pkexec provisioning cannot work here
+  # (the sudoers self-check needs NOPASSWD and the browbox path on one line of
+  # `sudo -n -l`, and a nix store path always wraps at sudo's 80-column no-tty
+  # width), and no polkit agent runs under niri anyway.
   flake.nixosModules.browsec = {
     pkgs,
     config,
@@ -130,39 +171,25 @@
   }: let
     cfg = config.programs.browsec;
     browsec = cfg.package;
-    browbox = "${browsec}/share/browsec/resources/xray/browbox";
   in {
-    options.programs.browsec = {
-      package = lib.mkOption {
-        type = lib.types.package;
-        default = self.packages.${pkgs.stdenv.hostPlatform.system}.browsec;
-      };
-      users = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        default = [];
-      };
+    options.programs.browsec.package = lib.mkOption {
+      type = lib.types.package;
+      default = self.packages.${pkgs.stdenv.hostPlatform.system}.browsec;
     };
 
     config = {
       environment.systemPackages = [browsec];
 
-      security.sudo.extraRules = [
-        {
-          users = cfg.users;
-          commands = [
-            {
-              command = browbox;
-              options = ["NOPASSWD"];
-            }
-            {
-              # The app invokes the pkill it detects on PATH, so the rule must
-              # name that exact path, not a store path.
-              command = "/run/current-system/sw/bin/pkill -2 -U 0 browbox";
-              options = ["NOPASSWD"];
-            }
-          ];
-        }
-      ];
+      # File capabilities cannot live in the nix store, so this wrapper is what
+      # actually carries them; the browbox inside the package is a shim that
+      # execs it. cap_net_admin creates the TUN device and manages routes and
+      # nftables; cap_net_raw covers the connectivity probes.
+      security.wrappers.browsec-browbox = {
+        source = "${browsec}/share/browsec/resources/xray/browbox-real";
+        capabilities = "cap_net_admin,cap_net_raw+ep";
+        owner = "root";
+        group = "root";
+      };
     };
   };
 }
