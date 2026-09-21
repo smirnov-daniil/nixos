@@ -125,6 +125,12 @@
       };
     };
 
+    services.tailscale = {
+      enable = true;
+      openFirewall = true;
+      useRoutingFeatures = "none";
+    };
+
     networking = {
       networkmanager.enable = true;
       wireless.iwd.enable = true;
@@ -132,6 +138,8 @@
         enable = true;
         allowedTCPPorts = [22 1234 25565];
         allowedUDPPorts = [500 4500 1701];
+        trustedInterfaces = ["tailscale0"];
+        checkReversePath = "loose";
       };
       interfaces = {
         enp3s0.useDHCP = true;

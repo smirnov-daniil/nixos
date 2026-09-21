@@ -123,3 +123,10 @@ nix build path:.#nixosConfigurations.tai-lung.config.system.build.toplevel
 Activate using the existing host deployment workflow only after configuring DNS,
 the required encrypted secrets, and backups. The integration is initially disabled
 on every host.
+
+## Удалённый доступ
+
+Хост включает Tailscale (`services.tailscale`), интерфейс `tailscale0` доверен брандмауэром.
+Это исходящее подключение: проброска портов на роутере и белый внешний адрес не нужны, поэтому
+доступ не зависит от фильтрации входящего SSH у провайдера. Первый вход выполняется на самой
+машине командой `sudo tailscale up`, дальше `deploy` и `ssh` ходят по адресу из tailnet.
