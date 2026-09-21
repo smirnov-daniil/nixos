@@ -1,6 +1,4 @@
 import Quickshell
-import Quickshell.Bluetooth
-import Quickshell.Services.Pipewire
 import QtQuick
 import QtQuick.Layouts
 import qs.Common
@@ -30,36 +28,8 @@ Variants {
             bottom: true
         }
 
-        implicitWidth: 28
+        implicitWidth: Theme.barWidth
         color: Theme.background
-
-        PwObjectTracker {
-            objects: [Pipewire.defaultAudioSink]
-        }
-
-        // Bluetooth.devices only signals insert/remove; bump a revision on
-        // per-device connect changes so the glyph binding re-evaluates.
-        property int btRev: 0
-
-        Item {
-            visible: false
-
-            Repeater {
-                model: Bluetooth.devices
-
-                Item {
-                    required property BluetoothDevice modelData
-
-                    Connections {
-                        target: modelData
-
-                        function onConnectedChanged() {
-                            window.btRev++;
-                        }
-                    }
-                }
-            }
-        }
 
         ColumnLayout {
             anchors.fill: parent
@@ -96,7 +66,7 @@ Variants {
                         else if (mouse.button === Qt.RightButton)
                             Media.activePlayer?.next();
                         else
-                            root.controlCenter.toggle();
+                            root.controlCenter.openTab("audio");
                     }
                 }
 
@@ -115,39 +85,12 @@ Variants {
                     Layout.fillWidth: true
                     visible: Niri.kbLayout !== ""
                     glyph: Niri.kbLayout
-                    size: 10
-                    color: Niri.kbLayoutIdx === 0 ? Theme.muted : Theme.warning
-                }
-
-                BarIcon {
-                    Layout.fillWidth: true
-                    glyph: Pipewire.defaultAudioSink?.audio.muted ? "󰖁" : "󰕾"
-                    color: Pipewire.defaultAudioSink?.audio.muted ? Theme.muted : Theme.foreground
-                    onClicked: root.controlCenter.toggle()
-                }
-
-                BarIcon {
-                    Layout.fillWidth: true
-                    glyph: Network.statusIcon
-                    color: Network.wifiConnected || Network.ethernetConnected
-                        ? Theme.foreground
-                        : Theme.muted
-                    onClicked: root.controlCenter.toggle()
-                }
-
-                BarIcon {
-                    Layout.fillWidth: true
-                    visible: Bluetooth.defaultAdapter !== null
-                    glyph: {
-                        void window.btRev;
-                        const adapter = Bluetooth.defaultAdapter;
-                        if (!adapter || !adapter.enabled)
-                            return "󰂲";
-                        const connected = [...Bluetooth.devices.values].some(d => d.connected);
-                        return connected ? "󰂱" : "󰂯";
-                    }
-                    color: Bluetooth.defaultAdapter?.enabled ? Theme.primary : Theme.muted
-                    onClicked: root.controlCenter.toggle()
+                    // Two letters at 10px in base03 were the least legible
+                    // thing on the bar; bold, a size up, and readable in both
+                    // states rather than only when the layout is non-default.
+                    size: 12
+                    bold: true
+                    color: Niri.kbLayoutIdx === 0 ? Theme.foreground : Theme.warning
                 }
 
                 BarIcon {
@@ -171,12 +114,16 @@ Variants {
                     onClicked: root.calendar.toggle()
                 }
 
-                BarIcon {
-                    Layout.fillWidth: true
-                    glyph: "󰐥"
-                    color: Theme.danger
-                    onClicked: root.sessionMenu.toggle()
+                QuickSettings {
+                    controlCenter: root.controlCenter
                 }
+
+                // BarIcon {
+                //     Layout.fillWidth: true
+                //     glyph: "󰐥"
+                //     color: Theme.danger
+                //     onClicked: root.sessionMenu.toggle()
+                // }
             }
         }
     }

@@ -41,4 +41,7 @@ BarIcon {
         return Theme.foreground;
     }
     label: root.percent + "%"
+    // The percentage matters most exactly when the glyph turns red, so it
+    // follows the glyph rather than staying in the muted shade.
+    labelColor: root.color
 }

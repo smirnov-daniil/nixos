@@ -56,7 +56,7 @@ PanelWindow {
 
         width: root.panelWidth
         height: root.panelHeight
-        x: root.alignment === "center" ? (parent.width - width) / 2 : 34
+        x: root.alignment === "center" ? (parent.width - width) / 2 : Theme.barWidth + 6
         y: root.alignment === "center" ? (parent.height - height) / 2 : parent.height - height - 8
 
         radius: 12

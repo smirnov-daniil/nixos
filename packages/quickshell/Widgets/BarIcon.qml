@@ -9,6 +9,10 @@ Item {
     property color color: Theme.foreground
     property int size: 15
     property string label: ""
+    property color labelColor: Theme.muted
+    property bool bold: false
+    // Exposed so a flyout can stay open while the pointer is on its anchor.
+    readonly property bool hovered: mouseArea.containsMouse
 
     signal clicked(var mouse)
 
@@ -32,15 +36,17 @@ Item {
             color: root.color
             font.pixelSize: root.size
             font.family: Theme.fontFamily
+            font.bold: root.bold
             anchors.horizontalCenter: parent.horizontalCenter
         }
 
         Text {
             visible: root.label !== ""
             text: root.label
-            color: Theme.muted
-            font.pixelSize: 8
+            color: root.labelColor
+            font.pixelSize: 10
             font.family: Theme.fontFamily
+            font.bold: true
             anchors.horizontalCenter: parent.horizontalCenter
         }
     }

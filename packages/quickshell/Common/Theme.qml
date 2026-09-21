@@ -9,6 +9,9 @@ QtObject {
     property string fontFamily: "JetBrainsMono Nerd Font"
     property int fontSize: 14
 
+    // Width of the vertical bar; panels sit just clear of it.
+    property int barWidth: 32
+
     // Fallback palette, overridden from theme.nix via QS_FLAKE_THEME (set by
     // the nix wrapper in packages/quickshell/default.nix).
     property color base00: "#292c36"

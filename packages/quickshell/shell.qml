@@ -90,6 +90,10 @@ ShellRoot {
         function toggle(): void {
             controlCenter.toggle();
         }
+
+        function openTab(name: string): void {
+            controlCenter.openTab(name);
+        }
     }
 
     IpcHandler {
