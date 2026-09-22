@@ -1,0 +1,156 @@
+# Installed into KAKOUNE_CONFIG_DIR by packages/kakoune/default.nix.
+# Helix-flavoured kakoune: <space> is the user mode, LSP everywhere, fzf pickers.
+
+# ── editor ────────────────────────────────────────────────────────────────────
+set-option global ui_options terminal_assistant=none terminal_set_title=true
+set-option global scrolloff 3,5
+set-option global autoreload yes
+set-option global indentwidth 4
+set-option global tabstop 4
+set-option global grepcmd 'rg --column --line-number --no-heading --smart-case --color=never'
+
+add-highlighter global/ number-lines -hlcursor
+add-highlighter global/ show-matching
+add-highlighter global/ show-whitespaces -only-trailing
+
+hook global WinSetOption filetype=(nix|json|markdown|typescript|javascript|yaml) %{
+    set-option window indentwidth 2
+}
+
+source "%val{config}/qml.kak"
+source "%val{config}/surround.kak"
+source "%val{config}/jj-diff.kak"
+
+# ── windowing: pickers and terminals open in a split below the editor ─────────
+source "%val{config}/herdr.kak"
+set-option global windowing_modules 'herdr' 'tmux' 'zellij' 'wezterm' 'kitty' 'niri' 'hyprland' 'sway' 'wayland' 'x11'
+set-option global windowing_placement vertical
+hook global ModuleLoaded wayland %{
+    set-option global termcmd 'ghostty -e sh -c'
+}
+
+# ── plugins ───────────────────────────────────────────────────────────────────
+enable-auto-pairs
+
+require-module fzf
+require-module fzf-file
+require-module fzf-buffer
+require-module fzf-grep
+set-option global fzf_file_command 'fd --type f --hidden --follow --exclude .git --exclude .jj'
+set-option global fzf_highlight_command bat
+set-option global fzf_grep_command "rg --line-number --no-column --no-heading --color=never --smart-case --hidden --glob=!.git --glob=!.jj ''"
+set-option global fzf_grep_preview_command bat
+set-option global fzf_tmux_popup true
+set-option global fzf_default_opts '--info=inline --border=rounded --layout=reverse --cycle'
+
+# ── lsp ───────────────────────────────────────────────────────────────────────
+evaluate-commands %sh{ kak-lsp --kakoune -s "$kak_session" }
+set-option global lsp_hover_anchor true
+set-option global lsp_diagnostic_line_error_sign '●'
+set-option global lsp_diagnostic_line_warning_sign '●'
+set-option global lsp_diagnostic_line_info_sign '●'
+set-option global lsp_diagnostic_line_hint_sign '○'
+lsp-enable
+lsp-inlay-hints-enable global
+lsp-auto-signature-help-enable
+set-option global modelinefmt '%val{bufname} %opt{lsp_modeline_code_actions}%opt{lsp_modeline_progress} {{mode_info}} %val{cursor_line}:%val{cursor_char_column} {{context_info}}'
+
+# format on save where a formatter is wired up (markdown deliberately excluded)
+hook global WinSetOption filetype=(nix|c|cpp|typst|json|qml|typescript|javascript) %{
+    hook window BufWritePre .* -group lsp-format lsp-formatting-sync
+    hook -once -always window WinSetOption filetype=.* %{ remove-hooks window lsp-format }
+}
+
+remove-hooks global lsp-filetype-nix
+hook -group lsp-filetype-nix global BufSetOption filetype=nix %{
+    set-option buffer lsp_servers %{
+        [nixd]
+        root_globs = ["flake.nix", "shell.nix", ".jj", ".git", ".hg"]
+        settings_section = "nixd"
+        [nixd.settings.nixd]
+        formatting.command = ["alejandra", "--quiet"]
+    }
+}
+
+remove-hooks global lsp-filetype-typst
+hook -group lsp-filetype-typst global BufSetOption filetype=typst %{
+    set-option buffer lsp_servers %{
+        [tinymist]
+        root_globs = ["typst.toml", ".jj", ".git", ".hg"]
+        args = ["lsp"]
+        settings_section = "_"
+        [tinymist.settings._]
+        exportPdf = "never"
+        formatterMode = "typstyle"
+    }
+}
+
+hook -group lsp-filetype-qml global BufSetOption filetype=qml %{
+    set-option buffer lsp_servers %{
+        [qmlls]
+        root_globs = [".qmlls.ini", "shell.qml", ".jj", ".git", ".hg"]
+        args = ["-E"]
+    }
+}
+
+# theme last: kak-lsp resets its faces when it loads
+colorscheme flake
+
+# ── vcs gutter ────────────────────────────────────────────────────────────────
+hook global WinCreate ^[^*]+$ %{
+    evaluate-commands %sh{
+        git -C "$(dirname "$kak_buffile")" rev-parse --is-inside-work-tree >/dev/null 2>&1 &&
+            echo 'try %{ git show-diff }'
+    }
+}
+hook global BufWritePost ^[^*]+$ %{
+    evaluate-commands %sh{
+        git -C "$(dirname "$kak_buffile")" rev-parse --is-inside-work-tree >/dev/null 2>&1 &&
+            echo 'try %{ git update-diff }'
+    }
+}
+
+# ── keys: helix muscle memory (<space> is already the user mode in kakoune) ──
+map global normal <c-c> ': comment-line<ret>' -docstring 'toggle line comment'
+
+map global goto d '<esc>: lsp-definition<ret>' -docstring 'definition'
+map global goto D '<esc>: lsp-declaration<ret>' -docstring 'declaration'
+map global goto r '<esc>: lsp-references<ret>' -docstring 'references'
+map global goto y '<esc>: lsp-type-definition<ret>' -docstring 'type definition'
+map global goto m '<esc>: lsp-implementation<ret>' -docstring 'implementation'
+
+map global user <space> ': fzf-file<ret>' -docstring 'open file'
+map global user b ': fzf-buffer<ret>' -docstring 'switch buffer'
+map global user / ': fzf-grep<ret>' -docstring 'grep project'
+map global user w ': write<ret>' -docstring 'write'
+map global user q ': quit<ret>' -docstring 'quit'
+map global user k ': lsp-hover<ret>' -docstring 'hover'
+map global user r ': lsp-rename-prompt<ret>' -docstring 'rename symbol'
+map global user a ': lsp-code-actions<ret>' -docstring 'code actions'
+map global user s ': lsp-goto-document-symbol<ret>' -docstring 'document symbols'
+map global user S ': lsp-workspace-symbol-incr<ret>' -docstring 'workspace symbols'
+map global user f ': lsp-formatting<ret>' -docstring 'format buffer'
+map global user c ': comment-line<ret>' -docstring 'toggle line comment'
+map global user C ': comment-block<ret>' -docstring 'toggle block comment'
+map global user y '<a-|> wl-copy<ret>' -docstring 'yank to clipboard'
+map global user p '! wl-paste -n<ret>' -docstring 'paste clipboard before'
+map global user P '<a-!> wl-paste -n<ret>' -docstring 'paste clipboard after'
+map global user R '| wl-paste -n<ret>' -docstring 'replace with clipboard'
+map global user l ': enter-user-mode lsp<ret>' -docstring 'lsp…'
+map global user g ': enter-user-mode vcs<ret>' -docstring 'vcs…'
+map global user m ': enter-user-mode surround<ret>' -docstring 'surround…'
+map global user ! ': fifo-prompt<ret>' -docstring 'shell command into *fifo*'
+
+declare-user-mode vcs
+map global vcs s ': git show-diff<ret>' -docstring 'flag changes vs HEAD (jj @-)'
+map global vcs t ': jj-show-diff<ret>' -docstring 'flag changes vs trunk()'
+map global vcs h ': git hide-diff; jj-hide-diff<ret>' -docstring 'hide diff flags'
+map global vcs n ': git next-hunk<ret>' -docstring 'next hunk'
+map global vcs p ': git prev-hunk<ret>' -docstring 'previous hunk'
+map global vcs b ': git blame<ret>' -docstring 'toggle blame'
+map global vcs d ': git diff<ret>' -docstring 'diff buffer'
+
+require-module fifo
+define-command fifo-prompt -docstring 'fifo-prompt: run a shell command, stream its output into *fifo*' %{
+    prompt -shell-completion 'shell:' %{ fifo -scroll -script %val{text} }
+}

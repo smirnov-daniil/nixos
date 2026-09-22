@@ -58,6 +58,7 @@
       self'.packages.herdr
       self'.packages.jjui
       self'.packages.jujutsu
+      self'.packages.kakoune
       self'.packages.nix-check-bin
       self'.packages.oh-my-posh
       self'.packages.pi
