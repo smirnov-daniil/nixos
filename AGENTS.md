@@ -4,7 +4,7 @@ Use [README.md](README.md) as the authoritative guide for adding features, packa
 
 ## Architecture
 
-- `flake.nix` recursively imports every `.nix` file except `flake.nix` and files beginning with `_`.
+- `flake.nix` uses `tools/_sources.nix` to recursively import ordinary `.nix` modules. It excludes `flake.nix`, `devenv.nix`, underscore-prefixed helpers, hidden directories, local overrides, generated state, and symlinks.
 - Every ordinary `.nix` file must therefore be a valid `flake-parts` module.
 - `_*.nix` files are plain helpers and require explicit imports.
 - Hosts are `aku`, `gru`, `lich`, and `tai-lung`.
@@ -23,13 +23,15 @@ Use [README.md](README.md) as the authoritative guide for adding features, packa
 
 ## Validation
 
-Run formatting and evaluation with uncommitted files included:
+Use the pinned devenv environment. Checks include uncommitted/new files and exclude mutable runtime state; shell entry never activates or deploys a system:
 
 ```bash
-alejandra --check .
-nix flake check path:. --no-build --show-trace
-nix flake check path:. --show-trace
-nix build path:.#nixosConfigurations.<host>.config.system.build.toplevel
+devenv test
+devenv tasks run flake:format
+devenv --profile full test
+devenv --profile gru tasks run flake:host
 ```
 
 Use `statix check .` for advisory lint review. Use `nh os switch` for a local host and `deploy .#tai-lung` from Gru for Tai Lung.
+
+Keep the root `nixpkgs` pin in `flake.lock` aligned with `devenv.yaml` and `devenv.lock`. Do not add automatic deployment, secret decryption, or Git hooks to shell entry. See README.md for bootstrap and standalone helper commands.

@@ -1,1 +1,10 @@
 .skillopt-sleep/
+.devenv/
+.direnv/
+devenv.local.nix
+devenv.local.yaml
+.env
+.env.*
+result
+result-*
+__pycache__/

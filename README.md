@@ -2,9 +2,39 @@
 
 This flake builds reusable packages and NixOS modules for `aku`, `gru`, `lich`, and `tai-lung`. It uses `flake-parts` with recursive module discovery, so additions need little wiring but must follow the contracts below.
 
+## Development environment
+
+Use Nix with flakes enabled and devenv 2.3.1 or newer. The standard CLI environment includes devenv. To bootstrap it without rebuilding your system:
+
+```bash
+cd ~/flake
+nix run --inputs-from path:. nixpkgs#devenv -- shell
+```
+
+Once the CLI is installed, use `devenv shell`, or run `direnv allow` once to enable automatic activation through `.envrc`. Shell entry provides Nix tooling (`nixd`, Alejandra, Statix, deadnix), Jujutsu, and the commands below. It does not format files, install Git hooks, decrypt secrets, evaluate hosts, or activate a system.
+
+```bash
+devenv test                         # format, workflow regression tests, whole-flake evaluation
+devenv tasks run flake:format        # format repository Nix files
+devenv tasks run flake:eval          # evaluate without building checks
+devenv --profile full test          # also build all flake checks; potentially expensive
+devenv shell flake-build environment # build one package
+devenv --profile gru tasks run flake:host # build Gru, never switch it
+```
+
+Inside the shell, `flake-fmt [--check]`, `flake-eval`, `flake-check`, `flake-build PACKAGE`, and `flake-host HOST` are available directly. The `aku`, `gru`, `lich`, and `tai-lung` profiles select the default host for `flake-host`; an explicit argument overrides the profile. Profiles can be combined, for example `devenv --profile gru --profile full shell`. Build result links live in `.devenv/builds/`.
+
+Checks and builds use a filtered source snapshot: new/uncommitted files are included, but VCS metadata, `.devenv`, `.direnv`, local overrides, `.env*`, and build result links are excluded. Keep plaintext credentials outside the source tree; this filter is not a general secret scanner. `devenv.local.nix` and `devenv.local.yaml` are ignored personal overrides. No services or containers are needed for maintaining this repository, so use `devenv shell` and tasks, not `devenv up`.
+
+The private `skinem` input still needs your SSH access (or an already fetched source) for whole-flake evaluation/builds. Devenv does not provide credentials. Activation and deployment remain explicit operations described below.
+
+Both lock files are committed. When updating the root `nixpkgs` input in `flake.lock`, copy its revision into `devenv.yaml` and run `devenv update nixpkgs`; the regression tests check that the pins match. `devenv update` alone does not update the NixOS flake. Official references: [profiles](https://devenv.sh/profiles/), [tasks](https://devenv.sh/tasks/), and [direnv](https://devenv.sh/integrations/direnv/).
+
+The pinned devenv `v2.3.1` release still has `2.2.2` in its upstream `src/modules/latest-version` metadata. Its shell can therefore print a version-mismatch hint even with the correct lock file; this does not indicate a failed setup.
+
 ## Architecture
 
-`flake.nix` imports every `.nix` file in the repository except `flake.nix` and files whose basename starts with `_`.
+`flake.nix` discovers modules through `tools/_sources.nix`. It recursively imports ordinary `.nix` files, excluding `flake.nix`, `devenv.nix`, underscore-prefixed helpers, hidden directories, local overrides, generated state, and symlinks.
 
 - Ordinary `.nix` files must be valid `flake-parts` modules.
 - `_*.nix` files are plain helpers and must be imported explicitly.
@@ -158,13 +188,13 @@ The aggregate `nixosModules.example` is retained as a reusable compatibility out
 
 ## Validate changes
 
-Use `path:.` while files are uncommitted so Nix includes newly created files:
+Prefer `devenv test` during development. It includes new files without copying live devenv state into the flake source. For an environment without devenv, run the equivalent helpers with Nix, Alejandra, and jq available:
 
 ```bash
-alejandra --check .
-nix flake check path:. --no-build --show-trace
-nix flake check path:. --show-trace
-nix build path:.#nixosConfigurations.<host>.config.system.build.toplevel
+bash tools/flake-dev.sh format --check
+bash tools/flake-dev.sh eval
+bash tools/flake-dev.sh check
+bash tools/flake-dev.sh host <host>
 ```
 
 Run `statix check .` as an additional lint review; it may report advisory style findings that do not block evaluation.

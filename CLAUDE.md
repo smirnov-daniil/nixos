@@ -5,10 +5,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-nix flake check path:. --no-build # evaluate the whole flake (fast sanity check)
-nix build path:.#<name>           # build one package, e.g. .#environment, .#ghostty, .#desktop
-nix build path:.#nixosConfigurations.<host>.config.system.build.toplevel   # build a full host (aku, gru, lich, tai-lung)
-alejandra .                      # format Nix files
+devenv shell                     # pinned tools; no activation or secret decryption
+devenv test                      # format + workflow tests + flake evaluation (no check builds)
+devenv --profile full test       # also build all checks (expensive)
+devenv shell flake-build environment # build one package
+devenv --profile gru tasks run flake:host # build a host, never activate
+devenv tasks run flake:format     # format source Nix files, excluding generated state
 statix check .                   # lint Nix files
 nh os switch                     # apply config on a NixOS host (no sudo needed; nh is wrapped with NH_FLAKE=$HOME/flake)
 nix flake update                 # update all inputs
@@ -20,10 +22,10 @@ Commit messages follow conventional-commit style, e.g. `fix(omp): jujutsu`, `fea
 
 ### Auto-import: every .nix file is a flake-parts module
 
-`flake.nix` collects **every** `.nix` file in the tree (except `flake.nix` itself and files whose name starts with `_`) and passes them all as imports to `flake-parts.lib.mkFlake`. Consequences:
+`flake.nix` uses `tools/_sources.nix` to collect ordinary `.nix` files and pass them to `flake-parts.lib.mkFlake`. It excludes `flake.nix`, `devenv.nix`, underscore-prefixed helpers, hidden directories, local overrides, generated state, and symlinks. Consequences:
 
-- Adding a new `.nix` file anywhere requires **no import wiring** — it is picked up automatically.
-- Every `.nix` file **must be a valid flake-parts module** (top-level `flake.*`, `perSystem`, `options`, ...). A plain expression or NixOS module at top level will break evaluation of the entire flake.
+- Adding a new ordinary `.nix` file in a source directory requires **no import wiring** — it is picked up automatically.
+- Every auto-imported `.nix` file **must be a valid flake-parts module** (top-level `flake.*`, `perSystem`, `options`, ...). A plain expression or NixOS module at top level will break evaluation of the entire flake.
 - Prefix a filename with `_` to exclude it from auto-import (helper/data files).
 
 `parts.nix` sets `systems = ["x86_64-linux"]` and declares the custom `flake.wrappersModules` option (see below).

@@ -12,6 +12,7 @@
     myTools = [
       # nix
       pkgs.alejandra
+      pkgs.devenv
       pkgs.manix
       pkgs.nil
       pkgs.nixd
