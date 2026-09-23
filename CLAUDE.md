@@ -2,6 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Workflow and safety
+
+- Use Jujutsu (`jj`), not Git, for history mutations. Inspect `jj status`, `jj log -r '@ | @-'`, and `jj diff` before editing. Create or reuse a logically scoped, described change before modifying files; preserve unrelated user work.
+- Prefer the commands below from the pinned devenv shell. With the Claude profile active, preserve it in nested invocations (`devenv --profile claude test`) so devenv does not remove the generated Claude configuration mid-session.
+- Never activate a system, deploy, restart services, publish changes, or decrypt secrets without explicit user approval for that action and target. A build or test request does not authorize `nh os switch`, `nixos-rebuild`, `deploy`, `switch-to-configuration`, or remote SSH execution.
+- Do not read plaintext credentials, `.env*`, SSH private keys, or SOPS age identities. Authentication is managed by the user outside Nix expressions and generated settings.
+- Do not bypass permission prompts, enable automatic approval, or add blanket Bash permissions. Project rules are safeguards, not an OS sandbox.
+- Run expensive full checks or host builds only when requested or clearly needed; do not attach them to editing hooks. `/flake-check` evaluates without building systems; `/flake-format` formats and reviews the diff.
+- `.claude/settings.json` and the two `flake-*` command files are generated from `tools/_claude.nix`; edit that source, not the generated files. Preserve `.claude/settings.local.json` and user-level Claude settings.
+
 ## Commands
 
 ```bash

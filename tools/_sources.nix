@@ -2,6 +2,13 @@ let
   ignored = name:
     builtins.match "(\\.git|\\.jj|\\.devenv|\\.direnv|\\.skillopt-sleep|__pycache__|result(-.*)?|devenv\\.local\\.(nix|yaml)|\\.env(\\..*)?)" name != null;
 
+  claudeState = [
+    ".claude/settings.json"
+    ".claude/settings.local.json"
+    ".claude/commands/flake-check.md"
+    ".claude/commands/flake-format.md"
+  ];
+
   # Never follow symlinks or traverse tool state when discovering modules.
   nixFiles = root: let
     entries = builtins.readDir root;
@@ -36,6 +43,8 @@ in {
     builtins.path {
       path = builtins.toPath root;
       name = "flake-dev-source";
-      filter = path: _type: !ignored (builtins.baseNameOf path);
+      filter = path: _type:
+        !ignored (builtins.baseNameOf path)
+        && !builtins.elem path (map (suffix: "${toString root}/${suffix}") claudeState);
     };
 }

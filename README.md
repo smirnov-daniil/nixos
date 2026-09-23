@@ -32,6 +32,47 @@ Both lock files are committed. When updating the root `nixpkgs` input in `flake.
 
 The pinned devenv `v2.3.1` release still has `2.2.2` in its upstream `src/modules/latest-version` metadata. Its shell can therefore print a version-mismatch hint even with the correct lock file; this does not indicate a failed setup.
 
+### Claude Code
+
+The optional `claude` profile provides the pinned Claude Code CLI and the native devenv integration:
+
+```bash
+devenv --profile claude shell claude
+devenv --profile claude --profile gru shell claude
+```
+
+Authenticate in Claude Code using your own account or externally supplied credentials. The profile does not configure a token, a model, or an external MCP server. Only the `claude-code` package is allowlisted as unfree; the default shell and CI do not install it.
+
+Two project commands are generated:
+
+- `/flake-check`: formatting checks, workflow tests, and whole-flake evaluation without building systems.
+- `/flake-format`: format Nix sources and review the Jujutsu diff.
+
+`CLAUDE.md` describes the jj change workflow and requires approval before activation, deployment, service restarts, publishing, or secret decryption. Generated Claude permissions also ask before commands such as `nh`, `nixos-rebuild`, `deploy`, `sudo`, and `ssh`; permission bypass is disabled. These are application-level safeguards, not an OS sandbox or a complete parser for arbitrary shell wrappers. No blanket shell permission or automatic edit hook is installed.
+
+Settings and command symlinks under `.claude/` are generated from `tools/_claude.nix`, ignored by VCS, and excluded from build snapshots. Personal `.claude/settings.local.json` is neither read by Nix nor overwritten. Do not edit the generated files directly. Devenv removes its generated symlinks on the next shell entry without the profile, so preserve `--profile claude` in nested invocations, including `devenv --profile claude test`.
+
+### GitHub Actions
+
+The `check` workflow uses the same pinned devenv environment, with read-only GitHub permissions and no deployment or full NixOS/package-bundle builds:
+
+- Every push, pull request, and manual run executes `devenv --profile ci test`: Alejandra, workflow/profile regression tests, ShellCheck, and actionlint. This profile does not need private inputs or Claude authentication.
+- Pushes and manual runs additionally evaluate the entire flake using `devenv --profile ci tasks run flake:eval`. Pull request events do not receive the private source or its token; their coverage is intentionally narrower.
+- Devenv is bootstrapped directly from the public nixpkgs revision in `devenv.lock`. The private `tributum` source is checked out separately over HTTPS at the revision in `flake.lock`, with credential persistence disabled. `FLAKE_SKINEM_SOURCE` supplies this checkout as a temporary input override; neither lock file is rewritten. Local development keeps using the original SSH input unless this variable is explicitly set.
+
+#### Enable private-source evaluation
+
+The default `GITHUB_TOKEN` can read this repository, not a different private repository. Configure a separate read-only token:
+
+1. In your GitHub account, open **Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**.
+2. Select resource owner **smirnov-daniil**, **Only select repositories → tributum**, and repository permission **Contents: Read-only**. Set an expiration and rotate the token before it expires; no write permission is needed.
+3. In the **flake repository**, open **Settings → Secrets and variables → Actions → New repository secret**. Name it **`SKINEM_READ_TOKEN`** and paste the token as its value. Do not put it in `devenv.yaml`, a Nix expression, `.env`, or a commit.
+4. Publish the updated workflow and trigger a new push or **Actions → check → Run workflow**. Re-running an old workflow run still uses its old workflow revision.
+
+Without the secret, push/manual runs fail with an explicit setup message after the credential-free checks. Expired tokens, missing repository access, or organization approval requirements also need to be resolved in GitHub. Do not use `pull_request_target` to expose credentials to untrusted changes.
+
+References: [fine-grained tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens), [Actions secrets](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets), [Claude Code integration](https://devenv.sh/integrations/claude-code/).
+
 ## Architecture
 
 `flake.nix` discovers modules through `tools/_sources.nix`. It recursively imports ordinary `.nix` files, excluding `flake.nix`, `devenv.nix`, underscore-prefixed helpers, hidden directories, local overrides, generated state, and symlinks.

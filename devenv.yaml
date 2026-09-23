@@ -2,6 +2,9 @@
 require_version: ">=2.3.1"
 secretspec:
   enable: false
+nixpkgs:
+  permitted_unfree_packages:
+    - claude-code
 inputs:
   nixpkgs:
     url: github:NixOS/nixpkgs/44a91898084f46797b5fac650c7e8c9ac38c43d4

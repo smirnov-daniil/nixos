@@ -35,3 +35,5 @@ devenv --profile gru tasks run flake:host
 Use `statix check .` for advisory lint review. Use `nh os switch` for a local host and `deploy .#tai-lung` from Gru for Tai Lung.
 
 Keep the root `nixpkgs` pin in `flake.lock` aligned with `devenv.yaml` and `devenv.lock`. Do not add automatic deployment, secret decryption, or Git hooks to shell entry. See README.md for bootstrap and standalone helper commands.
+
+The `ci` profile runs credential-free workflow checks only; whole-flake evaluation is a separate push/manual CI step using the locked private source and `SKINEM_READ_TOKEN`. Never expose this token or source to pull request events. The opt-in `claude` profile generates ignored settings and commands from `tools/_claude.nix`; preserve the profile in nested devenv invocations and never overwrite personal Claude settings.

@@ -9,6 +9,15 @@ source_snapshot() {
     '(import ./tools/_sources.nix).snapshot (builtins.getEnv "FLAKE_DEV_ROOT")'
 }
 
+skinem_input_flags=()
+if [[ -n ${FLAKE_SKINEM_SOURCE:-} ]]; then
+  if [[ $FLAKE_SKINEM_SOURCE != /* || ! -f $FLAKE_SKINEM_SOURCE/flake.nix ]]; then
+    echo 'FLAKE_SKINEM_SOURCE must be an absolute path to a skinem flake checkout.' >&2
+    exit 2
+  fi
+  skinem_input_flags=(--override-input skinem "path:$FLAKE_SKINEM_SOURCE")
+fi
+
 format_nix() {
   local files
   files=$(nix eval --impure --json --expr \
@@ -21,7 +30,7 @@ build_output() {
   source=$(source_snapshot)
   mkdir -p .devenv/builds
   nix build "path:$source#$attribute" --no-write-lock-file --show-trace \
-    --out-link "$PWD/.devenv/builds/$link"
+    "${skinem_input_flags[@]}" --out-link "$PWD/.devenv/builds/$link"
 }
 
 command=${1:-help}
@@ -32,7 +41,8 @@ case "$command" in
     flags=()
     [[ $command == eval ]] && flags+=(--no-build)
     source=$(source_snapshot)
-    nix flake check "path:$source" --no-write-lock-file --show-trace "${flags[@]}"
+    nix flake check "path:$source" --no-write-lock-file --show-trace \
+      "${skinem_input_flags[@]}" "${flags[@]}"
     ;;
   build)
     if [[ $# != 1 || ! $1 =~ ^[a-zA-Z0-9_][a-zA-Z0-9_-]*$ ]]; then

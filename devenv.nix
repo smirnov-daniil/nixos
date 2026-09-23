@@ -12,7 +12,7 @@
   };
 in {
   languages.nix.enable = true;
-  packages = with pkgs; [alejandra jq jujutsu ripgrep python3 shellcheck];
+  packages = with pkgs; [alejandra jq jujutsu ripgrep python3 shellcheck actionlint];
   dotenv.enable = false;
   dotenv.disableHint = true;
 
@@ -29,6 +29,11 @@ in {
       module.env.FLAKE_HOST = host;
     })
     // {
+      claude.module = import ./tools/_claude.nix;
+      ci.module = {lib, ...}: {
+        languages.nix.lsp.enable = false;
+        tasks."flake:test".after = lib.mkForce ["flake:format-check" "flake:workflow-test"];
+      };
       # Explicit opt-in: default tests only evaluate, never build whole systems.
       full.module = {config, ...}: {
         tasks."flake:check".before = lib.optional config.devenv.isTesting "devenv:enterTest";
@@ -41,6 +46,7 @@ in {
     "flake:workflow-test" = task ''
       python3 -m unittest discover -s tools -p 'test_*.py' -v
       shellcheck tools/flake-dev.sh
+      actionlint
     '';
     "flake:eval" = task "flake-eval";
     "flake:check" = task "flake-check";

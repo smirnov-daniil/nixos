@@ -74,6 +74,15 @@ class SourceFixture(unittest.TestCase):
         self.create("parts.nix", "{ changed = true; }")
         self.assertNotEqual(self.evaluate("snapshot"), before)
 
+    def test_claude_generated_files_are_excluded_but_handwritten_commands_remain(self):
+        self.create(".claude/commands/review.md", "handwritten instructions")
+        before = self.evaluate("snapshot")
+        for name in [".claude/settings.json", ".claude/settings.local.json",
+                     ".claude/commands/flake-check.md", ".claude/commands/flake-format.md"]:
+            self.create(name, "generated settings or local permissions")
+        self.assertEqual(self.evaluate("snapshot"), before)
+        self.assertTrue((Path(before) / ".claude/commands/review.md").is_file())
+
 
 class PinTests(unittest.TestCase):
     def test_shell_and_flake_use_the_same_nixpkgs(self):
@@ -105,7 +114,8 @@ class CommandTests(unittest.TestCase):
         mock.chmod(0o755)
         self.log = self.root / "calls.jsonl"
         self.env = dict(os.environ, DEVENV_ROOT=str(self.root), FLAKE_HOST="",
-                        PATH=f"{self.root}:{os.environ['PATH']}", NIX_TEST_LOG=str(self.log))
+                        FLAKE_SKINEM_SOURCE="", PATH=f"{self.root}:{os.environ['PATH']}",
+                        NIX_TEST_LOG=str(self.log))
 
     def run_command(self, *arguments, **environment):
         return subprocess.run(["bash", str(COMMAND), *arguments], text=True,
@@ -148,6 +158,24 @@ class CommandTests(unittest.TestCase):
 
     def test_nix_failure_is_propagated(self):
         self.assertEqual(self.run_command("eval", NIX_TEST_EXIT="42").returncode, 42)
+
+    def test_ci_uses_the_supplied_private_checkout_without_updating_the_lock(self):
+        upstream = self.root / "private source"
+        upstream.mkdir()
+        (upstream / "flake.nix").write_text("{}")
+        for arguments in [("eval",), ("check",), ("build", "environment"), ("host", "gru")]:
+            with self.subTest(arguments=arguments):
+                self.assertEqual(self.run_command(*arguments, FLAKE_SKINEM_SOURCE=str(upstream)).returncode, 0)
+                call = self.calls()[-1]
+                position = call.index("--override-input")
+                self.assertEqual(call[position:position + 3], ["--override-input", "skinem", f"path:{upstream}"])
+                self.assertIn("--no-write-lock-file", call)
+
+    def test_invalid_private_checkout_fails_before_calling_nix(self):
+        for source in ["relative/path", str(self.root / "missing")]:
+            with self.subTest(source=source):
+                self.assertEqual(self.run_command("eval", FLAKE_SKINEM_SOURCE=source).returncode, 2)
+                self.assertFalse(self.log.exists())
 
 
 if __name__ == "__main__":

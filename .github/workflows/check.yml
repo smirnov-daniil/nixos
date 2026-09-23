@@ -3,12 +3,105 @@ name: check
 on:
   push:
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    env:
+      DEVENV_TUI: "false"
+      DEVENV_MAX_JOBS: "1"
+      DEVENV_CORES: "2"
     steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v31
-      - run: nix flake check
-      - run: nix build .#environment
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31
+        with:
+          extra_nix_config: |
+            max-jobs = 1
+            cores = 2
+            auto-optimise-store = true
+            min-free = 2147483648
+            max-free = 5368709120
+
+      - uses: cachix/cachix-action@3ba601ff5bbb07c7220846facfa2cd81eeee15a1 # v16
+        with:
+          name: devenv
+          skipPush: true
+
+      - name: Install devenv from its pinned nixpkgs
+        run: |
+          # Do not use --inputs-from: bootstrapping must not fetch private inputs.
+          revision=$(jq -er '.nodes[.nodes[.root].inputs.nixpkgs].locked.rev | select(test("^[a-f0-9]{40}$"))' devenv.lock)
+          nix build "github:NixOS/nixpkgs/$revision#devenv" \
+            --out-link "$RUNNER_TEMP/devenv-cli" --print-build-logs
+          echo "$RUNNER_TEMP/devenv-cli/bin" >> "$GITHUB_PATH"
+
+      - name: Test the development workflow without private inputs
+        run: devenv --profile ci test 2>&1 | tee "$RUNNER_TEMP/devenv-ci.log"
+
+      # Never expose the private source or token to pull request code, including
+      # same-repository PRs. Full evaluation runs on pushes and manual runs only.
+      - name: Resolve the locked private source
+        if: github.event_name != 'pull_request'
+        id: skinem
+        env:
+          SKINEM_READ_TOKEN: ${{ secrets.SKINEM_READ_TOKEN }}
+        run: |
+          if [[ -z "$SKINEM_READ_TOKEN" ]]; then
+            echo '::error::Add the SKINEM_READ_TOKEN Actions secret with Contents: read access to smirnov-daniil/tributum. See README.md.'
+            exit 1
+          fi
+          revision=$(jq -er '.nodes[.nodes[.root].inputs.skinem].locked.rev | select(test("^[a-f0-9]{40}$"))' flake.lock)
+          echo "revision=$revision" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch the exact tributum revision over HTTPS
+        if: github.event_name != 'pull_request'
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: smirnov-daniil/tributum
+          ref: ${{ steps.skinem.outputs.revision }}
+          token: ${{ secrets.SKINEM_READ_TOKEN }}
+          path: .devenv/inputs/tributum
+          persist-credentials: false
+
+      - name: Evaluate all flake outputs without building systems
+        if: github.event_name != 'pull_request'
+        env:
+          FLAKE_SKINEM_SOURCE: ${{ github.workspace }}/.devenv/inputs/tributum
+        run: |
+          devenv --profile ci tasks run flake:eval 2>&1 | tee "$RUNNER_TEMP/devenv-eval.log"
+
+      - name: Explain pull request coverage
+        if: github.event_name == 'pull_request'
+        run: |
+          echo 'PR checks validate formatting, workflow tests and the Claude/CI profiles without secrets.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Whole-flake evaluation (private tributum input) runs after push or a trusted manual run.' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload check diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: devenv-check-logs
+          retention-days: 7
+          if-no-files-found: ignore
+          path: |
+            ${{ runner.temp }}/devenv-ci.log
+            ${{ runner.temp }}/devenv-eval.log
+
+      - name: Report remaining disk space
+        if: always()
+        run: df -h / /nix/store
