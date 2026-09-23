@@ -39,7 +39,8 @@ case "$command" in
   format) format_nix "$@" ;;
   eval|check)
     flags=()
-    [[ $command == eval ]] && flags+=(--no-build)
+    # No hidden builds during evaluation, even on a runner with a cold store.
+    [[ $command == eval ]] && flags+=(--no-build --option allow-import-from-derivation false)
     source=$(source_snapshot)
     nix flake check "path:$source" --no-write-lock-file --show-trace \
       "${skinem_input_flags[@]}" "${flags[@]}"

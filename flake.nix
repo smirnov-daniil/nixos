@@ -27,6 +27,11 @@
       url = "github:Lassulus/wrappers";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # Package expressions must be available without import-from-derivation.
+    herdr = {
+      url = "github:herdrdev/herdr/cca4af8dfad160bc5fb5ae133b70882b5fe28f61";
+      flake = false;
+    };
     zen-browser = {
       url = "github:youwen5/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";

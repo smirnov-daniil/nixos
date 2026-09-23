@@ -4,13 +4,7 @@
     self',
     ...
   }: let
-    herdrSrc = pkgs.fetchFromGitHub {
-      owner = "herdrdev";
-      repo = "herdr";
-      rev = "cca4af8dfad160bc5fb5ae133b70882b5fe28f61";
-      hash = "sha256-SUYF4bbaYwNgoe498VoCUzuLPcjBLQXR0o0DWjjoSnI=";
-    };
-    herdrBase = pkgs.callPackage "${herdrSrc}/nix/package.nix" {};
+    herdrBase = pkgs.callPackage "${inputs.herdr}/nix/package.nix" {};
   in {
     packages.herdr = inputs.wrappers.lib.wrapPackage {
       inherit pkgs;

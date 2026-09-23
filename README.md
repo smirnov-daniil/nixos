@@ -58,6 +58,7 @@ The `check` workflow uses the same pinned devenv environment, with read-only Git
 
 - Every push, pull request, and manual run executes `devenv --profile ci test`: Alejandra, workflow/profile regression tests, ShellCheck, and actionlint. This profile does not need private inputs or Claude authentication.
 - Pushes and manual runs additionally evaluate the entire flake using `devenv --profile ci tasks run flake:eval`. Pull request events do not receive the private source or its token; their coverage is intentionally narrower.
+- `flake-eval` disables import-from-derivation (IFD) as well as check builds. Package expressions fetched from upstream must come from locked source inputs (as with `herdr`), not a derivation that needs building during evaluation. This keeps evaluation independent of a warm local build cache.
 - Devenv is bootstrapped directly from the public nixpkgs revision in `devenv.lock`. The private `tributum` source is checked out separately over HTTPS at the revision in `flake.lock`, with credential persistence disabled. `FLAKE_SKINEM_SOURCE` supplies this checkout as a temporary input override; neither lock file is rewritten. Local development keeps using the original SSH input unless this variable is explicitly set.
 
 #### Enable private-source evaluation

@@ -127,7 +127,8 @@ class CommandTests(unittest.TestCase):
     def test_eval_does_not_build_or_update_lock(self):
         self.assertEqual(self.run_command("eval").returncode, 0)
         self.assertEqual(self.calls()[-1], ["flake", "check", "path:/nix/store/fixture-source",
-                                          "--no-write-lock-file", "--show-trace", "--no-build"])
+                                          "--no-write-lock-file", "--show-trace", "--no-build",
+                                          "--option", "allow-import-from-derivation", "false"])
 
     def test_full_check_builds_checks_without_activation(self):
         self.assertEqual(self.run_command("check").returncode, 0)
