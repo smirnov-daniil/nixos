@@ -16,7 +16,9 @@ def evaluate(*profiles):
     for profile in profiles:
         command.extend(["--profile", profile])
     command.extend(["eval", "claude.code.enable", "claude.code.commands", "tasks.flake:test.after",
-                    "claude.code.hooks.git-hooks-run.enable"])
+                    "claude.code.hooks.git-hooks-run.enable", "tasks.flake:deploy-check.before",
+                    "tasks.flake:deploy-check.after", "tasks.flake:deploy-check.exec",
+                    "scripts.flake-deploy.exec"])
     if "gru" in profiles:
         command.append("env.FLAKE_HOST")
     if "claude" in profiles:
@@ -49,7 +51,7 @@ class ProfileTests(unittest.TestCase):
         self.assertTrue(permissions["disableBypassPermissionsMode"])
         bash = permissions["rules"]["Bash"]
         self.assertFalse(bash["allow"])
-        for rule in ["nh *", "deploy *", "nixos-rebuild *", "sudo *",
+        for rule in ["nh *", "deploy *", "flake-deploy", "flake-deploy *", "nixos-rebuild *", "sudo *",
                      "ssh *", "*switch-to-configuration*", "sops *"]:
             self.assertIn(rule, bash["ask"])
 
@@ -72,6 +74,14 @@ class ProfileTests(unittest.TestCase):
                          {"flake:format-check", "flake:workflow-test"})
         self.assertIn("flake:eval", self.base["tasks.flake:test.after"])
         self.assertIn("flake:eval", self.claude["tasks.flake:test.after"])
+
+    def test_deployment_is_explicit_and_not_a_test_or_shell_dependency(self):
+        for config in [self.base, self.ci, self.claude]:
+            self.assertEqual(config["tasks.flake:deploy-check.before"], [])
+            self.assertEqual(config["tasks.flake:deploy-check.after"], [])
+            self.assertNotIn("flake:deploy-check", config["tasks.flake:test.after"])
+            self.assertEqual(config["tasks.flake:deploy-check.exec"], "flake-deploy-check")
+            self.assertIn('deploy "$@"', config["scripts.flake-deploy.exec"])
 
 
 if __name__ == "__main__":

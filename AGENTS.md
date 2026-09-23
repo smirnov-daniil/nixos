@@ -32,7 +32,7 @@ devenv --profile full test
 devenv --profile gru tasks run flake:host
 ```
 
-Use `statix check .` for advisory lint review. Use `nh os switch` for a local host and `deploy .#tai-lung` from Gru for Tai Lung.
+Use `statix check .` for advisory lint review. Use `nh os switch` for a local host and `devenv --profile tai-lung shell flake-deploy` from Gru for Tai Lung, only with explicit user authorization to activate/deploy. `devenv --profile tai-lung tasks run flake:deploy-check` only evaluates the local deployment target; it does not build, connect over SSH, or activate. Never attach deployment to tests or shell entry.
 
 Keep the root `nixpkgs` pin in `flake.lock` aligned with `devenv.yaml` and `devenv.lock`. Do not add automatic deployment, secret decryption, or Git hooks to shell entry. See README.md for bootstrap and standalone helper commands.
 

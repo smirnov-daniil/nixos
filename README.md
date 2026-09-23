@@ -32,6 +32,27 @@ Both lock files are committed. When updating the root `nixpkgs` input in `flake.
 
 The pinned devenv `v2.3.1` release still has `2.2.2` in its upstream `src/modules/latest-version` metadata. Its shell can therefore print a version-mismatch hint even with the correct lock file; this does not indicate a failed setup.
 
+### Deployment
+
+Use the declared deploy-rs node, currently `tai-lung`. A host profile selects a target; it does not create a deployment node or enable SSH access.
+
+```bash
+# Local preflight only: evaluate the target and activation derivation, no SSH/build.
+devenv --profile tai-lung tasks run flake:deploy-check
+
+# Explicit deployment from a terminal, with SSH access and the server sudo password.
+devenv --profile tai-lung shell flake-deploy
+
+# An explicit node argument overrides the selected host profile.
+devenv shell flake-deploy tai-lung
+```
+
+`flake-deploy-check [NODE]` reports the configured hostname, SSH user, and activation derivation. It validates local evaluation, not connectivity, credentials, or the health of the remote server. `flake-deploy [NODE]` uses the same filtered working-tree snapshot and the `deploy-rs` package exported by this flake, pinned through `flake.lock`. It selects only `NODE.system`, preserves upstream pre-build checks and rollback behavior, and requests interactive confirmation before deployment. Unlike preflight, deployment builds checks and the system, copies its closure over SSH, and activates it; this can take substantial time and disk space.
+
+Deployment requires terminal stdin/stdout and is disabled when `CI` or `GITHUB_ACTIONS` is set. It is not a task, shell-entry hook, or dependency of any test. Use `devenv shell flake-deploy`, not a task runner, so interactive sudo retains the terminal. With the Claude profile active, preserve it: `devenv --profile claude --profile tai-lung shell flake-deploy` (only after explicit approval to deploy).
+
+Tai Lung uses `server@ssmirnovd.online`, root activation, and interactive sudo. Keep SSH keys and credentials outside the repository; devenv does not provision them or decrypt SOPS secrets locally. See [nixos/README.md](nixos/README.md) for access prerequisites. For custom deploy-rs options, the same pinned client is available through `nix run .#deploy-rs -- --help`; use this lower-level interface deliberately, as it does not have the wrapper's terminal/CI safeguards or source filtering.
+
 ### Claude Code
 
 The optional `claude` profile provides the pinned Claude Code CLI and the native devenv integration:
@@ -48,7 +69,7 @@ Two project commands are generated:
 - `/flake-check`: formatting checks, workflow tests, and whole-flake evaluation without building systems.
 - `/flake-format`: format Nix sources and review the Jujutsu diff.
 
-`CLAUDE.md` describes the jj change workflow and requires approval before activation, deployment, service restarts, publishing, or secret decryption. Generated Claude permissions also ask before commands such as `nh`, `nixos-rebuild`, `deploy`, `sudo`, and `ssh`; permission bypass is disabled. These are application-level safeguards, not an OS sandbox or a complete parser for arbitrary shell wrappers. No blanket shell permission or automatic edit hook is installed.
+`CLAUDE.md` describes the jj change workflow and requires approval before activation, deployment, service restarts, publishing, or secret decryption. Generated Claude permissions also ask before commands such as `nh`, `nixos-rebuild`, `deploy`, `flake-deploy`, `sudo`, and `ssh`; permission bypass is disabled. These are application-level safeguards, not an OS sandbox or a complete parser for arbitrary shell wrappers. No blanket shell permission or automatic edit hook is installed.
 
 Settings and command symlinks under `.claude/` are generated from `tools/_claude.nix`, ignored by VCS, and excluded from build snapshots. Personal `.claude/settings.local.json` is neither read by Nix nor overwritten. Do not edit the generated files directly. Devenv removes its generated symlinks on the next shell entry without the profile, so preserve `--profile claude` in nested invocations, including `devenv --profile claude test`.
 
@@ -250,7 +271,7 @@ nh os switch
 Deploy Tai Lung from Gru with:
 
 ```bash
-deploy .#tai-lung
+devenv --profile tai-lung shell flake-deploy
 ```
 
 When adding an output, verify its public name directly:

@@ -33,6 +33,45 @@ build_output() {
     "${skinem_input_flags[@]}" --out-link "$PWD/.devenv/builds/$link"
 }
 
+deployment_node() {
+  local node=${1:-${FLAKE_HOST:-}}
+  if [[ $# -gt 1 || ! $node =~ ^[a-zA-Z0-9_][a-zA-Z0-9_-]*$ ]]; then
+    echo 'Choose one deploy node explicitly or with a host profile, e.g. tai-lung.' >&2
+    exit 2
+  fi
+  printf '%s' "$node"
+}
+
+check_deployment() {
+  local source=$1 node=$2
+  # Resolve the actual activation derivation, not just a similarly named host.
+  # No builds, SSH, activation, or hand-written copies of deploy-rs defaults.
+  nix eval --json "path:$source#deploy.nodes.$node" \
+    --no-write-lock-file --option allow-import-from-derivation false \
+    "${skinem_input_flags[@]}" --apply 'node: {
+      inherit (node) hostname;
+      sshUser = node.sshUser or null;
+      activation = node.profiles.system.path.drvPath;
+    }'
+}
+
+require_deploy_terminal() {
+  if [[ -n ${CI:-} || -n ${GITHUB_ACTIONS:-} || ! -t 0 || ! -t 1 ]]; then
+    echo 'Deploy requires a local terminal for confirmation and sudo; it is disabled in CI.' >&2
+    echo 'Use: devenv --profile tai-lung shell flake-deploy' >&2
+    exit 2
+  fi
+}
+
+deploy_system() {
+  local source=$1 node=$2
+  # Keep upstream checks, confirmation, sudo, and rollback behavior intact.
+  # Forward private-source overrides to BOTH the client and its Nix subprocesses.
+  nix run "path:$source#deploy-rs" --no-write-lock-file "${skinem_input_flags[@]}" -- \
+    "path:$source#$node.system" --interactive -- \
+    --no-write-lock-file --show-trace "${skinem_input_flags[@]}"
+}
+
 command=${1:-help}
 shift || true
 case "$command" in
@@ -64,8 +103,15 @@ case "$command" in
     esac
     build_output "nixosConfigurations.$host.config.system.build.toplevel" "host-$host"
     ;;
+  deploy|deploy-check)
+    node=$(deployment_node "$@")
+    [[ $command == deploy ]] && require_deploy_terminal
+    source=$(source_snapshot)
+    check_deployment "$source" "$node"
+    [[ $command == deploy-check ]] || deploy_system "$source" "$node"
+    ;;
   *)
-    echo 'Usage: bash tools/flake-dev.sh {format [--check]|eval|check|build PACKAGE|host HOST}' >&2
+    echo 'Usage: bash tools/flake-dev.sh {format [--check]|eval|check|build PACKAGE|host HOST|deploy-check [NODE]|deploy [NODE]}' >&2
     exit 2
     ;;
 esac

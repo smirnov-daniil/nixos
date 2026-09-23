@@ -22,6 +22,8 @@ in {
     flake-check.exec = command "check";
     flake-build.exec = command "build";
     flake-host.exec = command "host";
+    flake-deploy-check.exec = command "deploy-check";
+    flake-deploy.exec = command "deploy";
   };
 
   profiles =
@@ -51,6 +53,9 @@ in {
     "flake:eval" = task "flake-eval";
     "flake:check" = task "flake-check";
     "flake:host" = task "flake-host";
+    # Deployment itself needs a terminal for confirmation and interactive sudo.
+    # Only the local, build-free preflight is exposed as a task.
+    "flake:deploy-check" = task "flake-deploy-check";
     "flake:test" =
       (task "true")
       // {
@@ -62,5 +67,6 @@ in {
   enterShell = ''
     echo 'flake: flake-fmt | flake-eval | flake-build PACKAGE | flake-host HOST'
     echo 'Tests: devenv test; build all checks: devenv --profile full test'
+    echo 'Deploy: flake-deploy-check NODE (local); flake-deploy NODE (interactive)'
   '';
 }

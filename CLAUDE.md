@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - Use Jujutsu (`jj`), not Git, for history mutations. Inspect `jj status`, `jj log -r '@ | @-'`, and `jj diff` before editing. Create or reuse a logically scoped, described change before modifying files; preserve unrelated user work.
 - Prefer the commands below from the pinned devenv shell. With the Claude profile active, preserve it in nested invocations (`devenv --profile claude test`) so devenv does not remove the generated Claude configuration mid-session.
-- Never activate a system, deploy, restart services, publish changes, or decrypt secrets without explicit user approval for that action and target. A build or test request does not authorize `nh os switch`, `nixos-rebuild`, `deploy`, `switch-to-configuration`, or remote SSH execution.
+- Never activate a system, deploy, restart services, publish changes, or decrypt secrets without explicit user approval for that action and target. A build or test request does not authorize `nh os switch`, `nixos-rebuild`, `deploy`, `flake-deploy`, `switch-to-configuration`, or remote SSH execution. `flake-deploy-check` is local evaluation only, not a connectivity or remote health check.
 - Do not read plaintext credentials, `.env*`, SSH private keys, or SOPS age identities. Authentication is managed by the user outside Nix expressions and generated settings.
 - Do not bypass permission prompts, enable automatic approval, or add blanket Bash permissions. Project rules are safeguards, not an OS sandbox.
 - Run expensive full checks or host builds only when requested or clearly needed; do not attach them to editing hooks. `/flake-check` evaluates without building systems; `/flake-format` formats and reviews the diff.
@@ -20,6 +20,8 @@ devenv test                      # format + workflow tests + flake evaluation (n
 devenv --profile full test       # also build all checks (expensive)
 devenv shell flake-build environment # build one package
 devenv --profile gru tasks run flake:host # build a host, never activate
+devenv --profile tai-lung tasks run flake:deploy-check # local preflight, no SSH or build
+devenv --profile tai-lung shell flake-deploy # DEPLOY: explicit approval required
 devenv tasks run flake:format     # format source Nix files, excluding generated state
 statix check .                   # lint Nix files
 nh os switch                     # apply config on a NixOS host (no sudo needed; nh is wrapped with NH_FLAKE=$HOME/flake)

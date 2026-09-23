@@ -25,6 +25,8 @@
         "nh *"
         "nixos-rebuild *"
         "deploy *"
+        "flake-deploy"
+        "flake-deploy *"
         "sudo *"
         "doas *"
         "ssh *"

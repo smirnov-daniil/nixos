@@ -4,6 +4,8 @@
   ...
 }: {
   perSystem = {system, ...}: {
+    # The devenv command and NixOS initiator use the same locked client.
+    packages.deploy-rs = inputs.deploy-rs.packages.${system}.default;
     checks = inputs.deploy-rs.lib.${system}.deployChecks self.deploy;
   };
 

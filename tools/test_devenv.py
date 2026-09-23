@@ -1,4 +1,4 @@
-"""Regression tests for source discovery, pins, and build-only commands."""
+"""Regression tests for source discovery, pins, and explicit deployment commands."""
 
 import json
 import os
@@ -108,12 +108,18 @@ class CommandTests(unittest.TestCase):
             "import json, os, sys\n"
             "with open(os.environ['NIX_TEST_LOG'], 'a') as log:\n"
             "    log.write(json.dumps(sys.argv[1:]) + '\\n')\n"
-            "if sys.argv[1] == 'eval': print('/nix/store/fixture-source')\n"
+            "if sys.argv[1] == 'eval':\n"
+            "    if any('#deploy.nodes.' in arg for arg in sys.argv):\n"
+            "        print(json.dumps({'hostname': 'fixture.invalid', 'sshUser': 'server', 'activation': '/nix/store/fixture.drv'}))\n"
+            "        sys.exit(int(os.environ.get('NIX_TEST_DEPLOY_EVAL_EXIT', '0')))\n"
+            "    print('/nix/store/fixture-source')\n"
+            "if sys.argv[1] == 'run': sys.exit(int(os.environ.get('NIX_TEST_RUN_EXIT', '0')))\n"
             "sys.exit(int(os.environ.get('NIX_TEST_EXIT', '0')))\n"
         )
         mock.chmod(0o755)
         self.log = self.root / "calls.jsonl"
         self.env = dict(os.environ, DEVENV_ROOT=str(self.root), FLAKE_HOST="",
+                        CI="", GITHUB_ACTIONS="",
                         FLAKE_SKINEM_SOURCE="", PATH=f"{self.root}:{os.environ['PATH']}",
                         NIX_TEST_LOG=str(self.log))
 
@@ -123,6 +129,80 @@ class CommandTests(unittest.TestCase):
 
     def calls(self):
         return [json.loads(line) for line in self.log.read_text().splitlines()]
+
+    def run_in_terminal(self, *arguments, **environment):
+        # The fake nix client never connects to a server or asks for a password.
+        master, slave = os.openpty()
+        try:
+            return subprocess.run(["bash", str(COMMAND), *arguments], text=True,
+                                  stdin=slave, stdout=slave, stderr=subprocess.PIPE,
+                                  env=self.env | environment, timeout=15)
+        finally:
+            os.close(slave)
+            os.close(master)
+
+    def test_deploy_check_only_evaluates_the_selected_activation(self):
+        result = self.run_command("deploy-check", FLAKE_HOST="tai-lung")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual([call[0] for call in self.calls()], ["eval", "eval"])
+        call = self.calls()[-1]
+        self.assertIn("path:/nix/store/fixture-source#deploy.nodes.tai-lung", call)
+        self.assertIn("allow-import-from-derivation", call)
+        self.assertIn("node.profiles.system.path.drvPath", call[-1])
+        self.assertIn("--no-write-lock-file", call)
+
+    def test_deploy_requires_a_terminal(self):
+        result = self.run_command("deploy", "tai-lung")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("local terminal", result.stderr)
+        self.assertFalse(self.log.exists())
+
+    def test_deploy_is_disabled_in_ci_even_with_a_terminal(self):
+        for flag in ["CI", "GITHUB_ACTIONS"]:
+            with self.subTest(flag=flag):
+                self.assertEqual(self.run_in_terminal("deploy", "tai-lung", **{flag: "true"}).returncode, 2)
+                self.assertFalse(self.log.exists())
+
+    def test_deploy_rejects_missing_ambiguous_or_option_like_nodes(self):
+        for command in ["deploy", "deploy-check"]:
+            for arguments in [(), ("--all",), ("tai-lung", "gru"), ("tai-lung.system",), ("a#b",)]:
+                with self.subTest(command=command, arguments=arguments):
+                    self.assertEqual(self.run_in_terminal(command, *arguments).returncode, 2)
+                    self.assertFalse(self.log.exists())
+
+    def test_deploy_uses_the_pinned_client_and_single_system_target(self):
+        result = self.run_in_terminal("deploy", "tai-lung", FLAKE_HOST="gru")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.calls()[-1], [
+            "run", "path:/nix/store/fixture-source#deploy-rs", "--no-write-lock-file", "--",
+            "path:/nix/store/fixture-source#tai-lung.system", "--interactive", "--",
+            "--no-write-lock-file", "--show-trace",
+        ])
+
+    def test_missing_deploy_node_or_invalid_activation_prevents_deployment(self):
+        result = self.run_in_terminal("deploy", "gru", NIX_TEST_DEPLOY_EVAL_EXIT="1")
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual([call[0] for call in self.calls()], ["eval", "eval"])
+
+    def test_deploy_propagates_client_failure(self):
+        result = self.run_in_terminal("deploy", FLAKE_HOST="tai-lung", NIX_TEST_RUN_EXIT="42")
+        self.assertEqual(result.returncode, 42)
+
+    def test_deploy_preserves_private_source_override_in_all_nix_commands(self):
+        upstream = self.root / "private source"
+        upstream.mkdir()
+        (upstream / "flake.nix").write_text("{}")
+        result = self.run_in_terminal("deploy", "tai-lung", FLAKE_SKINEM_SOURCE=str(upstream))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        expected = ["--override-input", "skinem", f"path:{upstream}"]
+        preflight = self.calls()[-2]
+        index = preflight.index("--override-input")
+        self.assertEqual(preflight[index:index + 3], expected)
+        invocation = self.calls()[-1]
+        positions = [i for i, arg in enumerate(invocation) if arg == "--override-input"]
+        self.assertEqual(len(positions), 2)
+        for index in positions:
+            self.assertEqual(invocation[index:index + 3], expected)
 
     def test_eval_does_not_build_or_update_lock(self):
         self.assertEqual(self.run_command("eval").returncode, 0)
