@@ -20,6 +20,10 @@
         "${serviceCfg.domain}" = {
           forceSSL = true;
           enableACME = true;
+          extraConfig = optionalString (serviceCfg.allowedNetworks != []) (
+            concatMapStrings (network: "allow ${network};\n") serviceCfg.allowedNetworks
+            + "deny all;\n"
+          );
           locations."/" = {
             proxyPass = "http://127.0.0.1:${toString serviceCfg.port}";
             proxyWebsockets = true;

@@ -13,6 +13,12 @@ with lib; {
       description = "IP address";
     };
 
+    terminalUser = mkOption {
+      type = types.str;
+      default = "server";
+      description = "Account used by interactive admin services such as the browser terminal.";
+    };
+
     services = mkOption {
       type = types.attrsOf (types.submodule ({name, ...}: {
         options = {
@@ -35,6 +41,12 @@ with lib; {
             type = types.bool;
             default = true;
             description = "Generate the generic single-port nginx proxy; disable for a custom virtual host.";
+          };
+          allowedNetworks = mkOption {
+            type = types.listOf types.str;
+            default = [];
+            example = ["100.64.0.0/10"];
+            description = "Client networks admitted to the generic proxy; empty means public. Real client IPs are used even behind the SSH-over-TLS dispatcher.";
           };
           homepage = {
             enable = mkEnableOption "Enable homepage for service";

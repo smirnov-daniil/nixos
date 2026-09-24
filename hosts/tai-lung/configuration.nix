@@ -59,6 +59,7 @@
           assertion = lib.all (secret: builtins.hasAttr secret config.sops.secrets) [
             "croc"
             "microbin"
+            "ttyd"
             "vaultwarden"
             "xray"
           ];
@@ -129,6 +130,17 @@
       enable = true;
       openFirewall = true;
       useRoutingFeatures = "none";
+      # Tailscale SSH: key-less login by tailnet identity, plus the browser
+      # console in the Tailscale admin panel.
+      extraSetFlags = ["--ssh"];
+    };
+
+    # Unattended recovery: reboot on kernel panic and when PID 1 stops
+    # feeding the hardware watchdog (the host is only reachable remotely).
+    boot.kernel.sysctl."kernel.panic" = 10;
+    systemd.settings.Manager = {
+      RuntimeWatchdogSec = "30s";
+      RebootWatchdogSec = "5min";
     };
 
     networking = {
@@ -281,6 +293,10 @@
         # Inbound TCP/22 is filtered upstream; SSH rides the HTTPS port instead.
         sshOverTls.enable = true;
       };
+      # Browser admin access; public for now, later restrict with
+      # sanctum.services.{ttyd,cockpit}.allowedNetworks = ["100.64.0.0/10"].
+      ttyd.enable = true;
+      cockpit.enable = true;
       croc.enable = true;
       vaultwarden.enable = true;
       homepage = {

@@ -3,6 +3,7 @@
     imports = [
       self.nixosModules.sanctum-core
       self.nixosModules.sanctum-bazarr
+      self.nixosModules.sanctum-cockpit
       self.nixosModules.sanctum-croc
       self.nixosModules.sanctum-homepage
       self.nixosModules.sanctum-jellyfin
@@ -15,6 +16,7 @@
       self.nixosModules.sanctum-radarr
       self.nixosModules.sanctum-sonarr
       self.nixosModules.sanctum-skinem
+      self.nixosModules.sanctum-ttyd
       self.nixosModules.sanctum-vaultwarden
     ];
   };
