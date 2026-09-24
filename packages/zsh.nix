@@ -70,6 +70,12 @@
           zle -N edit-command-line
           bindkey '^X^E' edit-command-line
           source ${pkgs.zsh-fast-syntax-highlighting}/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
+          source ${./zsh/project-environment.zsh}
+          eval "$(${pkgs.direnv}/bin/direnv hook zsh)"
+          # Run after direnv so newly activated package completions work now,
+          # even though compinit already ran before the first prompt.
+          autoload -Uz add-zsh-hook
+          add-zsh-hook precmd _flake_project_completions
         '';
       }).wrapper;
   };

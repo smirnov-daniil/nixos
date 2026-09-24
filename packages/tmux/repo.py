@@ -66,8 +66,8 @@ def main() -> None:
         selected = choices[picked.stdout.decode().rstrip("\0")]
     os.chdir(selected)
     if args.tool == "tuicr":
-        os.execvp("reviewctl", ["reviewctl", "open", "--repo", str(selected), "--handoff"])
-    os.execvp(args.tool, [args.tool])
+        os.execvp("mux-exec", ["mux-exec", "reviewctl", "open", "--repo", str(selected), "--handoff"])
+    os.execvp("mux-exec", ["mux-exec", args.tool])
 
 
 if __name__ == "__main__":

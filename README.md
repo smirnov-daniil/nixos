@@ -83,6 +83,16 @@ An `.ff/repo.yml` umbrella remains one space even when `mux` runs inside a
 submodule. Session names include a short path hash to distinguish same-named
 projects. Kakoune is also the default `$EDITOR`.
 
+The wrapped zsh includes direnv: allow a project's `.envrc` once with
+`direnv allow`, then each pane loads the nearest environment. An environment
+in a parent directory also applies to nested repositories. Project packages'
+zsh completions are refreshed after PATH changes. Direct editor commands
+(`mux`'s `code` window and `Ctrl+b e`) and review/Jujutsu popups use `mux-exec`
+to load the selected directory's allowed environment. Without a parent `.envrc`,
+commands run normally; a blocked `.envrc` is never bypassed. After rebuilding,
+use the new environment's zsh and a newly started tmux server for these changes;
+existing editor processes retain their original environment.
+
 ```bash
 devenv --profile claude shell flake-build environment
 ./.devenv/builds/environment/bin/zsh

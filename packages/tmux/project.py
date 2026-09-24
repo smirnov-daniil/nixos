@@ -5,6 +5,7 @@ import hashlib
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
 
 from repo import project_root
@@ -32,8 +33,12 @@ def main() -> None:
         check=False,
     ).returncode == 0
     if not exists:
+        # A running tmux server may still have the previous profile's PATH.
+        project_exec = shutil.which("mux-exec")
+        if project_exec is None:
+            parser.error("mux-exec not found in the project launcher's PATH")
         subprocess.run(
-            ["tmux", "new-session", "-d", "-s", name, "-c", str(root), "-n", "code", "kak", "-s", name],
+            ["tmux", "new-session", "-d", "-s", name, "-c", str(root), "-n", "code", project_exec, "kak", "-s", name],
             check=True,
         )
         for window in ["agents", "build"]:
