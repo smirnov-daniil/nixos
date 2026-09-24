@@ -278,6 +278,8 @@
       nginx = {
         enable = true;
         acmeEmail = "ssmirnovd@bk.ru";
+        # Inbound TCP/22 is filtered upstream; SSH rides the HTTPS port instead.
+        sshOverTls.enable = true;
       };
       croc.enable = true;
       vaultwarden.enable = true;

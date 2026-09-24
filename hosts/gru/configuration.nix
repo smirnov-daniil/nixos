@@ -38,6 +38,11 @@
         "modesetting"
         "nvidia"
       ];
+      # Reaches tai-lung over the tailnet; inbound ports at its ISP are filtered.
+      tailscale = {
+        enable = true;
+        useRoutingFeatures = "client";
+      };
       fstrim.enable = true;
       fwupd.enable = true;
       thermald.enable = true;

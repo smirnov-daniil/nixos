@@ -38,6 +38,7 @@
       pkgs.killall
       pkgs.microfetch
       pkgs.openspec
+      pkgs.openssl
       pkgs.p7zip
       pkgs.ripgrep
       pkgs.serie
