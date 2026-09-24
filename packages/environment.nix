@@ -13,6 +13,7 @@
       # nix
       pkgs.alejandra
       pkgs.devenv
+      pkgs.direnv
       pkgs.manix
       pkgs.nil
       pkgs.nixd
@@ -65,11 +66,13 @@
       self'.packages.oh-my-posh
       self'.packages.pi
       self'.packages.skillopt-sleep
+      self'.packages.shell-completions
       self'.packages.tuicr
       self'.packages.tuicr-agent-review
       self'.packages.tmux
       self'.packages.tmux-project
       self'.packages.tmux-repo
+      self'.packages.tmux-exec
     ];
     combinedCompletions = pkgs.buildEnv {
       name = "env-completions";

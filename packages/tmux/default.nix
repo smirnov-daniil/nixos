@@ -16,9 +16,14 @@
     tmuxCore = pkgs.tmux.overrideAttrs (old: {
       patches = (old.patches or []) ++ [./popup-status-offset.patch];
     });
+    projectExec = pkgs.writeShellApplication {
+      name = "mux-exec";
+      runtimeInputs = [pkgs.direnv pkgs.devenv];
+      text = builtins.readFile ./exec.sh;
+    };
     repoPicker = pkgs.writeShellApplication {
       name = "mux-repo";
-      runtimeInputs = [pkgs.fzf self'.packages.tuicr-agent-review self'.packages.jjui self'.packages.jujutsu];
+      runtimeInputs = [projectExec pkgs.fzf self'.packages.tuicr-agent-review self'.packages.jjui self'.packages.jujutsu];
       text = ''exec ${python}/bin/python3 ${./repo.py} "$@"'';
     };
     navigate = pkgs.writeShellApplication {
@@ -81,7 +86,7 @@
       # Expand the launching client's tty before display-popup runs its command.
       bind a run-shell -C 'display-popup -E -w 90% -h 85% "${self'.packages.ccmux}/bin/ccmux --client-tty #{client_tty}"'
       bind A run-shell '${self'.packages.ccmux}/bin/ccmux sidebar --toggle'
-      bind e new-window -c '#{pane_current_path}' -n code '${self'.packages.kakoune}/bin/kak'
+      bind e new-window -c '#{pane_current_path}' -n code '${projectExec}/bin/mux-exec ${self'.packages.kakoune}/bin/kak'
       bind r display-popup -E -w 95% -h 95% -d '#{pane_current_path}' '${repoPicker}/bin/mux-repo tuicr'
       bind g display-popup -E -w 95% -h 95% -d '#{pane_current_path}' '${repoPicker}/bin/mux-repo jjui'
       bind Space display-popup -E -w 80% -h 65% -d '#{pane_current_path}' '${self'.packages.sysq}/bin/sysq'
@@ -108,12 +113,12 @@
       inherit pkgs;
       package = tmuxCore;
       # Server-side background jobs inherit this PATH, independently of popups.
-      runtimeInputs = [tmuxCore pkgs.coreutils self'.packages.ccmux self'.packages.kakoune self'.packages.jujutsu pkgs.jq pkgs.procps pkgs.wl-clipboard];
+      runtimeInputs = [tmuxCore projectExec pkgs.coreutils self'.packages.ccmux self'.packages.kakoune self'.packages.jujutsu pkgs.jq pkgs.procps pkgs.wl-clipboard];
       flags."-f" = toString config;
     };
     project = pkgs.writeShellApplication {
       name = "mux";
-      runtimeInputs = [tmux self'.packages.kakoune];
+      runtimeInputs = [tmux projectExec self'.packages.kakoune];
       text = ''exec ${python}/bin/python3 ${./.}/project.py "$@"'';
     };
   in {
@@ -121,10 +126,13 @@
       inherit tmux;
       tmux-project = project;
       tmux-repo = repoPicker;
+      tmux-exec = projectExec;
     };
     checks.tmux-workflow =
       pkgs.runCommand "tmux-workflow-tests" {
-        nativeBuildInputs = [testPython];
+        nativeBuildInputs = [testPython pkgs.direnv pkgs.zsh];
+        TMUX_TEST_EXEC = lib.getExe projectExec;
+        ZSH_COMPLETION_HOOK = ../zsh/project-environment.zsh;
         TMUX_TEST_WRAPPER = lib.getExe tmux;
         TMUX_TEST_SHELL = lib.getExe pkgs.bash;
       } ''
