@@ -1,0 +1,19 @@
+--- a/src/tui/index.tsx
++++ b/src/tui/index.tsx
+@@ -14,7 +14,7 @@
+   ThemeConfig,
+   Preferences,
+ } from "../lib/preferences";
+-import { applyTheme } from "./theme";
++import { applyTheme, theme } from "./theme";
+ import type { GroupBy } from "./utils/grouping";
+ import { PERF_ENABLED } from "./utils/perf";
+ import { findRestorePane, selectPane } from "./utils/tmux";
+@@ -96,6 +96,7 @@
+ 
+   const config: CliRendererConfig = {
+     useMouse: true,
++    backgroundColor: theme.base,
+     gatherStats: PERF_ENABLED,
+   };
+ 

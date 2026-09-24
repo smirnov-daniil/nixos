@@ -2,7 +2,7 @@
   perSystem = {pkgs, ...}: {
     packages.tuicr = pkgs.rustPlatform.buildRustPackage {
       pname = "tuicr";
-      version = "0.20.0";
+      version = "0.27.0";
       src = inputs.tuicr;
       cargoLock.lockFile = "${inputs.tuicr}/Cargo.lock";
       doCheck = false;

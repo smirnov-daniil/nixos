@@ -1,0 +1,4 @@
+interface:
+  display_name: "tuicr review"
+  short_description: "Review diffs and exchange tuicr comments with agents"
+  default_prompt: "Use $tuicr-review to review this diff in tuicr and add actionable findings."

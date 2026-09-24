@@ -89,7 +89,7 @@ devenv --profile claude shell flake-build environment
 mux ~/fft/baloo
 ```
 
-All shortcuts start with `Ctrl+b`, then release it and press the second key:
+Prefix shortcuts start with `Ctrl+b`, then release it and press the second key:
 
 | Key | Action |
 | --- | --- |
@@ -102,23 +102,68 @@ All shortcuts start with `Ctrl+b`, then release it and press the second key:
 | `r` / `g` | tuicr review / jjui |
 | `Space` | sysq shell assistant |
 
+Herdr-style navigation also works directly, without the prefix:
+
+| Key | Action |
+| --- | --- |
+| `Alt+h j k l` | Focus a pane |
+| `Alt+f` | Zoom pane |
+| `Alt+1…9` / `Alt+[` / `Alt+]` | Select / previous / next tab |
+| `Alt+Shift+1…9` | Select a space in creation order (US symbols `!…(`) |
+| `Alt+{` / `Alt+}` | Previous / next space |
+| `Alt+w` / `Alt+g` | Space picker / tab and pane tree |
+| `Ctrl+Alt+[` / `Ctrl+Alt+]` | Previous / next agent in this space |
+| `Ctrl+Alt+1…9` | Select an agent pane in creation order |
+
+These Alt keys belong to tmux, including while Kakoune is focused. The Ctrl+Alt
+combinations require the terminal's extended-key support (enabled for Ghostty).
+The agent picker captures its launching client with `run-shell -C` and passes
+`--client-tty` to ccmux. Passing `#{client_tty}` directly through `display-popup -e`
+leaves a literal format string on tmux 3.7c and prevents switching to an agent.
+The tmux wrapper also provides `tmux` and `sleep` on the server's PATH for
+background jobs. Pane flashing is disabled in both the ccmux picker and sidebar.
+ccmux's UI and ANSI preview palette, as well as tmux popup backgrounds and
+borders, use `theme.nix`. Existing ccmux preferences are preserved; the packaged
+defaults are available through the `packages.<system>.ccmux.defaultConfig`
+attribute when updating an existing theme.
+
+The packaged tmux includes a fix for 3.7c's popup clipping with a top status
+line: scrolling panes must clip against terminal coordinates, including the
+status offset. A PTY regression test checks popup borders after synchronized
+frames while both the background pane and popup update. A running unpatched
+server can avoid the bug with `tmux set -g status-position bottom`; the patch
+takes effect when a new server starts. Detaching and reattaching alone does
+not replace the server; keep running sessions alive until their work is done.
+
 Review and jjui open a repository picker for `.ff/repo.yml` projects, using each
 node's real `path`, including nested modules and excluding unloaded modules.
 For ordinary repositories they open directly in the nearest repository.
 `mux-repo tuicr [PATH]` and `mux-repo jjui [PATH]` expose the same picker in a shell.
-Review feedback can be exported from tuicr and pasted into the chosen agent.
+After review, select comments, an idle agent, and **Fill composer** or **Send and
+run**. Cancel any picker to keep the review without sending it.
 
-[ccmux](https://github.com/epilande/ccmux) is pinned to 1.4.2, with the release
-binary verified by SHA-256 and patched for NixOS. Its daemon starts when a tmux
+[ccmux](https://github.com/epilande/ccmux) is pinned to 1.4.2 and built from source
+with locked Bun dependencies and a local tuicr adapter. Its daemon starts when a tmux
 client attaches or the agent picker opens. Initial preferences enable Linux
 desktop notifications for waiting/finished agents and group agents by tmux
 session, so Baloo's modules stay together. Existing `~/.config/ccmux/ccmux.json`
 is preserved; `CCMUX_HOME` selects another writable state directory.
 
+Enter on a background Claude agent switches to its existing frontend or named
+attach tab; it never creates a new tab. The fleet frontend is recognized by
+its unique Claude pane title and project, since its PID differs from the
+background worker's. If it cannot be identified, choose **Attach agent** in
+the context menu to explicitly open a `ccmux-agent-<id>` tab running
+`claude attach <id>`. Existing tabs are reused. New connections open in the
+existing project space (including an umbrella's submodules), falling back to
+the picker's space if there is no unique match. Only the terminal that opened
+the picker is switched.
+
 Run this once from the packaged environment to connect agent lifecycle hooks:
 
 ```bash
 ccmux-setup
+reviewctl-setup
 ccmux setup --agent claude --agent codex --status
 ```
 
@@ -130,6 +175,59 @@ hooks; if Codex requests hook trust, review them in `/hooks`. Without hooks,
 ccmux can still discover agent panes, with less precise session matching.
 `ccmux notify` tests notification delivery. To adjust an existing configuration:
 `ccmux config set notifications.enabled true` and `ccmux config set groupBy session`.
+
+### Review with agents
+
+tuicr is pinned to 0.27.0. In the ccmux picker, `d` reviews the selected agent's
+working change and `D` reviews its branch (`trunk()..@` for jj; merge base for
+Git). Umbrella projects first offer the submodule picker. Save and leave tuicr
+with `:wq`; ccmux then offers the human comments back to the selected agent.
+`reviewHandback` retains ccmux's `confirm` default, with `fill` and `auto` available
+as explicit preferences. The sidebar itself does not launch review; use `Ctrl+b a`.
+
+`reviewctl-setup` installs the same `tuicr-review` skill for
+[Codex](https://learn.chatgpt.com/docs/build-skills) in `~/.agents/skills` and
+[Claude Code](https://code.claude.com/docs/en/skills) in `~/.claude/skills`
+(`CLAUDE_CONFIG_DIR` is respected). It refuses to replace personal skills and is
+never run on shell entry. Pi receives the skill through its package.
+
+Ask Claude or Codex to use `tuicr-review` to review the diff and add its findings
+to tuicr. The agent can open a review beside its own tmux pane:
+
+```bash
+reviewctl open --repo "$PWD" --pane
+reviewctl open --repo "$PWD" --pane --revset 'trunk()..@'
+reviewctl list
+reviewctl context REVIEW_ID
+reviewctl comments REVIEW_ID
+reviewctl handoff REVIEW_ID [ANOTHER_REVIEW_ID ...]
+```
+
+`context` exposes the saved diff path and exact tuicr session. An AI reviewer
+uses `reviewctl add REVIEW_ID --author 'Codex AI Reviewer'` with tuicr comment
+JSON on stdin; findings refresh in the open tuicr pane. The suffix
+` AI Reviewer` distinguishes agent comments. Automatic return to the author
+includes only human comments; `handoff` lets you select AI findings too. Multiple
+Baloo submodule reviews can be sent together to one agent in the umbrella space.
+`--revset` follows tuicr's combined review mode: the selected jj commits plus the
+working change, from the oldest selected commit's parent through `@`.
+
+In Pi, `/diff-review [JJ_REVSET]` opens tuicr in a split and pastes that review's
+human comments into the composer on exit. `/ai-review REVIEW_ID [instructions]`
+adds Pi findings without changing code. It no longer requires Herdr.
+
+Reviews live under `$XDG_STATE_HOME/tuicr-agent-review` (default
+`~/.local/state/tuicr-agent-review`; override with `REVIEWCTL_HOME`). Each review
+has its own tuicr data directory, shared with agents through `reviewctl`, while
+using the normal tuicr config and editor. Native `tuicr review list` therefore
+does not mix these reviews with unrelated sessions. Keep the chosen diff scope
+unchanged inside tuicr; open another review to change revisions.
+
+Handback checks the diff snapshot, exact recipient, project, and idle status.
+It records delivery per comment content and recipient, including composer fills;
+delivery does not mean the finding is resolved. A changed diff requires a new
+review. Comments remain available if handback fails or is cancelled. No agent
+is started and no jj workspace is created by opening a review.
 
 ### GitHub Actions
 

@@ -65,6 +65,8 @@ def main() -> None:
         picked.check_returncode()
         selected = choices[picked.stdout.decode().rstrip("\0")]
     os.chdir(selected)
+    if args.tool == "tuicr":
+        os.execvp("reviewctl", ["reviewctl", "open", "--repo", str(selected), "--handoff"])
     os.execvp(args.tool, [args.tool])
 
 

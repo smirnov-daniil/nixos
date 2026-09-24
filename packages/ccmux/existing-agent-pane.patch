@@ -1,0 +1,86 @@
+--- a/src/tui/utils/tmux.ts
++++ b/src/tui/utils/tmux.ts
+@@ -13,7 +13,10 @@
+ 
+ import { findAgentProjectSession } from "./agent-project-session";
+ 
+-export { switchToPane } from "./client-switch";
++import { findAttachedAgentPane } from "./existing-agent-pane";
++import { switchToPane } from "./client-switch";
++
++export { switchToPane };
+ 
+ /**
+  * Capture a pane's visible content. THROWS on failure (spawn error or non-zero
+@@ -225,9 +228,19 @@
+ export async function openAgentAttachWindow(
+   shortId: string,
+   cwd: string,
++  createIfMissing = false,
+ ): Promise<OpenAgentsResult> {
+   if (!isSafeAgentShortId(shortId)) {
+     return { ok: false, error: `unexpected agent id: ${shortId}` };
++  }
++  const attachedPane = await findAttachedAgentPane(shortId, cwd);
++  if (attachedPane) {
++    const result = await switchToPane(attachedPane);
++    if (result !== true) {
++      return { ok: false, error: `cannot switch to existing agent pane: ${result}` };
++    }
++    await notifyActivePane(attachedPane);
++    return { ok: true, clientSwitched: true };
+   }
+   const claude = resolveClaudeBin();
+   if (!claude) return { ok: false, error: "claude not found in PATH" };
+@@ -236,6 +249,7 @@
+     cwd,
+     `"${claude}" attach ${shortId}`,
+     true,
++    createIfMissing,
+   );
+ }
+ 
+@@ -316,6 +330,7 @@
+   cwd: string,
+   command: string,
+   preferProject = false,
++  createIfMissing = true,
+ ): Promise<OpenAgentsResult> {
+   // Outside tmux there is no client to switch: new-window would land the
+   // window in some unattached session while the picker exits claiming
+@@ -351,6 +366,10 @@
+         return { ok: true, clientSwitched: false, reason: "switch-failed" };
+       }
+       // Window really is gone: fall through and spawn.
++    }
++
++    if (!createIfMissing) {
++      return { ok: false, error: "No unique open agent pane found. Use Attach agent to open a new connection." };
+     }
+ 
+     // Fail closed. Dropping `-t` here would put the window wherever tmux
+--- a/src/tui/App.tsx
++++ b/src/tui/App.tsx
+@@ -362,9 +362,11 @@
+     }
+   }
+ 
+-  function attachBackgroundAgent(session: { id: string; cwd: string }) {
++  function attachBackgroundAgent(session: { id: string; cwd: string }, createIfMissing = false) {
+     launchBackgroundWindow("Attach", () =>
+-      openAgentAttachWindow(session.id, session.cwd),
++      createIfMissing
++        ? openAgentAttachWindow(session.id, session.cwd, true)
++        : openAgentAttachWindow(session.id, session.cwd),
+     );
+   }
+ 
+@@ -1415,7 +1417,7 @@
+     const session = store.state.sessions.find((s) => s.id === cm.sessionId);
+     store.actions.hideContextMenu();
+     if (session?.trackingMode === "background") {
+-      attachBackgroundAgent(session);
++      attachBackgroundAgent(session, true);
+     }
+   }
+ 

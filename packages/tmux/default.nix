@@ -1,5 +1,6 @@
 {
   inputs,
+  lib,
   self,
   ...
 }: {
@@ -9,10 +10,21 @@
     ...
   }: let
     python = pkgs.python3.withPackages (p: [p.pyyaml]);
+    testPython = pkgs.python3.withPackages (p: [p.pyyaml p.pyte]);
+    # Popup clipping uses terminal coordinates, including the top status line.
+    # tmux 3.7c otherwise overwrites its upper border when a pane scrolls.
+    tmuxCore = pkgs.tmux.overrideAttrs (old: {
+      patches = (old.patches or []) ++ [./popup-status-offset.patch];
+    });
     repoPicker = pkgs.writeShellApplication {
       name = "mux-repo";
-      runtimeInputs = [pkgs.fzf self'.packages.tuicr self'.packages.jjui self'.packages.jujutsu];
+      runtimeInputs = [pkgs.fzf self'.packages.tuicr-agent-review self'.packages.jjui self'.packages.jujutsu];
       text = ''exec ${python}/bin/python3 ${./repo.py} "$@"'';
+    };
+    navigate = pkgs.writeShellApplication {
+      name = "mux-navigate";
+      runtimeInputs = [tmuxCore self'.packages.ccmux];
+      text = ''exec ${python}/bin/python3 ${./navigate.py} "$@"'';
     };
     config = pkgs.writeText "tmux.conf" ''
       set -g default-terminal 'tmux-256color'
@@ -31,7 +43,29 @@
       set -g mode-keys vi
       set -ag update-environment ' DISPLAY WAYLAND_DISPLAY DBUS_SESSION_BUS_ADDRESS XDG_RUNTIME_DIR SSH_AUTH_SOCK'
 
-      # Prefix-only bindings preserve Kakoune's Alt key layer.
+      # Herdr's direct navigation layer; these keys are owned by tmux.
+      bind -n M-h select-pane -L
+      bind -n M-j select-pane -D
+      bind -n M-k select-pane -U
+      bind -n M-l select-pane -R
+      bind -n M-f resize-pane -Z
+      bind -n 'M-[' previous-window
+      bind -n 'M-]' next-window
+      bind -n 'M-{' switch-client -p
+      bind -n 'M-}' switch-client -n
+      bind -n M-w choose-tree -Zs
+      bind -n M-g choose-tree -Zw
+      bind -n 'C-M-[' run-shell '${navigate}/bin/mux-navigate agent previous #{pane_id}'
+      bind -n 'C-M-]' run-shell '${navigate}/bin/mux-navigate agent next #{pane_id}'
+      ${lib.concatMapStringsSep "\n" (n: ''
+        bind -n M-${toString n} select-window -t :${toString n}
+        bind -n C-M-${toString n} run-shell '${navigate}/bin/mux-navigate agent ${toString n} #{pane_id}'
+      '') (lib.range 1 9)}
+      ${lib.concatImapStringsSep "\n" (n: key: ''
+        bind -n 'M-${key}' run-shell '${navigate}/bin/mux-navigate space ${toString n} #{pane_id}'
+      '') ["!" "@" "#" "$" "%" "^" "&" "*" "("]}
+
+      # Prefix shortcuts remain available alongside the Alt layer.
       bind c new-window -c '#{pane_current_path}'
       bind v split-window -h -c '#{pane_current_path}'
       bind - split-window -v -c '#{pane_current_path}'
@@ -44,7 +78,8 @@
       bind -r K resize-pane -U 5
       bind -r L resize-pane -R 5
       bind w choose-tree -Zs
-      bind a display-popup -E -w 90% -h 85% -e 'CCMUX_CLIENT_TTY=#{client_tty}' '${self'.packages.ccmux}/bin/ccmux'
+      # Expand the launching client's tty before display-popup runs its command.
+      bind a run-shell -C 'display-popup -E -w 90% -h 85% "${self'.packages.ccmux}/bin/ccmux --client-tty #{client_tty}"'
       bind A run-shell '${self'.packages.ccmux}/bin/ccmux sidebar --toggle'
       bind e new-window -c '#{pane_current_path}' -n code '${self'.packages.kakoune}/bin/kak'
       bind r display-popup -E -w 95% -h 95% -d '#{pane_current_path}' '${repoPicker}/bin/mux-repo tuicr'
@@ -66,11 +101,14 @@
       set -g pane-border-style 'fg=${self.theme.base02}'
       set -g pane-active-border-style 'fg=${self.theme.base0D}'
       set -g message-style 'fg=${self.theme.base05},bg=${self.theme.base01}'
+      set -g popup-style 'fg=${self.theme.base05},bg=${self.theme.base00}'
+      set -g popup-border-style 'fg=${self.theme.base0D},bg=${self.theme.base00}'
     '';
     tmux = inputs.wrappers.lib.wrapPackage {
       inherit pkgs;
-      package = pkgs.tmux;
-      runtimeInputs = [self'.packages.ccmux self'.packages.kakoune self'.packages.jujutsu pkgs.jq pkgs.procps pkgs.wl-clipboard];
+      package = tmuxCore;
+      # Server-side background jobs inherit this PATH, independently of popups.
+      runtimeInputs = [tmuxCore pkgs.coreutils self'.packages.ccmux self'.packages.kakoune self'.packages.jujutsu pkgs.jq pkgs.procps pkgs.wl-clipboard];
       flags."-f" = toString config;
     };
     project = pkgs.writeShellApplication {
@@ -86,7 +124,9 @@
     };
     checks.tmux-workflow =
       pkgs.runCommand "tmux-workflow-tests" {
-        nativeBuildInputs = [python];
+        nativeBuildInputs = [testPython];
+        TMUX_TEST_WRAPPER = lib.getExe tmux;
+        TMUX_TEST_SHELL = lib.getExe pkgs.bash;
       } ''
         cp -r ${./.} source
         cd source

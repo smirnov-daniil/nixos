@@ -1,0 +1,121 @@
+--- a/src/tui/App.tsx
++++ b/src/tui/App.tsx
+@@ -33,7 +33,6 @@
+-  formatReviewPrompt,
+-  HUNK_INSTALL_HINT,
+-  isHunkAvailable,
+-  resolveMergeBase,
+-  runHunkReview,
+-  type HunkReviewNote,
+-} from "./utils/review";
++  deliverTuicrNotes,
++  TUICR_INSTALL_HINT,
++  isTuicrAvailable,
++  runTuicrReview,
++  type TuicrReviewNote,
++} from "./utils/tuicr-review";
+@@ -258 +257 @@
+-  // Probed once at launch (cheap `which`, no need to react to hunk being
++  // Probed once at launch (cheap `which`, no need to react to tuicr being
+@@ -260,2 +259,2 @@
+-  // re-probes live so a hunk installed after launch works without restart.
+-  const hunkAtLaunch = isHunkAvailable();
++  // re-probes live so a tuicr installed after launch works without restart.
++  const tuicrAtLaunch = isTuicrAvailable();
+@@ -264 +263 @@
+-  const reviewEnabled = !props.sidebar && hunkAtLaunch;
++  const reviewEnabled = !props.sidebar && tuicrAtLaunch;
+@@ -411 +410 @@
+-    notes: HunkReviewNote[];
++    notes: TuicrReviewNote[];
+@@ -422 +421 @@
+-    notes: HunkReviewNote[],
++    notes: TuicrReviewNote[],
+@@ -428,12 +427 @@
+-      const response = await fetch(
+-        `${getDaemonUrl()}/sessions/${sessionId}/send`,
+-        {
+-          method: "POST",
+-          headers: { "Content-Type": "application/json" },
+-          body: JSON.stringify({
+-            text: formatReviewPrompt(notes),
+-            enter: mode !== "fill",
+-          }),
+-        },
+-      );
+-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
++      await deliverTuicrNotes(sessionId, notes, mode !== "fill");
+@@ -458,2 +446,2 @@
+-    } catch {
+-      store.actions.showToast(`Failed to send review comments to ${agent}`);
++    } catch (error) {
++      store.actions.showToast(error instanceof Error ? error.message : `Failed to send review comments to ${agent}`, 6000);
+@@ -474 +462 @@
+-    notes: HunkReviewNote[],
++    notes: TuicrReviewNote[],
+@@ -519 +507 @@
+-    // Re-probe live (not the launch-time `hunkAtLaunch`) so a hunk installed
++    // Re-probe live (not the launch-time `tuicrAtLaunch`) so a tuicr installed
+@@ -521,2 +509,2 @@
+-    if (!isHunkAvailable()) {
+-      store.actions.showToast(HUNK_INSTALL_HINT);
++    if (!isTuicrAvailable()) {
++      store.actions.showToast(TUICR_INSTALL_HINT);
+@@ -526 +514 @@
+-    // Resolved before `runHunkReview`, which is what suspends the renderer.
++    // Resolved before `runTuicrReview`, which is what suspends the renderer.
+@@ -531,3 +519 @@
+-    const base = branchMode
+-      ? resolveMergeBase(session.worktreeRoot ?? cwd)
+-      : Promise.resolve(null);
++    const base = Promise.resolve(branchMode ? "branch" : null);
+@@ -536 +522 @@
+-        runHunkReview(renderer, cwd, { target: target ?? undefined }),
++        runTuicrReview(renderer, cwd, { target: target ?? undefined, agent: session.id }),
+@@ -545 +531 @@
+-          // and added here rather than in `runHunkReview`, whose other two
++          // and added here rather than in `runTuicrReview`, whose other two
+@@ -557 +543 @@
+-        // runHunkReview resolves on every expected failure; this guards an
++        // runTuicrReview resolves on every expected failure; this guards an
+@@ -585 +571 @@
+-    // Re-probe live (not the launch-time `hunkAtLaunch`) so a hunk installed
++    // Re-probe live (not the launch-time `tuicrAtLaunch`) so a tuicr installed
+@@ -587,2 +573,2 @@
+-    if (!isHunkAvailable()) {
+-      store.actions.showToast(HUNK_INSTALL_HINT);
++    if (!isTuicrAvailable()) {
++      store.actions.showToast(TUICR_INSTALL_HINT);
+@@ -615,2 +601,2 @@
+-    // before `runHunkReview` because that is what suspends the renderer.
+-    resolveMergeBase(target.path)
++    // before `runTuicrReview` because that is what suspends the renderer.
++    Promise.resolve("branch")
+@@ -618 +604 @@
+-        runHunkReview(renderer, target.path, { target: base ?? undefined }),
++        runTuicrReview(renderer, target.path, { target: base, agent: session?.id }),
+--- a/src/commands/review.ts
++++ b/src/commands/review.ts
+@@ -4,2 +4 @@
+-import { resolveRepoRoot } from "../lib/git";
+-import { HUNK_INSTALL_HINT, spawnHunkDiff } from "../tui/utils/review";
++import { TUICR_INSTALL_HINT, reviewCommand } from "../tui/utils/tuicr-review";
+@@ -10 +9 @@
+-    .description("Review a session's diff with hunk")
++    .description("Review a session's diff with tuicr")
+@@ -15,2 +14,2 @@
+-      if (!Bun.which("hunk")) {
+-        console.error(HUNK_INSTALL_HINT);
++      if (!Bun.which("reviewctl")) {
++        console.error(TUICR_INSTALL_HINT);
+@@ -51,7 +50,3 @@
+-      const root = await resolveRepoRoot(cwd);
+-      if (!root) {
+-        console.error(`Not a git repository: ${cwd}`);
+-        process.exit(1);
+-      }
+-
+-      const proc = spawnHunkDiff(root);
++      const proc = Bun.spawn([...reviewCommand(cwd, { agent: sessionId }), "--handoff"], {
++        cwd, stdin: "inherit", stdout: "inherit", stderr: "inherit",
++      });

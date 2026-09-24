@@ -1,0 +1,102 @@
+--- a/src/tui/utils/tmux.ts
++++ b/src/tui/utils/tmux.ts
+@@ -4,13 +4,12 @@
+   SIDEBAR_PANE_TITLE,
+ } from "../../lib/config";
+ import { PANE_FIELD_SEP } from "../../lib/tmux-format";
+-import { tmuxArgv, tmuxShellPrefix } from "../../lib/tmux-exec";
++import { tmuxArgv } from "../../lib/tmux-exec";
+ import {
+   resolvePinnedTmuxClientTty,
+   resolveTmuxClientSessionId,
+   type ClientTtyRefusal,
+ } from "../../lib/tmux-client";
+-import { theme } from "../theme";
+ 
+ export { switchToPane } from "./client-switch";
+ 
+@@ -99,80 +98,10 @@
+   }
+ }
+ 
+-const FLASH_DURATION_MS = 500;
+-
+-/** Pane-flash background, read at call time so it follows the active theme
+- * (a module-scope const would freeze the default palette at import). Uses the
+- * `surface` semantic color (Mocha's #313244, the prior hardcoded value). */
+-function flashBg(): string {
+-  return `bg=${theme.surface}`;
+-}
+-
+-let flashTimer: Timer | null = null;
+-let flashingPaneId: string | null = null;
+-
+-function resetPaneStyle(paneId: string): void {
+-  Bun.spawn(tmuxArgv("set-option", "-p", "-u", "-t", paneId, "window-style"), {
+-    stdout: "ignore",
+-    stderr: "ignore",
+-  });
+-}
+-
+-/**
+- * Briefly flash a pane's background (500ms).
+- * Uses per-pane window-style to avoid stealing focus.
+- * Skips if the pane is already being flashed. Defers reset of the
+- * previous pane, guarded against A->B->A races.
+- */
+-export function flashPane(paneId: string): void {
+-  if (flashingPaneId === paneId && flashTimer) return;
+-
+-  if (flashTimer) {
+-    clearTimeout(flashTimer);
+-    if (flashingPaneId && flashingPaneId !== paneId) {
+-      const oldPane = flashingPaneId;
+-      setTimeout(() => {
+-        if (flashingPaneId !== oldPane) resetPaneStyle(oldPane);
+-      }, 0);
+-    }
+-  }
+-
+-  flashingPaneId = paneId;
+-
+-  Bun.spawn(
+-    tmuxArgv("set-option", "-p", "-t", paneId, "window-style", flashBg()),
+-    { stdout: "ignore", stderr: "ignore" },
+-  );
+-
+-  flashTimer = setTimeout(() => {
+-    resetPaneStyle(paneId);
+-    flashTimer = null;
+-    flashingPaneId = null;
+-  }, FLASH_DURATION_MS);
+-}
+-
+-/**
+- * Spawn a detached flash that self-resets after 500ms.
+- * Use when the calling process is about to exit (e.g. picker in a tmux popup).
+- * Uses `tmux run-shell -b` so the reset runs in tmux's own process context
+- * and survives popup teardown, which kills the entire child process group.
+- */
+-export function flashPaneDetached(paneId: string): void {
+-  Bun.spawn(
+-    tmuxArgv("set-option", "-p", "-t", paneId, "window-style", flashBg()),
+-    { stdin: "ignore", stdout: "ignore", stderr: "ignore" },
+-  );
+-  // The nested `tmux` runs from tmux's own process context, which does not
+-  // carry this process's environment, so it needs the socket spelled out.
+-  Bun.spawn(
+-    tmuxArgv(
+-      "run-shell",
+-      "-b",
+-      `sleep ${FLASH_DURATION_MS / 1000} && ${tmuxShellPrefix()} set-option -p -u -t '${paneId}' window-style`,
+-    ),
+-    { stdin: "ignore", stdout: "ignore", stderr: "ignore" },
+-  );
+-}
++// Navigation must leave the target pane's own colors unchanged, including
++// sidebar selection and picker exit. Keep the upstream API for both callers.
++export function flashPane(_paneId: string): void {}
++export function flashPaneDetached(_paneId: string): void {}
+ 
+ export async function selectPane(paneId: string): Promise<boolean> {
+   try {

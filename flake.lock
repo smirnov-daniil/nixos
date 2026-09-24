@@ -60,6 +60,23 @@
         "type": "github"
       }
     },
+    "ccmux": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1789971369,
+        "narHash": "sha256-/9lpL+skOSXsPY8Rx+k+vdU6DohkZi7/PEsgMQboSN8=",
+        "owner": "epilande",
+        "repo": "ccmux",
+        "rev": "7efd5873354d0f783afa3c9270fd318cd26fbea6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "epilande",
+        "ref": "v1.4.2",
+        "repo": "ccmux",
+        "type": "github"
+      }
+    },
     "deploy-rs": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -431,6 +448,7 @@
     },
     "root": {
       "inputs": {
+        "ccmux": "ccmux",
         "deploy-rs": "deploy-rs",
         "flake-parts": "flake-parts",
         "herdr": "herdr",
@@ -599,16 +617,16 @@
     "tuicr": {
       "flake": false,
       "locked": {
-        "lastModified": 1785683320,
-        "narHash": "sha256-ByeWD4mC1DiH6L971mC7Qv6zUVmaf2lneewK2ZWXxg8=",
+        "lastModified": 1790190268,
+        "narHash": "sha256-kObt0MLJZYASWM1vexZTPaIeFaU2XpT9sHUSdClRz2Y=",
         "owner": "agavra",
         "repo": "tuicr",
-        "rev": "8b14bb233ab72774446c21dd31ff8e5c3bc115ce",
+        "rev": "9175dc95b97a0a7dd290d43d38385745a7fb7d40",
         "type": "github"
       },
       "original": {
         "owner": "agavra",
-        "ref": "v0.20.0",
+        "ref": "v0.27.0",
         "repo": "tuicr",
         "type": "github"
       }

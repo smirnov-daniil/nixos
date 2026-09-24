@@ -49,7 +49,11 @@
       flake = false;
     };
     tuicr = {
-      url = "github:agavra/tuicr/v0.20.0";
+      url = "github:agavra/tuicr/v0.27.0";
+      flake = false;
+    };
+    ccmux = {
+      url = "github:epilande/ccmux/v1.4.2";
       flake = false;
     };
     skillopt = {

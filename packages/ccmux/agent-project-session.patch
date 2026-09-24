@@ -1,0 +1,41 @@
+--- a/src/tui/utils/tmux.ts
++++ b/src/tui/utils/tmux.ts
+@@ -10,6 +10,8 @@
+   resolveTmuxClientSessionId,
+   type ClientTtyRefusal,
+ } from "../../lib/tmux-client";
++
++import { findAgentProjectSession } from "./agent-project-session";
+ 
+ export { switchToPane } from "./client-switch";
+ 
+@@ -233,6 +235,7 @@
+     agentAttachWindowName(shortId),
+     cwd,
+     `"${claude}" attach ${shortId}`,
++    true,
+   );
+ }
+ 
+@@ -312,6 +315,7 @@
+   windowName: string,
+   cwd: string,
+   command: string,
++  preferProject = false,
+ ): Promise<OpenAgentsResult> {
+   // Outside tmux there is no client to switch: new-window would land the
+   // window in some unattached session while the picker exits claiming
+@@ -363,7 +367,12 @@
+           error: `no tmux session found for client ${clientTty}`,
+         };
+       }
+-      placement = ["-t", sessionId];
++      // The initiating terminal is still pinned, but a background agent's
++      // attach view belongs in its project's space, not the picker's project.
++      const projectSession = preferProject
++        ? await findAgentProjectSession(cwd)
++        : null;
++      placement = ["-t", projectSession ?? sessionId];
+     }
+     const spawn = Bun.spawn(
+       tmuxArgv(

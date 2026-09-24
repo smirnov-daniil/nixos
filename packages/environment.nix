@@ -65,6 +65,7 @@
       self'.packages.pi
       self'.packages.skillopt-sleep
       self'.packages.tuicr
+      self'.packages.tuicr-agent-review
       self'.packages.tmux
       self'.packages.tmux-project
       self'.packages.tmux-repo

@@ -14,7 +14,7 @@
     # paths would each copy only that single file to the store.
     extDir = ./extensions;
     extension = name: "${extDir}/${name}";
-    tuicrSkill = inputs.tuicr + "/skills/tuicr";
+    tuicrSkill = ../review/tuicr-review;
     piSubagentsExtension = "${self'.packages.pi-subagents}/lib/node_modules/@tintinweb/pi-subagents/src/index.ts";
 
     piReviewSource = pkgs.applyPatches {
@@ -89,8 +89,8 @@
         pkgs.gh
         pkgs.git
         pkgs.jujutsu
+        self'.packages.tuicr-agent-review
       ];
-      env.TUICR_HERDR_WRAPPER = "${tuicrSkill}/tuicr-wrapper-herdr.sh";
       # mkCodingAgent has no option for installing arbitrary resource dirs
       # like ~/.pi/agent/agents/*.md (that's specific to the vendored
       # subagent extension's own discovery, not a pi-core concept), so this
@@ -117,7 +117,7 @@
         mkdir -p "$out" node_modules
         cp -r ${./extensions} extensions
         ln -s ${self'.packages.pi-unwrapped}/lib/node_modules/@earendil-works node_modules/@earendil-works
-        bun test ./extensions/subagent-routing.test.ts >"$out/test.log"
+        bun test ./extensions/subagent-routing.test.ts ./extensions/tuicr-review.test.ts >"$out/test.log"
       '';
   };
 }
