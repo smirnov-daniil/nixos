@@ -313,7 +313,9 @@
       jellyfin.enable = true;
       qbittorrent.enable = true;
       skinem = {
-        enable = true;
+        # Temporarily off: keeps the local rebuild small. Re-enable after the
+        # host is reachable again; the module (and its flake input) stays imported.
+        enable = false;
         secrets = {
           TELEGRAM_BOT_TOKEN = "skinem/bot-token";
           WEBHOOK_SECRET = "skinem/webhook-secret";
