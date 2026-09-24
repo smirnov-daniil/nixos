@@ -52,6 +52,7 @@
       pkgs.zoxide
 
       # wrapped
+      self'.packages.ccmux
       self'.packages.fzf
       self'.packages.git
       self'.packages.helix
@@ -64,6 +65,9 @@
       self'.packages.pi
       self'.packages.skillopt-sleep
       self'.packages.tuicr
+      self'.packages.tmux
+      self'.packages.tmux-project
+      self'.packages.tmux-repo
     ];
     combinedCompletions = pkgs.buildEnv {
       name = "env-completions";
@@ -78,7 +82,7 @@
         imports = [self.wrappersModules.niri];
         terminal = lib.getExe self'.packages.terminal;
         env = {
-          EDITOR = lib.getExe self'.packages.helix;
+          EDITOR = lib.getExe self'.packages.kakoune;
         };
       };
 
@@ -91,7 +95,9 @@
         package = self'.packages.zsh;
         runtimeInputs = myTools;
         env = {
-          EDITOR = lib.getExe self'.packages.helix;
+          EDITOR = lib.getExe self'.packages.kakoune;
+          # New tmux panes inherit this environment instead of an older profile.
+          SHELL = lib.getExe self'.packages.zsh;
         };
       };
 

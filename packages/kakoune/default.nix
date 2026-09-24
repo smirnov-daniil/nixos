@@ -98,7 +98,7 @@
       ];
     };
   in {
-    # Trial replacement for helix; lives next to it, EDITOR is untouched.
+    # Terminal editor, also used by the tmux project launcher.
     packages.kakoune = inputs.wrappers.lib.wrapPackage {
       inherit pkgs;
       package = kakoune;

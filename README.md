@@ -73,6 +73,64 @@ Two project commands are generated:
 
 Settings and command symlinks under `.claude/` are generated from `tools/_claude.nix`, ignored by VCS, and excluded from build snapshots. Personal `.claude/settings.local.json` is neither read by Nix nor overwritten. Do not edit the generated files directly. Devenv removes its generated symlinks on the next shell entry without the profile, so preserve `--profile claude` in nested invocations, including `devenv --profile claude test`.
 
+### Terminal workspace
+
+Ghostty opens the wrapped tmux in the persistent `main` session. Projects use
+separate sessions (spaces), windows are tabs, and splits are panes. `mux PATH`
+creates or attaches a project session with `code` (Kakoune), `agents`, and `build`
+tabs. It does not create worktrees, change revisions, or launch agents for you.
+An `.ff/repo.yml` umbrella remains one space even when `mux` runs inside a
+submodule. Session names include a short path hash to distinguish same-named
+projects. Kakoune is also the default `$EDITOR`.
+
+```bash
+devenv --profile claude shell flake-build environment
+./.devenv/builds/environment/bin/zsh
+mux ~/fft/baloo
+```
+
+All shortcuts start with `Ctrl+b`, then release it and press the second key:
+
+| Key | Action |
+| --- | --- |
+| `a` / `A` | Agent picker / toggle the ccmux sidebar |
+| `w` | Spaces and tabs |
+| `c` / `e` | New shell tab / Kakoune tab |
+| `v` / `-` | Split right / below |
+| `h j k l` / `H J K L` | Focus / resize a pane |
+| `z` / `d` | Zoom pane / detach, keeping processes alive |
+| `r` / `g` | tuicr review / jjui |
+| `Space` | sysq shell assistant |
+
+Review and jjui open a repository picker for `.ff/repo.yml` projects, using each
+node's real `path`, including nested modules and excluding unloaded modules.
+For ordinary repositories they open directly in the nearest repository.
+`mux-repo tuicr [PATH]` and `mux-repo jjui [PATH]` expose the same picker in a shell.
+Review feedback can be exported from tuicr and pasted into the chosen agent.
+
+[ccmux](https://github.com/epilande/ccmux) is pinned to 1.4.2, with the release
+binary verified by SHA-256 and patched for NixOS. Its daemon starts when a tmux
+client attaches or the agent picker opens. Initial preferences enable Linux
+desktop notifications for waiting/finished agents and group agents by tmux
+session, so Baloo's modules stay together. Existing `~/.config/ccmux/ccmux.json`
+is preserved; `CCMUX_HOME` selects another writable state directory.
+
+Run this once from the packaged environment to connect agent lifecycle hooks:
+
+```bash
+ccmux-setup
+ccmux setup --agent claude --agent codex --status
+```
+
+`ccmux-setup` merges upstream hooks with existing settings, saves dated backups,
+and gives the hook scripts Nix-provided Bash and utilities. It refuses to overwrite
+managed settings symlinks. It is an explicit command, never a shell-entry hook.
+Restart agent sessions to load newly installed
+hooks; if Codex requests hook trust, review them in `/hooks`. Without hooks,
+ccmux can still discover agent panes, with less precise session matching.
+`ccmux notify` tests notification delivery. To adjust an existing configuration:
+`ccmux config set notifications.enabled true` and `ccmux config set groupBy session`.
+
 ### GitHub Actions
 
 The `check` workflow uses the same pinned devenv environment, with read-only GitHub permissions and no deployment or full NixOS/package-bundle builds:

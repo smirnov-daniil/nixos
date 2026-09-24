@@ -23,7 +23,7 @@ source "%val{config}/jj-diff.kak"
 
 # ── windowing: pickers and terminals open in a split below the editor ─────────
 source "%val{config}/herdr.kak"
-set-option global windowing_modules 'herdr' 'tmux' 'zellij' 'wezterm' 'kitty' 'niri' 'hyprland' 'sway' 'wayland' 'x11'
+set-option global windowing_modules 'tmux' 'herdr' 'zellij' 'wezterm' 'kitty' 'niri' 'hyprland' 'sway' 'wayland' 'x11'
 set-option global windowing_placement vertical
 hook global ModuleLoaded wayland %{
     set-option global termcmd 'ghostty -e sh -c'

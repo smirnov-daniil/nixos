@@ -18,6 +18,7 @@
             gtk-titlebar = false;
             mouse-hide-while-typing = true;
             window-show-tab-bar = "never";
+            command = "${self'.packages.tmux}/bin/tmux new-session -A -s main";
             # window-decoration = false;
             #
             quick-terminal-position = "center";
@@ -48,7 +49,7 @@
             selection-background = self.themeNoHash.base02;
             selection-foreground = self.themeNoHash.base05;
 
-            # Multiplexing (splits/tabs/zoom) and scrollback are herdr's job,
+            # Multiplexing (splits/tabs/zoom) and scrollback are tmux's job,
             # so ghostty's defaults for them are dropped wholesale: "clear"
             # removes every binding set up to this point, including ghostty's
             # own defaults, and only the entries below survive.
