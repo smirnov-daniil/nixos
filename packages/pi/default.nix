@@ -1,123 +1,42 @@
-{
-  inputs,
-  lib,
-  ...
-}: {
+{inputs, ...}: {
   perSystem = {
     pkgs,
     self',
     ...
-  }: let
-    # Reference the whole extensions/ tree as one store path so relative
-    # imports between sibling files resolve at runtime — passing individual
-    # ./extensions/foo.ts
-    # paths would each copy only that single file to the store.
-    extDir = ./extensions;
-    extension = name: "${extDir}/${name}";
-    tuicrSkill = ../review/tuicr-review;
-    piSubagentsExtension = "${self'.packages.pi-subagents}/lib/node_modules/@tintinweb/pi-subagents/src/index.ts";
-
-    piReviewSource = pkgs.applyPatches {
-      name = "pi-review-f1de050";
-      src = inputs.pi-review;
-      patches = [./patches/pi-review-jj.patch];
-    };
-
-    agent = inputs.pi.lib.mkCodingAgent {
-      inherit pkgs;
-      modules = [
-        {
-          pi.coding-agent = {
-            package = self'.packages.pi-unwrapped;
-            models = ./models.json;
-            rules = ./APPEND_SYSTEM.md;
-
-            extensions = [
-              (extension "prefer-rg.ts")
-              (extension "prefer-fd.ts")
-              (extension "prefer-eza.ts")
-              (extension "prefer-jj.ts")
-              (extension "plan-mode.ts")
-              (extension "memory.ts")
-              (extension "handoff.ts")
-              (extension "notify.ts")
-              (extension "subagent-routing.ts")
-              piSubagentsExtension
-              (extension "pipeline.ts")
-              (extension "tuicr-review.ts")
-              "${piReviewSource}/review.ts"
-            ];
-
-            skills = [
-              ./skills/code-review
-              ./skills/simplify
-              ./skills/verify
-              ./skills/security-review
-              ./skills/skillopt-learned
-              ./skills/skillopt-sleep
-              ./skills/run
-              ./skills/graphify
-              ./skills/jujutsu
-              ./skills/markitdown
-              tuicrSkill
-            ];
-
-            promptTemplates = [./prompts];
-
-            settings = {
-              defaultProvider = "openai-codex";
-              defaultModel = "gpt-5.4";
-              defaultThinkingLevel = "xhigh";
-              enableSkillCommands = true;
-              theme = "dark";
-            };
-          };
-        }
-      ];
-    };
-
-    roleFiles = builtins.attrNames (builtins.readDir ./agents);
-  in {
+  }: {
     packages.pi-unwrapped = inputs.pi.packages.${pkgs.stdenv.hostPlatform.system}.coding-agent;
 
+    # Personal resources are a native local Pi package; the runtime only adds tools.
     packages.pi = inputs.wrappers.lib.wrapPackage {
       inherit pkgs;
-      inherit (agent) package;
+      package = self'.packages.pi-unwrapped;
       runtimeInputs = [
         pkgs.clang-tools
         pkgs.eza
+        pkgs.fd
         pkgs.gh
         pkgs.git
         pkgs.jujutsu
+        pkgs.nodejs
+        pkgs.ripgrep
         self'.packages.tuicr-agent-review
       ];
-      # mkCodingAgent has no option for installing arbitrary resource dirs
-      # like ~/.pi/agent/agents/*.md (that's specific to the vendored
-      # subagent extension's own discovery, not a pi-core concept), so this
-      # is the one place a plain wrapPackage preHook is still needed —
-      # mirrors the idempotent-install idiom pi.nix uses for models.json,
-      # except role files are flake-managed and always overwritten (a user's
-      # own hand-written roles under a different filename are left alone).
-      preHook = ''
-        agent_dir="''${PI_CODING_AGENT_DIR:-$HOME/.pi/agent}"
-        mkdir -p "$agent_dir/agents"
-        ${lib.concatMapStringsSep "\n" (f: ''
-            install -m 0644 ${./agents}/${f} "$agent_dir/agents/${f}"
-          '')
-          roleFiles}
-      '';
     };
 
-    checks.pi-subagents = self'.packages.pi-subagents;
-
-    checks.pi-subagent-routing =
-      pkgs.runCommand "pi-subagent-routing-tests" {
-        nativeBuildInputs = [pkgs.bun];
-      } ''
-        mkdir -p "$out" node_modules
-        cp -r ${./extensions} extensions
-        ln -s ${self'.packages.pi-unwrapped}/lib/node_modules/@earendil-works node_modules/@earendil-works
-        bun test ./extensions/subagent-routing.test.ts ./extensions/tuicr-review.test.ts >"$out/test.log"
-      '';
+    checks.pi-runtime = pkgs.runCommand "pi-runtime-check" {} ''
+      export HOME="$TMPDIR/home"
+      export PI_CODING_AGENT_DIR="$HOME/.pi/agent"
+      mkdir -p "$PI_CODING_AGENT_DIR/agents" "$out"
+      printf '%s\n' '{"defaultModel":"personal-model","theme":"light","packages":[]}' > "$PI_CODING_AGENT_DIR/settings.json"
+      printf '%s\n' 'personal role' > "$PI_CODING_AGENT_DIR/agents/scout.md"
+      cp -r "$PI_CODING_AGENT_DIR" before
+      ${self'.packages.pi}/bin/pi --version > "$out/version"
+      diff -r before "$PI_CODING_AGENT_DIR"
+      export PI_CODING_AGENT_DIR="$HOME/unused-agent-dir"
+      ${self'.packages.pi}/bin/pi --help > "$out/help"
+      for resource in settings.json models.json APPEND_SYSTEM.md agents; do
+        test ! -e "$PI_CODING_AGENT_DIR/$resource"
+      done
+    '';
   };
 }

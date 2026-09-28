@@ -199,7 +199,7 @@ as explicit preferences. The sidebar itself does not launch review; use `Ctrl+b 
 [Codex](https://learn.chatgpt.com/docs/build-skills) in `~/.agents/skills` and
 [Claude Code](https://code.claude.com/docs/en/skills) in `~/.claude/skills`
 (`CLAUDE_CONFIG_DIR` is respected). It refuses to replace personal skills and is
-never run on shell entry. Pi receives the skill through its package.
+never run on shell entry. Pi receives a copy through the personal `~/pi-config` package.
 
 Ask Claude or Codex to use `tuicr-review` to review the diff and add its findings
 to tuicr. The agent can open a review beside its own tmux pane:
@@ -239,6 +239,19 @@ delivery does not mean the finding is resolved. A changed diff requires a new
 review. Comments remain available if handback fails or is cancelled. No agent
 is started and no jj workspace is created by opening a review.
 
+### Pi
+
+Nix supplies the Pi runtime and CLI tools; mutable extensions, skills, prompts,
+agent roles and instructions live in the standalone local package `~/pi-config`.
+Pi's settings, models, credentials, memories and sessions remain in `~/.pi/agent`.
+The runtime no longer overwrites settings or copies roles on launch.
+
+Build it with `devenv shell flake-build pi`. The local package's
+`python3 scripts/setup.py` connects its resources once, preserving existing
+settings and saving backups. Resource edits take effect with `/reload` or a new
+session. See [the runtime notes](packages/pi/README.md) and `~/pi-config/README.md`
+for setup, tests and independent updates.
+
 ### GitHub Actions
 
 The `check` workflow uses the same pinned devenv environment, with read-only GitHub permissions and no deployment or full NixOS/package-bundle builds:
@@ -277,7 +290,7 @@ Repository layout:
 - `hosts/<name>/`: host composition, configuration, hardware, and encrypted secrets.
 - `nixos/base/`: shared options and minimal foundations.
 - `nixos/features/`: independently reusable NixOS features and compatibility aggregates.
-- `packages/`: packages, wrappers, and package bundles. Pi-owned implementation and support packages are co-located under `packages/pi/`.
+- `packages/`: packages, wrappers, and package bundles. `packages/pi/` supplies the Pi runtime and SkillOpt CLI; personal Pi resources live in a separate local package.
 - `checks/`: evaluation checks and host-specific invariants.
 
 See [nixos/README.md](nixos/README.md) for the current module catalog and Tai Lung deployment instructions.

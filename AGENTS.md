@@ -11,7 +11,7 @@ Use [README.md](README.md) as the authoritative guide for adding features, packa
 - A host exports separate `<host>-configuration` and `<host>-hardware` modules, composes them in `hosts/<host>/default.nix`, and retains `nixosModules.<host>` as an aggregate.
 - Shared NixOS modules live in `nixos/base/` and `nixos/features/`. Leaves should remain independently usable; aggregates are compatibility and convenience boundaries.
 - Packages and wrappers live under `packages/` and are exported from `perSystem`.
-- Pi lives in `packages/pi/` and is included through `packages.environment`; it is not a NixOS feature.
+- The Pi runtime lives in `packages/pi/` and is included through `packages.environment`; it is not a NixOS feature. Personal Pi resources are maintained separately in `~/pi-config`; do not restore startup-time settings or role rewriting in the Nix wrapper.
 
 ## Change workflow
 

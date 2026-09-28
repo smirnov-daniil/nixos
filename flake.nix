@@ -40,14 +40,6 @@
       url = "github:lukasl-dev/pi.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    pi-review = {
-      url = "github:earendil-works/pi-review/f1de050504936046c0f85b21fec0e0a93ef394eb";
-      flake = false;
-    };
-    pi-subagents = {
-      url = "github:tintinweb/pi-subagents/2966cd5a33c0640de9698b56a39c11f83207a835";
-      flake = false;
-    };
     tuicr = {
       url = "github:agavra/tuicr/v0.27.0";
       flake = false;

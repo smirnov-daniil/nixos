@@ -1,25 +1,49 @@
-# Pi package
+# Pi runtime
 
-This directory contains the repository-owned Pi coding-agent integration and its Pi-specific support packages.
+Nix supplies the Pi executable and command-line tools. Personal Pi resources
+are maintained separately in the native local package at `~/pi-config`.
+Its README documents setup, resource tests, updates and rollback.
 
-## Layout
+- `default.nix` exports `pi-unwrapped`, `pi` and the `pi-runtime` smoke check.
+- `skillopt-sleep/` still packages the independent SkillOpt-Sleep CLI.
+- `packages.environment` includes Pi and SkillOpt-Sleep explicitly.
+- The `pi` flake input pins the runtime; changing personal configuration needs
+  no flake edit or Nix rebuild.
 
-- `default.nix`: assembles the `pi` package and its checks.
-- `agents/`: managed subagent roles installed into the Pi agent directory.
-- `extensions/`: repository extensions and extension tests.
-- `models.json`: additional model definitions.
-- `patches/`: patches for Pi integrations such as pi-review.
-- `prompts/`: packaged Pi prompt templates.
-- `skills/`: packaged Pi skills.
-- `pi-subagents/`: patched and tested `pi-subagents` package.
-- `skillopt-sleep/`: Pi-safe SkillOpt-Sleep package and tests.
+The wrapper adds `rg`, `fd`, `eza`, `jj`, Git, GitHub CLI, Node/npm, clang tools
+and review tools to Pi's PATH. It has no startup hooks, resource arguments,
+model defaults, role copying or settings merging. It respects Pi's native
+`PI_CODING_AGENT_DIR` handling.
 
-These nested `default.nix` files are discovered automatically as flake-parts modules. They continue to export the top-level package names `pi`, `pi-subagents`, and `skillopt-sleep`.
+Build the runtime without activating a system:
 
-The following stay outside this directory because they are repository-wide or independently useful:
+```sh
+devenv shell flake-build pi
+```
 
-- Pi-related flake inputs and their locks in `flake.nix` and `flake.lock`.
-- Package selection in `packages/environment.nix`.
-- Standalone `tuicr` and Herdr packages.
-- Project runtime state and repository-specific skills in `.pi/`.
-- Graphify's repository graph in `graphify-out/`.
+The personal migration uses `~/.local/bin/pi` pointing through
+`~/.local/state/pi/runtime`, a Nix GC root. To update that local runtime after
+building (or after updating the `pi` input):
+
+```sh
+nix build --offline --out-link "$HOME/.local/state/pi/runtime" "$(readlink -f .devenv/builds/pi)"
+```
+
+Use `command -v pi` to check which runtime a shell starts. Avoid the old wrapper:
+it rewrites settings/roles and also passes the same resources through CLI flags.
+The user-local launcher takes precedence until the normal environment is updated.
+
+Pi reads mutable settings, models, authentication, sessions and memory from
+`~/.pi/agent`. The local package's one-time `scripts/setup.py` registers its path
+and links rules/roles there while preserving personal files and saving backups.
+Use Pi's settings UI or `pi config` to change resource selection; use `/reload`
+or restart Pi after editing skills/extensions. New roles require rerunning setup.
+
+The existing subagent and review integrations, including their jj patches and
+tests, moved to `~/pi-config/vendor/`. Their source revisions and original patches
+are recorded in that repository's `provenance/`. They are no longer flake inputs
+or Nix build dependencies. The original sources remain in this flake's history.
+
+`tuicr`, its shared agent-review skill, Herdr and repository-specific `.pi/` state
+remain independent. The personal package holds a copy of the tuicr skill; update
+that copy explicitly when changing `packages/review/tuicr-review`.
