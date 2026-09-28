@@ -15,9 +15,11 @@ and review tools to Pi's PATH. It has no startup hooks, resource arguments,
 model defaults, role copying or settings merging. It respects Pi's native
 `PI_CODING_AGENT_DIR` handling.
 
-Build the runtime without activating a system:
+For a new Pi release, update its Nix input and build the runtime without
+activating a system. Use this workflow for runtime update notifications:
 
 ```sh
+nix flake update pi
 devenv shell flake-build pi
 ```
 
