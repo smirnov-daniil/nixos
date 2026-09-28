@@ -35,6 +35,7 @@
       set -g default-terminal 'tmux-256color'
       set -as terminal-features ',xterm-ghostty:RGB:extkeys'
       set -s extended-keys on
+      set -s extended-keys-format csi-u
       set -s escape-time 10
       set -g focus-events on
       set -g allow-passthrough on
