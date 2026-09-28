@@ -33,7 +33,8 @@ nix build --offline --out-link "$HOME/.local/state/pi/runtime" "$(readlink -f .d
 
 Use `command -v pi` to check which runtime a shell starts. Avoid the old wrapper:
 it rewrites settings/roles and also passes the same resources through CLI flags.
-The user-local launcher takes precedence until the normal environment is updated.
+The user-local launcher takes precedence over environment-provided Pi. After
+updating `packages.environment`, open a new shell to pick up its wrapper.
 
 Pi reads mutable settings, models, authentication, sessions and memory from
 `~/.pi/agent`. The local package's one-time `scripts/setup.py` registers its path
@@ -47,5 +48,6 @@ are recorded in that repository's `provenance/`. They are no longer flake inputs
 or Nix build dependencies. The original sources remain in this flake's history.
 
 `tuicr`, its shared agent-review skill, Herdr and repository-specific `.pi/` state
-remain independent. The personal package holds a copy of the tuicr skill; update
-that copy explicitly when changing `packages/review/tuicr-review`.
+remain independent. Pi discovers the shared tuicr skill in `~/.agents/skills`
+directly; the personal package does not keep a duplicate. Update the shared
+installation explicitly when changing `packages/review/tuicr-review`.

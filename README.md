@@ -199,7 +199,8 @@ as explicit preferences. The sidebar itself does not launch review; use `Ctrl+b 
 [Codex](https://learn.chatgpt.com/docs/build-skills) in `~/.agents/skills` and
 [Claude Code](https://code.claude.com/docs/en/skills) in `~/.claude/skills`
 (`CLAUDE_CONFIG_DIR` is respected). It refuses to replace personal skills and is
-never run on shell entry. Pi receives a copy through the personal `~/pi-config` package.
+never run on shell entry. Pi discovers the shared skill in `~/.agents/skills`
+directly; the personal `~/pi-config` package does not keep a duplicate.
 
 Ask Claude or Codex to use `tuicr-review` to review the diff and add its findings
 to tuicr. The agent can open a review beside its own tmux pane:
