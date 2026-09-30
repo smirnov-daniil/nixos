@@ -8,6 +8,14 @@ return_file=""
 use_web=0
 refresh=0
 verbosity="brief"
+hold_response=0
+
+wait_for_close() {
+  if [ "$hold_response" -eq 1 ] && [ -t 0 ] && [ -t 1 ]; then
+    trap 'exit 130' INT
+    IFS= read -r -p $'\nPress Enter to close… ' _ || true
+  fi
+}
 
 usage() {
   printf '%s\n' \
@@ -59,6 +67,7 @@ while [ "$#" -gt 0 ]; do
     --return-file)
       [ "$#" -ge 2 ] || die '--return-file requires a path'
       return_file=$2
+      hold_response=1
       shift 2
       ;;
     explain)
@@ -199,8 +208,10 @@ if [ -z "$question" ]; then
   elif [ ! -t 0 ]; then
     question=$(cat)
   elif [ "$mode" = "explain" ]; then
+    hold_response=1
     question=$(gum write --header "Command to explain" --placeholder "find . -type f -mtime +30 -delete")
   else
+    hold_response=1
     question=$(gum write --header "Ask Pi" --placeholder "How do I find the process listening on port 8080?")
   fi
 fi
@@ -238,6 +249,7 @@ case "$question" in
   /new)
     rm -f -- "$session_file"
     printf 'Started a new sysq session.\n'
+    wait_for_close
     exit 0
     ;;
   /nix|/nix\ *)
@@ -339,6 +351,7 @@ if [ "$mode" = "context" ]; then
   else
     printf '\nHistory context: none\n'
   fi
+  wait_for_close
   exit 0
 fi
 
@@ -429,12 +442,8 @@ set -- sh -c '
   exec "$@" <"$prompt_file" >"$output_file" 2>"$log_file"
 ' sh "$prompt_file" "$output_file" "$log_file" "$@"
 
-if [ -t 1 ]; then
-  set -- gum spin \
-    --spinner moon \
-    --spinner.foreground 212 \
-    --title "Pi · $model думает…  Ctrl-C — отменить" \
-    -- "$@"
+if [ "$cache_hit" -eq 0 ] && [ -t 1 ]; then
+  printf 'Pi · %s думает…  Ctrl-C — отменить\n\n' "$model" >&2
 fi
 
 if [ "$cache_hit" -eq 0 ] && ! "$@"; then
@@ -475,7 +484,10 @@ printf '%s\n' "$answer"
 } >>"$session_file"
 
 command_count=$(jq '.commands | length' "$result_file")
-[ "$command_count" -gt 0 ] || exit 0
+if [ "$command_count" -eq 0 ]; then
+  wait_for_close
+  exit 0
+fi
 
 labels_file="$tmpdir/labels"
 jq -r '.commands[] | "[\(.risk)] \(.command) — \(.description)"' "$result_file" >"$labels_file"

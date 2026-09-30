@@ -126,6 +126,13 @@ or `SYSQ_MODEL=PROVIDER/MODEL sysq QUESTION`; the flag overrides the environment
 which overrides the saved choice. Non-interactive requests without a model fail
 with the available choices instead of silently selecting one.
 
+Requests entered at sysq's prompt and the `?`/`Alt+?` shell widgets keep answers
+without suggested commands visible until Enter is pressed. When commands are
+suggested, the selector stays open until selection or cancellation; the widgets
+insert selected commands into the shell buffer without executing them. Explicit
+one-shot requests such as `sysq QUESTION` and piped input still print their answer
+and exit.
+
 Sysq gives Pi only `read`, `grep`, `find`, and `ls`, disables automatic personal
 extensions/context, and does not persist Pi sessions. This tool allowlist is not
 an OS sandbox. `--web` additionally loads `pi-smart-web-search` and

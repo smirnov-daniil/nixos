@@ -47,7 +47,7 @@
 
     checks.sysq =
       pkgs.runCommand "sysq-tests" {
-        nativeBuildInputs = with pkgs; [python3 bash coreutils findutils gawk gnugrep gnused jq shellcheck];
+        nativeBuildInputs = with pkgs; [python3 bash coreutils findutils gawk gnugrep gnused gum jq shellcheck];
       } ''
         cp -r ${./.} sysq
         cd sysq
