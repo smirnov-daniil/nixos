@@ -90,7 +90,7 @@ The wrapped zsh includes direnv: allow a project's `.envrc` once with
 `direnv allow`, then each pane loads the nearest environment. An environment
 in a parent directory also applies to nested repositories. Project packages'
 zsh completions are refreshed after PATH changes. Direct editor commands
-(`Ctrl+b e`) and review/Jujutsu popups use `mux-exec`
+(`Ctrl+Space e`) and review/Jujutsu popups use `mux-exec`
 to load the selected directory's allowed environment. Without a parent `.envrc`,
 commands run normally; a blocked `.envrc` is never bypassed. After rebuilding,
 use the new environment's zsh and a newly started tmux server for these changes;
@@ -102,16 +102,18 @@ devenv --profile claude shell flake-build environment
 mux ~/fft/baloo
 ```
 
-Prefix shortcuts start with `Ctrl+b`, then release it and press the second key:
+All tmux keyboard shortcuts start with `Ctrl+Space`, then release it and press the next key:
 
 | Key | Action |
 | --- | --- |
 | `a` / `A` | Agent picker / toggle the ccmux sidebar |
-| `w` | Spaces and tabs |
+| `w` / `W` | Space picker / tab and pane tree |
 | `c` / `e` | New shell tab / Kakoune tab |
 | `v` / `-` | Split right / below |
 | `h j k l` / `H J K L` | Focus / resize a pane |
 | `z` / `d` | Zoom pane / detach, keeping processes alive |
+| `1…9` / `p` / `n` | Select / previous / next tab |
+| `(` / `)` | Previous / next space |
 | `r` / `g` | tuicr review / jjui |
 | `Space` | sysq shell assistant |
 
@@ -132,21 +134,20 @@ an OS sandbox. `--web` additionally loads `pi-smart-web-search` and
 `SYSQ_WEB_SEARCH_EXTENSION` and `SYSQ_WEB_FETCH_EXTENSION` can override their
 entrypoint paths. `sysq doctor` reports Pi, the selected model, and the catalog.
 
-Herdr-style navigation also works directly, without the prefix:
+Numbered space and agent navigation also requires `Ctrl+Space` first:
 
-| Key | Action |
+| Key after prefix | Action |
 | --- | --- |
-| `Alt+h j k l` | Focus a pane |
-| `Alt+f` | Zoom pane |
-| `Alt+1…9` / `Alt+[` / `Alt+]` | Select / previous / next tab |
 | `Alt+Shift+1…9` | Select a space in creation order (US symbols `!…(`) |
-| `Alt+{` / `Alt+}` | Previous / next space |
-| `Alt+w` / `Alt+g` | Space picker / tab and pane tree |
 | `Ctrl+Alt+[` / `Ctrl+Alt+]` | Previous / next agent in this space |
 | `Ctrl+Alt+1…9` | Select an agent pane in creation order |
 
-These Alt keys belong to tmux, including while Kakoune is focused. The Ctrl+Alt
-combinations require the terminal's extended-key support (enabled for Ghostty).
+Without the prefix, Alt combinations and `Ctrl+b` pass through to Kakoune and
+other applications. Ghostty does not bind `Alt+t`. Press `Ctrl+Space` twice to
+send a literal `Ctrl+Space` to the application. Reloading the tmux configuration
+also removes the former direct bindings from an existing server; no restart is
+needed. The Ctrl+Alt combinations require the terminal's extended-key support
+(enabled for Ghostty).
 The Nix tmux configuration sets `extended-keys-format csi-u` for Pi. If an older
 running server still uses `xterm`, apply it without closing sessions:
 `tmux set -s extended-keys-format csi-u`. New servers use the packaged setting.
@@ -216,7 +217,7 @@ working change and `D` reviews its branch (`trunk()..@` for jj; merge base for
 Git). Umbrella projects first offer the submodule picker. Save and leave tuicr
 with `:wq`; ccmux then offers the human comments back to the selected agent.
 `reviewHandback` retains ccmux's `confirm` default, with `fill` and `auto` available
-as explicit preferences. The sidebar itself does not launch review; use `Ctrl+b a`.
+as explicit preferences. The sidebar itself does not launch review; use `Ctrl+Space a`.
 
 `reviewctl-setup` installs the same `tuicr-review` skill for
 [Codex](https://learn.chatgpt.com/docs/build-skills) in `~/.agents/skills` and

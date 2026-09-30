@@ -47,31 +47,28 @@
       set -g detach-on-destroy off
       set -g set-clipboard on
       set -g mode-keys vi
+      set -g prefix C-Space
+      unbind -q C-b
+      bind C-Space send-prefix
       set -ag update-environment ' DISPLAY WAYLAND_DISPLAY DBUS_SESSION_BUS_ADDRESS XDG_RUNTIME_DIR SSH_AUTH_SOCK'
 
-      # Herdr's direct navigation layer; these keys are owned by tmux.
-      bind -n M-h select-pane -L
-      bind -n M-j select-pane -D
-      bind -n M-k select-pane -U
-      bind -n M-l select-pane -R
-      bind -n M-f resize-pane -Z
-      bind -n 'M-[' previous-window
-      bind -n 'M-]' next-window
-      bind -n 'M-{' switch-client -p
-      bind -n 'M-}' switch-client -n
-      bind -n M-w choose-tree -Zs
-      bind -n M-g choose-tree -Zw
-      bind -n 'C-M-[' run-shell '${navigate}/bin/mux-navigate agent previous #{pane_id}'
-      bind -n 'C-M-]' run-shell '${navigate}/bin/mux-navigate agent next #{pane_id}'
+      # Remove the former direct navigation layer when reloading a running server.
+      ${lib.concatMapStringsSep "\n" (key: ''
+        unbind -q -n '${key}'
+      '') ["M-h" "M-j" "M-k" "M-l" "M-f" "M-[" "M-]" "M-{" "M-}" "M-w" "M-g" "C-M-[" "C-M-]"]}
+      bind 'C-M-[' run-shell '${navigate}/bin/mux-navigate agent previous #{pane_id}'
+      bind 'C-M-]' run-shell '${navigate}/bin/mux-navigate agent next #{pane_id}'
       ${lib.concatMapStringsSep "\n" (n: ''
-        bind -n M-${toString n} select-window -t :${toString n}
-        bind -n C-M-${toString n} run-shell '${navigate}/bin/mux-navigate agent ${toString n} #{pane_id}'
+        unbind -q -n M-${toString n}
+        unbind -q -n C-M-${toString n}
+        bind C-M-${toString n} run-shell '${navigate}/bin/mux-navigate agent ${toString n} #{pane_id}'
       '') (lib.range 1 9)}
       ${lib.concatImapStringsSep "\n" (n: key: ''
-        bind -n 'M-${key}' run-shell '${navigate}/bin/mux-navigate space ${toString n} #{pane_id}'
+        unbind -q -n 'M-${key}'
+        bind 'M-${key}' run-shell '${navigate}/bin/mux-navigate space ${toString n} #{pane_id}'
       '') ["!" "@" "#" "$" "%" "^" "&" "*" "("]}
 
-      # Prefix shortcuts remain available alongside the Alt layer.
+      # Keyboard shortcuts are handled only after the prefix.
       bind c new-window -c '#{pane_current_path}'
       bind v split-window -h -c '#{pane_current_path}'
       bind - split-window -v -c '#{pane_current_path}'
@@ -84,6 +81,12 @@
       bind -r K resize-pane -U 5
       bind -r L resize-pane -R 5
       bind w choose-tree -Zs
+      bind W choose-tree -Zw
+      bind p previous-window
+      bind n next-window
+      bind z resize-pane -Z
+      bind '(' switch-client -p
+      bind ')' switch-client -n
       # Expand the launching client's tty before display-popup runs its command.
       bind a run-shell -C 'display-popup -E -w 90% -h 85% "${self'.packages.ccmux}/bin/ccmux --client-tty #{client_tty}"'
       bind A run-shell '${self'.packages.ccmux}/bin/ccmux sidebar --toggle'
@@ -100,7 +103,7 @@
       set -g status-style 'bg=${self.theme.base00},fg=${self.theme.base04}'
       set -g status-left '#[fg=${self.theme.base0D},bold] #S #[default] '
       set -g status-left-length 40
-      set -g status-right '#[fg=${self.theme.base03}] ^b a agents | ^b w spaces | %H:%M '
+      set -g status-right '#[fg=${self.theme.base03}] ^Space a agents | ^Space w spaces | %H:%M '
       set -g status-right-length 55
       setw -g window-status-format ' #I:#W '
       setw -g window-status-current-format '#[fg=${self.theme.base00},bg=${self.theme.base0D},bold] #I:#W #[default]'

@@ -77,7 +77,6 @@
               "ctrl+digit_0=reset_font_size"
 
               # window and ghostty-local UI
-              "alt+t=toggle_quick_terminal"
               "ctrl+enter=toggle_fullscreen"
               "ctrl+shift+q=quit"
               "alt+f4=close_window"
