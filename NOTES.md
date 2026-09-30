@@ -34,7 +34,7 @@ The Pi adaptation requires the exact Nix-managed source skill on every run and a
 
 The blocking vendored subagent executor is replaced by pinned `@tintinweb/pi-subagents` 0.14.3. The broader `nicobailon/pi-subagents` candidate was not selected because its current main branch has an open standalone-Pi startup regression that affects this Nix wrapper. `Agent` calls can return immediately with unique job IDs, the orchestrator can continue accepting user turns, and `steer_subagent` injects corrections into a running child after its current tool completes. Completion arrives as a structured follow-up and the full JSONL transcript lives under a user-private, session-and-job-scoped system temporary directory rather than the repository; the extension removes the session run directory when Pi switches sessions or exits. Explicit schedule metadata also lives under the private temporary root instead of `<cwd>/.pi/`.
 
-Managed roles return research, plans, reviews, and other handoffs in their final response. The `/ship` pipeline passes those responses in memory instead of creating `scratchpad/` files. Roles that edit code or tests may still modify their assigned product files, and Graphify retains its explicit absolute chunk-output exception.
+Managed roles return research, plans, reviews, and other handoffs in their final response. The `/ship` pipeline passes those responses in memory instead of creating `scratchpad/` files. Roles that edit code or tests may still modify their assigned product files.
 
 A local adapter preserves provider-portable complexity routing for managed and built-in roles. The packaged upstream source removes its Anthropic-specific default and wizard presets. `isolation: "worktree"` selects the repository-native backend: a temporary Jujutsu workspace for `.jj/` repositories or a Git worktree otherwise. Jujutsu results survive workspace cleanup as change IDs and include a `jj squash --from '<snapshot>..<agent-change>' --into @ -m 'Integrate isolated agent changes' && jj abandon <snapshot>` integration command; empty workspace commits are abandoned.
 
@@ -64,7 +64,7 @@ Host configuration and hardware modules now have distinct public names and are c
 
 ## Co-located Pi implementation
 
-Pi-owned implementation assets now live under `packages/pi/`, including the patched `pi-subagents` and Pi-safe `skillopt-sleep` package modules and tests. Their public package and check names remain unchanged because recursive flake-parts discovery is path-independent. Repository-wide flake inputs and environment selection, standalone tuicr/Herdr packages, project `.pi/` runtime state, and root `graphify-out/` remain outside because they have broader ownership or location-dependent behavior.
+Pi-owned implementation assets now live under `packages/pi/`, including the patched `pi-subagents` and Pi-safe `skillopt-sleep` package modules and tests. Their public package and check names remain unchanged because recursive flake-parts discovery is path-independent. Repository-wide flake inputs and environment selection, standalone tuicr/Herdr packages, and project `.pi/` runtime state remain outside because they have broader ownership or location-dependent behavior.
 
 ## Terminal navigation moved from Ghostty to Herdr
 

@@ -15,26 +15,32 @@ and review tools to Pi's PATH. It has no startup hooks, resource arguments,
 model defaults, role copying or settings merging. It respects Pi's native
 `PI_CODING_AGENT_DIR` handling.
 
-For a new Pi release, update its Nix input and build the runtime without
-activating a system. Use this workflow for runtime update notifications:
+Pi is supplied by the installed `environment` user profile package. For a new
+release, update its Nix input, then upgrade the environment without activating
+a system:
 
 ```sh
+cd ~/flake
 nix flake update pi
-devenv shell flake-build pi
+nix profile upgrade environment
+exec ~/.nix-profile/bin/zsh
 ```
 
-The personal migration uses `~/.local/bin/pi` pointing through
-`~/.local/state/pi/runtime`, a Nix GC root. To update that local runtime after
-building (or after updating the `pi` input):
+To build and check a candidate before updating the profile:
 
 ```sh
-nix build --offline --out-link "$HOME/.local/state/pi/runtime" "$(readlink -f .devenv/builds/pi)"
+devenv shell flake-build pi
+./.devenv/builds/pi/bin/pi --version
 ```
 
-Use `command -v pi` to check which runtime a shell starts. Avoid the old wrapper:
-it rewrites settings/roles and also passes the same resources through CLI flags.
-The user-local launcher takes precedence over environment-provided Pi. After
-updating `packages.environment`, open a new shell to pick up its wrapper.
+Building alone does not update the installed environment. Run the personal
+configuration's compatibility checks against the candidate before upgrading.
+Use `command -v pi` and `pi --version` in the new profile shell to verify the
+selected runtime. Existing shells and Pi processes retain their old environment.
+The migration's `~/.local/bin/pi` override was removed; do not recreate it.
+Old roots under `~/.local/state/pi/` are rollback artifacts, not active launchers.
+Avoid the historical wrapper that rewrites settings/roles and duplicates resource
+arguments.
 
 Pi reads mutable settings, models, authentication, sessions and memory from
 `~/.pi/agent`. The local package's one-time `scripts/setup.py` registers its path
