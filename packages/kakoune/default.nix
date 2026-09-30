@@ -9,6 +9,11 @@
     ...
   }: let
     c = name: "rgb:${self.themeNoHash.${name}}";
+    clipboard = pkgs.writeShellApplication {
+      name = "kak-clipboard";
+      runtimeInputs = [pkgs.wl-clipboard pkgs.xclip];
+      text = builtins.readFile ./clipboard.sh;
+    };
 
     # base16 -> kakoune faces, generated from theme.nix (self.theme).
     colorscheme = pkgs.writeText "flake.kak" ''
@@ -91,10 +96,13 @@
       install -Dm444 ${colorscheme} $out/colors/flake.kak
     '';
 
+    fzf = pkgs.kakounePlugins.kak-fzf.overrideAttrs (old: {
+      patches = (old.patches or []) ++ [./fzf-path.patch];
+    });
     kakoune = pkgs.kakoune.override {
       plugins = with pkgs.kakounePlugins; [
         auto-pairs-kak
-        kak-fzf
+        fzf
       ];
     };
   in {
@@ -123,11 +131,43 @@
         pkgs.gawk
         pkgs.diffutils
         pkgs.perl
-        pkgs.wl-clipboard
+        clipboard
         self'.packages.git
         self'.packages.jujutsu
       ];
       env.KAKOUNE_CONFIG_DIR = "${configDir}";
     };
+    checks.kakoune-workflow =
+      pkgs.runCommand "kakoune-workflow-tests" {
+        nativeBuildInputs = [
+          (pkgs.python3.withPackages (ps: [ps.pyte]))
+          pkgs.bash
+          pkgs.shellcheck
+          pkgs.tmux
+          pkgs.wl-clipboard
+          pkgs.sway-unwrapped
+          pkgs.xclip
+          pkgs.xvfb-run
+        ];
+        KAK_TEST_WRAPPER = pkgs.lib.getExe self'.packages.kakoune;
+        KAK_TEST_SHELL = pkgs.lib.getExe pkgs.bash;
+        KAK_TEST_SWAY = pkgs.lib.getExe pkgs.sway-unwrapped;
+        KAK_TEST_POPUP_PATH = pkgs.lib.makeBinPath [
+          pkgs.bash
+          pkgs.coreutils
+          pkgs.findutils
+          pkgs.gnugrep
+          pkgs.gnused
+          pkgs.ncurses
+          pkgs.tmux
+        ];
+      } ''
+        cp -r ${./.} source
+        cd source
+        unset WAYLAND_DISPLAY
+        xvfb-run -a python3 -B -m unittest discover -v
+        shellcheck -s bash clipboard.sh
+        touch "$out"
+      '';
   };
 }
