@@ -77,8 +77,11 @@ Settings and command symlinks under `.claude/` are generated from `tools/_claude
 
 Ghostty opens the wrapped tmux in the persistent `main` session. Projects use
 separate sessions (spaces), windows are tabs, and splits are panes. `mux PATH`
-creates or attaches a project session with `code` (Kakoune), `agents`, and `build`
-tabs. It does not create worktrees, change revisions, or launch agents for you.
+creates or attaches a project session with a single shell tab. New sessions load
+the allowed `.envrc`, or, without one, enter `devenv shell` for `devenv.nix` or
+`nix develop` for `flake.nix`. Otherwise they start a normal interactive shell.
+It does not open an editor, create worktrees, change revisions, or launch agents.
+Existing sessions and their tabs are left unchanged.
 An `.ff/repo.yml` umbrella remains one space even when `mux` runs inside a
 submodule. Session names include a short path hash to distinguish same-named
 projects. Kakoune is also the default `$EDITOR`.
@@ -87,7 +90,7 @@ The wrapped zsh includes direnv: allow a project's `.envrc` once with
 `direnv allow`, then each pane loads the nearest environment. An environment
 in a parent directory also applies to nested repositories. Project packages'
 zsh completions are refreshed after PATH changes. Direct editor commands
-(`mux`'s `code` window and `Ctrl+b e`) and review/Jujutsu popups use `mux-exec`
+(`Ctrl+b e`) and review/Jujutsu popups use `mux-exec`
 to load the selected directory's allowed environment. Without a parent `.envrc`,
 commands run normally; a blocked `.envrc` is never bypassed. After rebuilding,
 use the new environment's zsh and a newly started tmux server for these changes;
@@ -127,6 +130,9 @@ Herdr-style navigation also works directly, without the prefix:
 
 These Alt keys belong to tmux, including while Kakoune is focused. The Ctrl+Alt
 combinations require the terminal's extended-key support (enabled for Ghostty).
+The Nix tmux configuration sets `extended-keys-format csi-u` for Pi. If an older
+running server still uses `xterm`, apply it without closing sessions:
+`tmux set -s extended-keys-format csi-u`. New servers use the packaged setting.
 The agent picker captures its launching client with `run-shell -C` and passes
 `--client-tty` to ccmux. Passing `#{client_tty}` directly through `display-popup -e`
 leaves a literal format string on tmux 3.7c and prevents switching to an agent.

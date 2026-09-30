@@ -27,6 +27,14 @@ class EnvironmentTests(unittest.TestCase):
             XDG_DATA_HOME=str(self.base / "data"),
             XDG_CACHE_HOME=str(self.base / "cache"),
         )
+        self.shell = self.base / "shell with spaces"
+        self.shell.write_text(
+            f"#!{sys.executable}\n"
+            "import json, os, sys\n"
+            "print(json.dumps([sys.argv[1:], os.environ.get('FFT_TEST_IDENTITY'), os.getcwd()]))\n"
+        )
+        self.shell.chmod(0o755)
+        self.env["SHELL"] = str(self.shell)
         self.wrapper = (
             [os.environ["TMUX_TEST_EXEC"]]
             if "TMUX_TEST_EXEC" in os.environ
@@ -80,6 +88,23 @@ class EnvironmentTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout.strip(), "child")
 
+    def test_interactive_shell_uses_allowed_parent_environment(self):
+        (self.root / ".envrc").write_text("export FFT_TEST_IDENTITY=work\n")
+        (self.project / "devenv.nix").touch()
+        (self.project / "flake.nix").touch()
+        self.allow(self.root)
+        result = self.run_command()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout), [["-i"], "work", str(self.project)])
+
+    def test_blocked_environment_does_not_fall_back_to_devshell(self):
+        (self.root / ".envrc").write_text("export FFT_TEST_IDENTITY=work\n")
+        (self.project / "devenv.nix").touch()
+        (self.project / "flake.nix").touch()
+        result = self.run_command()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(result.stdout, "")
+
     def test_zsh_refreshes_completions_on_environment_entry_and_exit(self):
         package = self.base / "completion package"
         (package / "bin").mkdir(parents=True)
@@ -109,6 +134,71 @@ class EnvironmentTests(unittest.TestCase):
             cwd=self.project, env=self.env, text=True, capture_output=True,
         )
         self.assertEqual(result.returncode, 0, result.stderr)
+
+
+class ShellFallbackTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(prefix="shell with spaces ")
+        self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name)
+        self.bin = self.root / "bin"
+        self.bin.mkdir()
+        for name in ("devenv", "nix", "shell with spaces"):
+            executable = self.bin / name
+            executable.write_text(
+                f"#!{sys.executable}\n"
+                "import json, os, sys\n"
+                "print(json.dumps([os.path.basename(sys.argv[0]), sys.argv[1:], os.getcwd()]))\n"
+                "raise SystemExit(int(os.environ.get('LAUNCHER_EXIT_STATUS', '0')))\n"
+            )
+            executable.chmod(0o755)
+        self.shell = self.bin / "shell with spaces"
+        self.env = dict(os.environ, PATH=f"{self.bin}:{os.environ['PATH']}", SHELL=str(self.shell))
+        self.wrapper = ["bash", str(Path(__file__).with_name("exec.sh").resolve())]
+
+    def run_command(self, *args):
+        return subprocess.run(
+            [*self.wrapper, *args], cwd=self.root, env=self.env,
+            text=True, capture_output=True, check=False,
+        )
+
+    def test_devenv_takes_precedence_over_flake(self):
+        (self.root / "devenv.nix").touch()
+        (self.root / "flake.nix").touch()
+        result = self.run_command()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout), [
+            "devenv", ["shell", "--", str(self.shell), "-i"], str(self.root),
+        ])
+
+    def test_flake_enters_nix_develop_with_interactive_user_shell(self):
+        (self.root / "flake.nix").touch()
+        result = self.run_command()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout), [
+            "nix", ["develop", "--command", str(self.shell), "-i"], str(self.root),
+        ])
+
+    def test_without_environment_starts_normal_interactive_shell(self):
+        result = self.run_command()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout), ["shell with spaces", ["-i"], str(self.root)])
+
+    def test_direct_commands_do_not_enter_devshell(self):
+        (self.root / "devenv.nix").touch()
+        (self.root / "flake.nix").touch()
+        argument = "space ; $(touch must-not-exist) ' quote"
+        result = self.run_command(str(self.shell), argument)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout), ["shell with spaces", [argument], str(self.root)])
+        self.assertFalse((self.root / "must-not-exist").exists())
+
+    def test_devshell_failure_does_not_fall_back_to_plain_shell(self):
+        (self.root / "devenv.nix").touch()
+        self.env["LAUNCHER_EXIT_STATUS"] = "23"
+        result = self.run_command()
+        self.assertEqual(result.returncode, 23, result.stderr)
+        self.assertEqual(json.loads(result.stdout)[0], "devenv")
 
 
 if __name__ == "__main__":

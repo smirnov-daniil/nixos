@@ -38,14 +38,9 @@ def main() -> None:
         if project_exec is None:
             parser.error("mux-exec not found in the project launcher's PATH")
         subprocess.run(
-            ["tmux", "new-session", "-d", "-s", name, "-c", str(root), "-n", "code", project_exec, "kak", "-s", name],
+            ["tmux", "new-session", "-d", "-s", name, "-c", str(root), "-n", "shell", project_exec],
             check=True,
         )
-        for window in ["agents", "build"]:
-            subprocess.run(
-                ["tmux", "new-window", "-d", "-t", target, "-c", str(root), "-n", window],
-                check=True,
-            )
     action = "switch-client" if os.environ.get("TMUX") else "attach-session"
     os.execvp("tmux", ["tmux", action, "-t", target])
 
