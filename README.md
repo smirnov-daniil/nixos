@@ -115,6 +115,23 @@ Prefix shortcuts start with `Ctrl+b`, then release it and press the second key:
 | `r` / `g` | tuicr review / jjui |
 | `Space` | sysq shell assistant |
 
+`sysq` uses Pi and its authenticated/configured models. The first interactive
+request opens a model picker and saves the choice in `~/.cache/sysq/model`
+(or under `XDG_CACHE_HOME`). Use `sysq models` to list available models and
+`sysq model` to change the saved choice. `sysq model PROVIDER/MODEL` also saves
+an explicit choice. For one request, use `sysq --model PROVIDER/MODEL QUESTION`
+or `SYSQ_MODEL=PROVIDER/MODEL sysq QUESTION`; the flag overrides the environment,
+which overrides the saved choice. Non-interactive requests without a model fail
+with the available choices instead of silently selecting one.
+
+Sysq gives Pi only `read`, `grep`, `find`, and `ls`, disables automatic personal
+extensions/context, and does not persist Pi sessions. This tool allowlist is not
+an OS sandbox. `--web` additionally loads `pi-smart-web-search` and
+`pi-smart-fetch` from Pi's agent-local npm directory; install each with
+`pi install npm:pi-smart-web-search` and `pi install npm:pi-smart-fetch`.
+`SYSQ_WEB_SEARCH_EXTENSION` and `SYSQ_WEB_FETCH_EXTENSION` can override their
+entrypoint paths. `sysq doctor` reports Pi, the selected model, and the catalog.
+
 Herdr-style navigation also works directly, without the prefix:
 
 | Key | Action |

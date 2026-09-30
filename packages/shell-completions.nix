@@ -56,18 +56,20 @@
           local context state state_descr line
           local -A opt_args
           _arguments -C \
+            '--model[Use an available Pi model]:model:($(sysq models 2>/dev/null))' \
             '--web[Enable web search]' \
             '--refresh[Refresh context]' \
             '(--teach)--brief[Use brief answers]' \
             '(--brief)--teach[Explain in detail]' \
             '--return-file[Write result to a file]:file:_files' \
             '(-h --help)'{-h,--help}'[Show help]' \
-            '1:command:(explain fix safer nix error last history new context init doctor)' \
+            '1:command:(explain fix safer nix error last history new context models model init doctor)' \
             '*::argument:->args'
           if [[ $state = args ]]; then
             case $line[1] in
               explain) _normal ;;
               init) _values 'shell' zsh ;;
+              model) compadd -- ''${(f)"$(sysq models 2>/dev/null)"} ;;
               *) _files ;;
             esac
           fi

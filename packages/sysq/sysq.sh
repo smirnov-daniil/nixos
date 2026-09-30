@@ -1,6 +1,8 @@
 set -eu
 
-model="${SYSQ_MODEL:-gpt-5.3-codex-spark}"
+model="${SYSQ_MODEL:-}"
+model_explicit=0
+[ -z "$model" ] || model_explicit=1
 mode="ask"
 return_file=""
 use_web=0
@@ -9,15 +11,20 @@ verbosity="brief"
 
 usage() {
   printf '%s\n' \
-    'Usage: sysq [--web] [--refresh] [--brief|--teach] [QUESTION...]' \
+    'Usage: sysq [--model PROVIDER/MODEL] [--web] [--refresh] [--brief|--teach] [QUESTION...]' \
     '       sysq explain [--return-file PATH] COMMAND...' \
     '       sysq fix|safer|nix|error [TEXT...]' \
     '       sysq last' \
     '       sysq history QUERY...' \
     '       sysq new' \
     '       sysq context' \
+    '       sysq models' \
+    '       sysq model [PROVIDER/MODEL]' \
     '       sysq init zsh' \
-    '       sysq doctor'
+    '       sysq doctor' \
+    '' \
+    'Model: --model, then SYSQ_MODEL, then the saved selection.' \
+    'Run sysq model to choose and save an available Pi model.'
 }
 
 die() {
@@ -27,6 +34,12 @@ die() {
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
+    --model)
+      [ "$#" -ge 2 ] && [ -n "$2" ] || die '--model requires PROVIDER/MODEL'
+      model=$2
+      model_explicit=1
+      shift 2
+      ;;
     --web)
       use_web=1
       shift
@@ -64,8 +77,8 @@ while [ "$#" -gt 0 ]; do
       mode="history"
       shift
       ;;
-    context)
-      mode="context"
+    context|model|models|doctor)
+      mode=$1
       shift
       ;;
     new)
@@ -75,13 +88,6 @@ while [ "$#" -gt 0 ]; do
     init)
       [ "${2:-}" = "zsh" ] || die 'supported shell: zsh'
       cat '@zshIntegration@'
-      exit 0
-      ;;
-    doctor)
-      command -v codex >/dev/null 2>&1 || die 'codex is not available in PATH'
-      printf 'codex: %s\n' "$(codex --version)"
-      printf 'model: %s\n' "$model"
-      printf 'ui: gum %s\n' "$(gum --version)"
       exit 0
       ;;
     -h|--help)
@@ -101,12 +107,80 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
-command -v codex >/dev/null 2>&1 || die 'codex is not available in PATH; install it and run codex login'
+command -v pi >/dev/null 2>&1 || die 'pi is not available in PATH; install it and use /login in Pi'
 
 state_dir="${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}/sysq-${UID}}/sysq"
 cache_dir="${XDG_CACHE_HOME:-${HOME}/.cache}/sysq"
 session_file="$state_dir/session"
+model_file="$cache_dir/model"
 mkdir -p "$state_dir" "$cache_dir"
+if [ -z "$model" ] && [ -r "$model_file" ]; then
+  model=$(cat "$model_file")
+fi
+
+pi_options=(--offline --no-extensions --no-skills --no-prompt-templates --no-themes --no-context-files --no-approve)
+
+list_models() {
+  local catalog
+  catalog=$(pi "${pi_options[@]}" --list-models) || die 'could not list Pi models; check Pi authentication and configuration'
+  printf '%s\n' "$catalog" | awk '
+    $1 == "provider" && $2 == "model" { table = 1; next }
+    table && NF >= 6 { print $1 "/" $2 }
+  ' | sort -u
+}
+
+select_model() {
+  local available selected matches
+  available=$(list_models)
+  [ -n "$available" ] || die 'no available Pi models; use /login in Pi or configure models.json'
+  matches=$(printf '%s\n' "$available" | awk -v selected="$model" '$0 == selected')
+  if [ -z "$matches" ]; then
+    matches=$(printf '%s\n' "$available" | awk -v selected="$model" 'substr($0, index($0, "/") + 1) == selected')
+  fi
+  if [ -n "$matches" ] && [ "$(printf '%s\n' "$matches" | wc -l)" -eq 1 ]; then
+    model=$matches
+  elif [ -n "$model" ] && [ "$model_explicit" -eq 1 ]; then
+    die "model '$model' is unavailable or ambiguous; run sysq models and use PROVIDER/MODEL"
+  elif [ -t 0 ] && [ -t 1 ]; then
+    selected=$(printf '%s\n' "$available" | gum filter --header 'Choose a Pi model') || exit 0
+    [ -n "$selected" ] || exit 0
+    printf '%s\n' "$available" | grep -Fxq -- "$selected" || die 'invalid model selection'
+    model=$selected
+    printf '%s\n' "$model" >"$model_file"
+  else
+    printf 'Available Pi models:\n%s\n' "$available" >&2
+    die 'choose a model with sysq model, --model PROVIDER/MODEL or SYSQ_MODEL'
+  fi
+}
+
+case "$mode" in
+  models)
+    list_models
+    exit 0
+    ;;
+  model)
+    if [ "$#" -gt 0 ]; then
+      [ "$#" -eq 1 ] || die 'sysq model accepts one PROVIDER/MODEL'
+      model=$1
+      model_explicit=1
+    else
+      model=""
+      model_explicit=0
+    fi
+    select_model
+    printf '%s\n' "$model" >"$model_file"
+    printf 'Saved Pi model: %s\n' "$model"
+    exit 0
+    ;;
+  doctor)
+    printf 'pi: %s\n' "$(pi --version)"
+    printf 'model: %s\n' "${model:-not selected (run sysq model)}"
+    printf 'ui: gum %s\n' "$(gum --version)"
+    printf '\nAvailable Pi models:\n'
+    list_models
+    exit 0
+    ;;
+esac
 
 if [ "$mode" = "new" ]; then
   rm -f -- "$session_file"
@@ -127,7 +201,7 @@ if [ -z "$question" ]; then
   elif [ "$mode" = "explain" ]; then
     question=$(gum write --header "Command to explain" --placeholder "find . -type f -mtime +30 -delete")
   else
-    question=$(gum write --header "Ask Codex Spark" --placeholder "How do I find the process listening on port 8080?")
+    question=$(gum write --header "Ask Pi" --placeholder "How do I find the process listening on port 8080?")
   fi
 fi
 
@@ -199,8 +273,10 @@ cleanup() {
 trap cleanup EXIT HUP INT TERM
 
 prompt_file="$tmpdir/prompt"
+system_file="$tmpdir/system"
 result_file="$tmpdir/result.json"
-log_file="$tmpdir/codex.log"
+output_file="$tmpdir/pi-output"
+log_file="$tmpdir/pi.log"
 context_file="$tmpdir/context"
 histdb_file="${HISTDB_FILE:-${HOME}/.histdb/zsh-history.db}"
 
@@ -250,7 +326,7 @@ history_context >"$context_file"
 
 if [ "$mode" = "context" ]; then
   printf 'Model: %s\nOS: %s\nShell: %s\nCWD: %s\nDetail: %s\nWeb: %s\n' \
-    "$model" "$(uname -srm)" "${SHELL:-unknown}" "$PWD" "$verbosity" "$use_web"
+    "${model:-not selected (run sysq model)}" "$(uname -srm)" "${SHELL:-unknown}" "$PWD" "$verbosity" "$use_web"
   if [ -s "$session_file" ]; then
     printf '\nRecent conversation:\n'
     tail -n 80 "$session_file"
@@ -266,9 +342,31 @@ if [ "$mode" = "context" ]; then
   exit 0
 fi
 
+select_model
+
+tools='read,grep,find,ls'
+if [ "$use_web" -eq 1 ]; then
+  agent_dir="${PI_CODING_AGENT_DIR:-${HOME}/.pi/agent}"
+  search_extension="${SYSQ_WEB_SEARCH_EXTENSION:-$agent_dir/npm/node_modules/pi-smart-web-search/index.ts}"
+  fetch_extension="${SYSQ_WEB_FETCH_EXTENSION:-$agent_dir/npm/node_modules/pi-smart-fetch/dist/index.js}"
+  [ -r "$search_extension" ] && [ -r "$fetch_extension" ] || die '--web requires Pi packages pi-smart-web-search and pi-smart-fetch; install them with pi install npm:PACKAGE or set SYSQ_WEB_SEARCH_EXTENSION and SYSQ_WEB_FETCH_EXTENSION'
+  pi_options+=(-e "$search_extension" -e "$fetch_extension")
+  tools+=',web_search,web_fetch,batch_web_fetch'
+fi
+
 {
   cat '@skillPrompt@'
-  printf '\n\n## Runtime context\n\n'
+  printf '\n\nReturn only a JSON object matching this schema, without Markdown fences or extra text:\n'
+  cat '@responseSchema@'
+  if [ "$use_web" -eq 0 ]; then
+    printf '\nWeb access is disabled. Use only the supplied context and local read-only tools.\n'
+  else
+    printf '\nWeb search is enabled. Use web_search and fetch primary sources when current information matters.\n'
+  fi
+} >"$system_file"
+
+{
+  printf '## Runtime context\n\n'
   printf 'Operating system: %s\n' "$(uname -srm)"
   printf 'Shell: %s\n' "${SHELL:-unknown}"
   printf 'Working directory: %s\n' "$PWD"
@@ -303,7 +401,7 @@ fi
   fi
 } >"$prompt_file"
 
-cache_key=$(printf '%s\n%s\n' "$model" "$(cat "$prompt_file")" | sha256sum | cut -d' ' -f1)
+cache_key=$(printf '%s\n' 'pi-v1' "$model" "$use_web" "$(cat "$system_file")" "$(cat "$prompt_file")" | sha256sum | cut -d' ' -f1)
 cache_file="$cache_dir/$cache_key.json"
 cache_hit=0
 if [ "$refresh" -eq 0 ] && [ "$mode" = "ask" ] && [ ! -s "$session_file" ] && [ -f "$cache_file" ] && ! find "$cache_file" -mmin +1440 -print -quit | grep -q .; then
@@ -312,39 +410,54 @@ if [ "$refresh" -eq 0 ] && [ "$mode" = "ask" ] && [ ! -s "$session_file" ] && [ 
   printf 'cached response · use --refresh to update\n\n'
 fi
 
-if [ "$use_web" -eq 1 ]; then
-  set -- codex --search exec
-else
-  set -- codex exec
-fi
-
-set -- "$@" \
-  --model "$model" \
-  --sandbox read-only \
-  --ephemeral \
-  --skip-git-repo-check \
-  --color never \
-  --output-schema '@responseSchema@' \
-  --output-last-message "$result_file"
+set -- pi "${pi_options[@]}" \
+  --provider "${model%%/*}" \
+  --model "${model#*/}" \
+  --tools "$tools" \
+  --system-prompt "$(cat "$system_file")" \
+  --append-system-prompt '' \
+  --no-session \
+  --print
 
 # The single-quoted program is evaluated by the child shell, not this one.
 # shellcheck disable=SC2016
-if [ "$cache_hit" -eq 0 ] && ! gum spin \
-  --spinner moon \
-  --spinner.foreground 212 \
-  --title "Codex Spark думает…  Ctrl-C — отменить" \
-  -- sh -c '
-    prompt_file=$1
-    log_file=$2
-    shift 2
-    exec "$@" - <"$prompt_file" >"$log_file" 2>&1
-  ' sh "$prompt_file" "$log_file" "$@"; then
-  printf 'Codex failed:\n' >&2
+set -- sh -c '
+  prompt_file=$1
+  output_file=$2
+  log_file=$3
+  shift 3
+  exec "$@" <"$prompt_file" >"$output_file" 2>"$log_file"
+' sh "$prompt_file" "$output_file" "$log_file" "$@"
+
+if [ -t 1 ]; then
+  set -- gum spin \
+    --spinner moon \
+    --spinner.foreground 212 \
+    --title "Pi · $model думает…  Ctrl-C — отменить" \
+    -- "$@"
+fi
+
+if [ "$cache_hit" -eq 0 ] && ! "$@"; then
+  printf 'Pi failed:\n' >&2
   tail -n 20 "$log_file" >&2
   exit 1
 fi
 
-jq -e . "$result_file" >/dev/null 2>&1 || die 'Codex returned an invalid response'
+if [ "$cache_hit" -eq 0 ]; then
+  jq -Rs 'sub("^\\s*```(?:json)?\\s*\\n"; "") | sub("\\n```\\s*$"; "") | fromjson' "$output_file" >"$result_file" 2>/dev/null || die 'Pi returned an invalid JSON response'
+fi
+
+jq -e '
+  type == "object" and keys == ["answer", "commands", "needs_clarification"] and
+  (.answer | type == "string") and
+  (.needs_clarification | type == "boolean") and
+  (.commands | type == "array" and all(.[];
+    type == "object" and keys == ["command", "description", "risk"] and
+    (.command | type == "string") and
+    (.description | type == "string") and
+    (.risk | . == "read-only" or . == "changes-files" or . == "destructive")
+  ))
+' "$result_file" >/dev/null 2>&1 || die 'Pi returned a response that does not match the sysq schema'
 
 if [ "$cache_hit" -eq 0 ] && [ "$mode" = "ask" ] && [ ! -s "$session_file" ]; then
   cp "$result_file" "$cache_file"
