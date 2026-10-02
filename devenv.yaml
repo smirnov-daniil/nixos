@@ -7,6 +7,6 @@ nixpkgs:
     - claude-code
 inputs:
   nixpkgs:
-    url: github:NixOS/nixpkgs/44a91898084f46797b5fac650c7e8c9ac38c43d4
+    url: github:NixOS/nixpkgs/c59305bab2065cfecc4944690d9eedbb56f3a9fa
   devenv:
     url: github:cachix/devenv?dir=src/modules
