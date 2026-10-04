@@ -252,7 +252,9 @@
         wantedBy = ["multi-user.target"];
         after = ["skinem-server.service"];
         serviceConfig = {
-          ExecStart = "${pkgs.envoy}/bin/envoy -c ${gatewayConfig}";
+          # Upstream release binary: nixpkgs' Bazel source build of envoy breaks
+          # regularly (drifting deps hash, vendored code vs. newer GCC).
+          ExecStart = "${pkgs.envoy-bin}/bin/envoy -c ${gatewayConfig}";
           DynamicUser = true;
           Restart = "on-failure";
           NoNewPrivileges = true;
