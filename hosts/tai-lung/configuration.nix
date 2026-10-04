@@ -332,5 +332,11 @@
         };
       };
     };
+
+    # The apex certificate expired in April 2026. ARI makes lego send its serial
+    # as `replaces`, Let's Encrypt rejects the order with 404 because it no longer
+    # knows that certificate, and lego only retries without it on 409. Drop this
+    # once the certificate has renewed.
+    security.acme.certs.${config.sanctum.domain}.extraLegoRenewFlags = ["--ari-disable"];
   };
 }
