@@ -1,7 +1,7 @@
 {inputs, ...}: {
   perSystem = {pkgs, ...}: let
     inherit (pkgs) lib;
-    nixglhost = inputs.nix-gl-host.packages.${pkgs.system}.default;
+    nixglhost = inputs.nix-gl-host.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
     extension = shortId: guid: {
       name = guid;

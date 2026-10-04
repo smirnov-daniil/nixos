@@ -10,7 +10,7 @@
     ...
   }: {
     packages.ghostty = let
-      nixglhost = inputs.nix-gl-host.packages.${pkgs.system}.default;
+      nixglhost = inputs.nix-gl-host.packages.${pkgs.stdenv.hostPlatform.system}.default;
       ghosttyWrapped =
         (inputs.wrappers.wrapperModules.ghostty.apply {
           inherit pkgs;
