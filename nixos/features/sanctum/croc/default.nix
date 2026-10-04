@@ -11,7 +11,6 @@
   }:
     with lib; let
       cfg = config.sanctum.croc;
-      sanctumCfg = config.sanctum;
     in {
       imports = [
         self.nixosModules.sanctum-core
@@ -22,36 +21,25 @@
         enable = mkEnableOption "Croc file transfer";
         port = mkOption {
           type = types.port;
-          default = 9009; # - 9013
-          description = "Port croc";
+          default = 9009;
+          description = "First croc relay port; the next port carries transfers. Both must be reachable from clients.";
         };
       };
 
+      # The relay speaks raw TCP on its own ports (clients connect to the first,
+      # then to the transfer port it advertises), so nginx cannot front it.
       config = mkIf cfg.enable {
-        sanctum.services.croc = {
-          enable = true;
-          domain = "croc.${sanctumCfg.domain}";
-          port = cfg.port;
-          description = "File Transfer";
-          homepage.enable = false;
-        };
+        sops.secrets.croc.restartUnits = ["croc.service"];
 
-        sanctum.services.croc2 = {
-          enable = true;
-          domain = "croc2.${sanctumCfg.domain}";
-          port = cfg.port + 1;
-          description = "File Transfer";
-          homepage.enable = false;
-        };
-
-        sops.secrets.croc = {
-          # owner = "croc";
-        };
+        # The relay runs as a DynamicUser and cannot read the root-only SOPS
+        # file; croc would then silently use the path itself as the password.
+        systemd.services.croc.serviceConfig.LoadCredential = ["pass:${config.sops.secrets.croc.path}"];
 
         services.croc = {
           enable = true;
-          ports = [9009 9010];
-          pass = config.sops.secrets.croc.path;
+          ports = [cfg.port (cfg.port + 1)];
+          pass = "/run/credentials/croc.service/pass";
+          openFirewall = true;
         };
       };
     };
