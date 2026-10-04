@@ -55,6 +55,7 @@
     assert polling.systemd.services.skinem-server.environment.TELEGRAM_MODE == "polling";
     assert customDatabasePort.systemd.services.skinem-server.environment.DATABASE_URL == "postgresql:///skinem?host=/run/postgresql&port=5544";
     assert web.systemd.services.skinem-server.serviceConfig.User == "skinem";
+    assert web.systemd.services.skinem-server.serviceConfig.KillMode == "mixed";
     assert web.systemd.services.skinem-server.serviceConfig.LoadCredential == [];
     assert web.systemd.services.skinem-server.environment.DATABASE_URL == "postgresql:///skinem?host=/run/postgresql&port=5432";
     assert web.services.nginx.virtualHosts."split.example.org".locations."/".proxyPass == null;

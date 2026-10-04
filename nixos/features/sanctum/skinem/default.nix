@@ -233,6 +233,9 @@
           };
         serviceConfig = {
           ExecStart = lib.mkForce server;
+          # secretspec forwards SIGTERM itself; a cgroup-wide signal would hit the server
+          # twice, exit 143 and fail switch-to-configuration, so deploy-rs rolls back.
+          KillMode = "mixed";
           DynamicUser = lib.mkForce false;
           User = "skinem";
           Group = "skinem";
