@@ -12,7 +12,7 @@
   };
 in {
   languages.nix.enable = true;
-  packages = with pkgs; [alejandra jq jujutsu ripgrep python3 shellcheck actionlint];
+  packages = with pkgs; [alejandra coreutils jq jujutsu ripgrep python3 shellcheck actionlint];
   dotenv.enable = false;
   dotenv.disableHint = true;
 

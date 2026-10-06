@@ -64,12 +64,17 @@ require_deploy_terminal() {
 }
 
 deploy_system() {
-  local source=$1 node=$2
+  local source=$1 node=$2 available_cpus build_cores
+  available_cpus=$(nproc)
+  build_cores=$((available_cpus * 3 / 4))
+  ((build_cores > 0)) || build_cores=1
+  local -a build_flags=(--max-jobs 1 --cores "$build_cores")
+  printf 'Local build budget: %s/%s CPUs; one build at a time.\n' "$build_cores" "$available_cpus" >&2
   # Keep upstream checks, confirmation, sudo, and rollback behavior intact.
   # Forward private-source overrides to BOTH the client and its Nix subprocesses.
-  nix run "path:$source#deploy-rs" --no-write-lock-file "${skinem_input_flags[@]}" -- \
+  nix run "path:$source#deploy-rs" --no-write-lock-file "${skinem_input_flags[@]}" "${build_flags[@]}" -- \
     "path:$source#$node.system" --interactive -- \
-    --no-write-lock-file --show-trace "${skinem_input_flags[@]}"
+    --no-write-lock-file --show-trace "${skinem_input_flags[@]}" "${build_flags[@]}"
 }
 
 command=${1:-help}

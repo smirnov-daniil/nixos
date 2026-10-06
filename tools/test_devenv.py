@@ -117,6 +117,9 @@ class CommandTests(unittest.TestCase):
             "sys.exit(int(os.environ.get('NIX_TEST_EXIT', '0')))\n"
         )
         mock.chmod(0o755)
+        cpu_count = self.root / "nproc"
+        cpu_count.write_text('#!/usr/bin/env bash\nprintf "%s\\n" "${NIX_TEST_CPU_COUNT:-8}"\n')
+        cpu_count.chmod(0o755)
         self.log = self.root / "calls.jsonl"
         self.env = dict(os.environ, DEVENV_ROOT=str(self.root), FLAKE_HOST="",
                         CI="", GITHUB_ACTIONS="",
@@ -174,10 +177,34 @@ class CommandTests(unittest.TestCase):
         result = self.run_in_terminal("deploy", "tai-lung", FLAKE_HOST="gru")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(self.calls()[-1], [
-            "run", "path:/nix/store/fixture-source#deploy-rs", "--no-write-lock-file", "--",
+            "run", "path:/nix/store/fixture-source#deploy-rs", "--no-write-lock-file",
+            "--max-jobs", "1", "--cores", "6", "--",
             "path:/nix/store/fixture-source#tai-lung.system", "--interactive", "--",
-            "--no-write-lock-file", "--show-trace",
+            "--no-write-lock-file", "--show-trace", "--max-jobs", "1", "--cores", "6",
         ])
+
+    def test_deploy_cpu_budget_is_rounded_down_with_minimum_one(self):
+        for cpus, cores in [(1, 1), (2, 1), (3, 2), (4, 3), (7, 5), (8, 6), (9, 6), (32, 24)]:
+            with self.subTest(cpus=cpus):
+                result = self.run_in_terminal("deploy", "tai-lung", NIX_TEST_CPU_COUNT=str(cpus))
+                self.assertEqual(result.returncode, 0, result.stderr)
+                call = self.calls()[-1]
+                client_end = call.index("--")
+                build_start = call.index("--", client_end + 1) + 1
+                for arguments in [call[:client_end], call[build_start:]]:
+                    self.assertEqual(arguments.count("--cores"), 1)
+                    self.assertEqual(arguments[arguments.index("--cores") + 1], str(cores))
+                    self.assertEqual(arguments[arguments.index("--max-jobs") + 1], "1")
+
+    def test_cpu_budget_does_not_apply_to_preflight_or_other_commands(self):
+        for arguments in [("deploy-check", "tai-lung"), ("build", "environment"),
+                          ("host", "gru"), ("eval",), ("check",)]:
+            with self.subTest(arguments=arguments):
+                start = len(self.calls()) if self.log.exists() else 0
+                self.assertEqual(self.run_command(*arguments).returncode, 0)
+                for call in self.calls()[start:]:
+                    self.assertNotIn("--cores", call)
+                    self.assertNotIn("--max-jobs", call)
 
     def test_missing_deploy_node_or_invalid_activation_prevents_deployment(self):
         result = self.run_in_terminal("deploy", "gru", NIX_TEST_DEPLOY_EVAL_EXIT="1")
