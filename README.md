@@ -96,6 +96,16 @@ commands run normally; a blocked `.envrc` is never bypassed. After rebuilding,
 use the new environment's zsh and a newly started tmux server for these changes;
 existing editor processes retain their original environment.
 
+`Ctrl+R` (also `Alt+R`) searches the existing histdb database through a themed fzf
+picker. Commands stay compact in the list; the lower preview shows the full
+multiline command, host, directory, timestamp, exit status, and duration.
+`Alt+H` filters the current host, `Alt+D` the exact current directory, and
+`Alt+S` the selected command's session; press a filter again to disable it.
+`Enter` inserts the command for editing, without executing it. `Esc`/`Ctrl+G`
+return the typed query to the prompt. `Alt+J` changes to the selected command's
+directory without running it. History remains local in `~/.histdb/zsh-history.db`
+(or `$HISTDB_FILE`); no import, migration, account, or synchronization is needed.
+
 ```bash
 devenv --profile claude shell flake-build environment
 ./.devenv/builds/environment/bin/zsh

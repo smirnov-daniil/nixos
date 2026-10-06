@@ -8,7 +8,36 @@
     pkgs,
     self',
     ...
-  }: {
+  }: let
+    histdb = pkgs.zsh-histdb.overrideAttrs (old: {
+      version = "0-unstable-2026-09-18";
+      src = pkgs.fetchFromGitHub {
+        owner = "larkery";
+        repo = "zsh-histdb";
+        rev = "27b719a993414321135ddaf73f9a4ecf785bd8c5";
+        hash = "sha256-w1HsIkhsB6iG6yFBpiNcyXPiuPprkoQ49wO1jfWRExs=";
+      };
+      patches = (old.patches or []) ++ [./zsh/histdb-fzf.patch];
+      postPatch =
+        old.postPatch
+        + ''
+          substituteInPlace histdb-fzf.zsh \
+            --replace-fail 'sqlite3 -batch' '${lib.getExe pkgs.sqlite} -batch' \
+            --replace-fail 'zsh -fc' '${lib.getExe pkgs.zsh} -fc' \
+            --replace-fail 'FZF_DEFAULT_OPTS_FILE= fzf' 'FZF_DEFAULT_OPTS_FILE= ${lib.getExe self'.packages.fzf-history}' \
+            --replace-fail '| awk ' '| ${lib.getExe pkgs.gawk} ' \
+            --replace-fail 'mktemp -d' '${pkgs.coreutils}/bin/mktemp -d' \
+            --replace-fail 'command rm -rf' 'command ${pkgs.coreutils}/bin/rm -rf'
+        '';
+      postInstall =
+        (old.postInstall or "")
+        + ''
+          install -Dt "$out/share/zsh-histdb" histdb-fzf.zsh
+        '';
+    });
+    testPython = pkgs.python3.withPackages (p: [p.pyte]);
+  in {
+    packages.zsh-histdb = histdb;
     packages.zsh =
       (inputs.wrappers.wrapperModules.zsh.apply {
         inherit pkgs;
@@ -62,9 +91,11 @@
         '';
         extraRC = ''
           path=(${pkgs.sqlite}/bin ${self'.packages.sysq}/bin $path)
-          source ${pkgs.zsh-histdb}/share/zsh-histdb/sqlite-history.zsh
-          source ${pkgs.zsh-histdb}/share/zsh-histdb/histdb-interactive.zsh
-          bindkey '^[r' _histdb-isearch
+          source ${histdb}/share/zsh-histdb/sqlite-history.zsh
+          source ${histdb}/share/zsh-histdb/histdb-fzf.zsh
+          bindkey '^R' _fzf_histdb_widget
+          bindkey '^[r' _fzf_histdb_widget
+          bindkey -M viins '^R' _fzf_histdb_widget
           source ${self'.packages.sysq}/share/zsh/site-functions/sysq.zsh
           autoload -Uz edit-command-line
           zle -N edit-command-line
@@ -78,5 +109,18 @@
           add-zsh-hook precmd _flake_project_completions
         '';
       }).wrapper;
+
+    checks.zsh-history =
+      pkgs.runCommand "zsh-history-tests" {
+        nativeBuildInputs = [testPython pkgs.zsh pkgs.sqlite pkgs.coreutils];
+        HISTDB_TEST_SCRIPT = "${histdb}/share/zsh-histdb/histdb-fzf.zsh";
+        HISTDB_TEST_BACKEND = "${histdb}/share/zsh-histdb/sqlite-history.zsh";
+        ZSH_TEST_WRAPPER = lib.getExe self'.packages.zsh;
+      } ''
+        cp -r ${./zsh} source
+        cd source
+        python3 -B -m unittest test_history -v
+        touch "$out"
+      '';
   };
 }

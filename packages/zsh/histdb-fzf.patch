@@ -1,0 +1,97 @@
+--- a/histdb-fzf.zsh
++++ b/histdb-fzf.zsh
+@@ -61,7 +61,7 @@
+     where="$where and places.host = '$(_fzf_histdb_sql_escape "$_fh_hostname")'"
+   fi
+   if [[ $_fh_dir == 1 ]]; then
+-    where="$where and places.dir like '$(_fzf_histdb_sql_escape "$_fh_pwd")%'"
++    where="$where and places.dir = '$(_fzf_histdb_sql_escape "$_fh_pwd")'"
+   fi
+   if [[ $_fh_sessmode == 1 && -n $_fh_session ]]; then
+     where="$where and history.session = '$(_fzf_histdb_sql_escape "$_fh_session")'"
+@@ -151,11 +151,12 @@
+     dirbit="dir:all"
+   fi
+   if [[ $_fh_sessmode == 1 ]]; then
+-    sessbit="  ${fg[green]}session:${_fh_session}@${_fh_sesshost%%.*}${reset_color}"
++    sessbit="${fg[green]}session:${_fh_session}@${_fh_sesshost%%.*}${reset_color}"
+   else
+-    sessbit=""
++    sessbit="session:all"
+   fi
+-  print -r -- "$hostbit  $dirbit$sessbit   —   alt-h host  alt-d dir  alt-s session  ·  alt-j cd  ↵ edit"
++  print -r -- "$hostbit  $dirbit  $sessbit"
++  print -r -- "Alt-H host · Alt-D dir · Alt-S session · Alt-J cd · Enter edit"
+ }
+ 
+ # Compact detail strip for the highlighted id.
+@@ -197,6 +198,8 @@
+ 
+   print -r -- "Host: ${host%%.*}   Exit: ${exitc}${secs:+   (${secs}s)}"
+   print -r -- "Date: ${date}   Dir: ${dir}"
++  print
++  _fzf_histdb_get "$sd" "$id"
+ }
+ 
+ # Absolute directory for the selected id (used by Alt-j).
+@@ -228,7 +231,7 @@
+   local sd
+   sd=$(mktemp -d "${TMPDIR:-/tmp}/fzf-histdb.XXXXXX") || return
+   {
+-    print -n "$COLUMNS"                        > "$sd/width"
++    print -n "$(( COLUMNS > 6 ? COLUMNS - 6 : 1 ))" > "$sd/width"
+     print -n 0                                 > "$sd/host"
+     print -n 0                                 > "$sd/dir"
+     print -rn -- "${HOST}"                     > "$sd/hostname"
+@@ -242,6 +245,12 @@
+     local f=${(q)FZF_HISTDB_LITE_FILE}
+     local q=${(q)sd}
+     local src="source $f;"
++    local generate="zsh -fc ${(q):-${src} _fzf_histdb_gen $q}"
++    local header="zsh -fc ${(q):-${src} _fzf_histdb_header $q}"
++    local detail="zsh -fc ${(q):-${src} _fzf_histdb_detail $q \"\$1\"} -- {1}"
++    local host_toggle="zsh -fc ${(q):-${src} _fzf_histdb_toggle $q host}"
++    local dir_toggle="zsh -fc ${(q):-${src} _fzf_histdb_toggle $q dir}"
++    local session_toggle="zsh -fc ${(q):-${src} _fzf_histdb_toggle_session $q \"\$1\"} -- {1}"
+ 
+     local -a fzfopts
+     fzfopts=(
+@@ -262,8 +271,8 @@
+       --expect=alt-j
+       +m
+       --header="$(_fzf_histdb_header "$sd")"
+-      --preview="zsh -c '${src} _fzf_histdb_detail $q {1}'"
+-      --preview-window='down,5,border-top,wrap'
++      --preview="$detail"
++      --preview-window='down,40%,border-top,wrap'
+       # Neutralise any change:* bind inherited from the user's FZF_DEFAULT_OPTS
+       # (e.g. a change:reload from an rg/fzf setup would wipe our list on every
+       # keystroke — the classic "no hits when I type" symptom). We just re-home
+@@ -275,13 +284,14 @@
+       # ctrl-d = delete forward char only. fzf's default is delete-char/eof,
+       # which aborts on an empty query; use plain delete-char so only C-g / ESC exit.
+       --bind='ctrl-d:delete-char'
+-      --bind="alt-h:execute-silent(zsh -c '${src} _fzf_histdb_toggle $q host')+reload(zsh -c '${src} _fzf_histdb_gen $q')+transform-header(zsh -c '${src} _fzf_histdb_header $q')"
+-      --bind="alt-d:execute-silent(zsh -c '${src} _fzf_histdb_toggle $q dir')+reload(zsh -c '${src} _fzf_histdb_gen $q')+transform-header(zsh -c '${src} _fzf_histdb_header $q')"
+-      --bind="alt-s:execute-silent(zsh -c '${src} _fzf_histdb_toggle_session $q {1}')+reload(zsh -c '${src} _fzf_histdb_gen $q')+transform-header(zsh -c '${src} _fzf_histdb_header $q')"
++      --bind='esc:print-query+abort,ctrl-g:print-query+abort'
++      --bind="alt-h:execute-silent($host_toggle)+reload($generate)+transform-header($header)"
++      --bind="alt-d:execute-silent($dir_toggle)+reload($generate)+transform-header($header)"
++      --bind="alt-s:execute-silent($session_toggle)+reload($generate)+transform-header($header)"
+     )
+ 
+     local -a result
+-    result=("${(@f)$(_fzf_histdb_gen "$sd" | FZF_DEFAULT_OPTS="$FZF_DEFAULT_OPTS" fzf "${fzfopts[@]}")}")
++    result=("${(@f)$(_fzf_histdb_gen "$sd" | FZF_DEFAULT_OPTS= FZF_DEFAULT_OPTS_FILE= fzf "${fzfopts[@]}")}")
+     local status_code=$?
+ 
+     local query=${result[1]}
+@@ -291,7 +301,7 @@
+ 
+     if [[ $status_code -ne 0 ]]; then
+       # aborted (esc / ctrl-g): keep whatever was typed
+-      BUFFER=$query
++      BUFFER=${result[1]-$BUFFER}
+     elif [[ $key == alt-j ]]; then
+       local dir=$(_fzf_histdb_cddir "$sd" "$id")
+       if [[ -n $dir && -d $dir ]]; then
