@@ -61,6 +61,7 @@ class ReviewTests(unittest.TestCase):
         self.assertIn("+after", (review.ticket_dir(ticket) / "diff.patch").read_text())
         review.assert_current(ticket)
         branch = review.prepare(self.repo, "branch")
+        self.assertEqual(review.load(branch)["selection"]["args"], ["-r", "trunk()..@", "-w"])
         self.assertIn("+after", (review.ticket_dir(branch) / "diff.patch").read_text())
 
     def test_explicit_jj_range_includes_working_change_like_tuicr(self):

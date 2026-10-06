@@ -26,6 +26,11 @@
       runtimeInputs = [projectExec pkgs.fzf self'.packages.tuicr-agent-review self'.packages.jjui self'.packages.jujutsu];
       text = ''exec ${python}/bin/python3 ${./repo.py} "$@"'';
     };
+    popup = pkgs.writeShellApplication {
+      name = "mux-popup";
+      runtimeInputs = [tmuxCore repoPicker];
+      text = ''exec ${python}/bin/python3 ${./popup.py} "$@"'';
+    };
     navigate = pkgs.writeShellApplication {
       name = "mux-navigate";
       runtimeInputs = [tmuxCore self'.packages.ccmux];
@@ -65,7 +70,7 @@
       '') (lib.range 1 9)}
       ${lib.concatImapStringsSep "\n" (n: key: ''
         unbind -q -n 'M-${key}'
-        bind 'M-${key}' run-shell '${navigate}/bin/mux-navigate space ${toString n} #{pane_id}'
+        bind 'M-${key}' run-shell '${navigate}/bin/mux-navigate space ${toString n} #{pane_id} #{client_tty}'
       '') ["!" "@" "#" "$" "%" "^" "&" "*" "("]}
 
       # Keyboard shortcuts are handled only after the prefix.
@@ -80,19 +85,22 @@
       bind -r J resize-pane -D 5
       bind -r K resize-pane -U 5
       bind -r L resize-pane -R 5
-      bind w choose-tree -Zs
-      bind W choose-tree -Zw
+      bind w choose-tree -Zs -f '#{==:#{@mux-popup-parent},}'
+      bind W choose-tree -Zw -f '#{==:#{@mux-popup-parent},}'
       bind p previous-window
       bind n next-window
       bind z resize-pane -Z
-      bind '(' switch-client -p
-      bind ')' switch-client -n
+      bind '(' run-shell '${navigate}/bin/mux-navigate space previous #{pane_id} #{client_tty}'
+      bind ')' run-shell '${navigate}/bin/mux-navigate space next #{pane_id} #{client_tty}'
       # Expand the launching client's tty before display-popup runs its command.
       bind a run-shell -C 'display-popup -E -w 90% -h 85% "${self'.packages.ccmux}/bin/ccmux --client-tty #{client_tty}"'
       bind A run-shell '${self'.packages.ccmux}/bin/ccmux sidebar --toggle'
       bind e new-window -c '#{pane_current_path}' -n code '${projectExec}/bin/mux-exec ${self'.packages.kakoune}/bin/kak'
-      bind r display-popup -E -w 95% -h 95% -d '#{pane_current_path}' '${repoPicker}/bin/mux-repo tuicr'
-      bind g display-popup -E -w 95% -h 95% -d '#{pane_current_path}' '${repoPicker}/bin/mux-repo jjui'
+      bind r run-shell -b '${popup}/bin/mux-popup open tuicr #{pane_id} #{client_tty}'
+      bind R new-window -c '#{pane_current_path}' -n tuicr '${repoPicker}/bin/mux-repo tuicr'
+      bind g run-shell -b '${popup}/bin/mux-popup open jjui #{pane_id} #{client_tty}'
+      bind G new-window -c '#{pane_current_path}' -n jjui '${repoPicker}/bin/mux-repo jjui'
+      bind ! run-shell -b '${popup}/bin/mux-popup promote #{pane_id}'
       bind Space display-popup -E -w 80% -h 65% -d '#{pane_current_path}' '${self'.packages.sysq}/bin/sysq'
 
       # Start monitoring on terminal attachment, not on shell/devenv entry.
@@ -130,6 +138,7 @@
       inherit tmux;
       tmux-project = project;
       tmux-repo = repoPicker;
+      tmux-popup = popup;
       tmux-exec = projectExec;
     };
     checks.tmux-workflow =
@@ -139,6 +148,7 @@
         TMUX_TEST_PROJECT = lib.getExe project;
         ZSH_COMPLETION_HOOK = ../zsh/project-environment.zsh;
         TMUX_TEST_WRAPPER = lib.getExe tmux;
+        TMUX_TEST_POPUP = lib.getExe popup;
         TMUX_TEST_SHELL = lib.getExe pkgs.bash;
       } ''
         cp -r ${./.} source

@@ -27,7 +27,7 @@
           shellAliases = {
             ".." = "cd ..";
             "x" = "eza --group-directories-first --icons=always --git --color=always";
-            "c" = "cat";
+            "c" = "clear";
             "f" = "${self'.packages.fzf-files}/bin/fzf";
             "n" = "nh os switch";
           };

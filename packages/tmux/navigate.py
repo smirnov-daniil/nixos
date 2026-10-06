@@ -10,10 +10,11 @@ def output(argv):
 
 
 def main():
-    kind, selection, pane = sys.argv[1:]
+    kind, selection, pane, *clients = sys.argv[1:]
     if kind == "space":
         # Creation order keeps Alt+Shift+number stable when names change.
-        rows = output(["tmux", "list-sessions", "-F", "#{session_created}\t#{session_id}"]).splitlines()
+        rows = output(["tmux", "list-sessions", "-f", "#{==:#{@mux-popup-parent},}",
+                       "-F", "#{session_created}\t#{session_id}"]).splitlines()
         targets = [line.split("\t")[1] for line in sorted(rows, key=lambda s: (int(s.split("\t")[0]), int(s.split("$")[-1])))]
     else:
         space = output(["tmux", "display-message", "-p", "-t", pane, "#{session_name}"])
@@ -24,14 +25,16 @@ def main():
     if not targets:
         return
     if selection in ("next", "previous"):
-        position = targets.index(pane) if pane in targets else (-1 if selection == "next" else 0)
+        current = output(["tmux", "display-message", "-p", "-t", pane, "#{session_id}"]) if kind == "space" else pane
+        position = targets.index(current) if current in targets else (-1 if selection == "next" else 0)
         index = (position + (1 if selection == "next" else -1)) % len(targets)
     else:
         index = int(selection) - 1
         if index >= len(targets):
             return
     if kind == "space":
-        subprocess.run(["tmux", "switch-client", "-t", targets[index]], check=True)
+        command = ["tmux", "switch-client"] + (["-c", clients[0]] if clients else []) + ["-t", targets[index]]
+        subprocess.run(command, check=True)
     else:
         subprocess.run(["tmux", "select-window", "-t", targets[index]], check=True)
         subprocess.run(["tmux", "select-pane", "-t", targets[index]], check=True)

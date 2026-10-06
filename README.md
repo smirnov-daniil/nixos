@@ -86,8 +86,8 @@ An `.ff/repo.yml` umbrella remains one space even when `mux` runs inside a
 submodule. Session names include a short path hash to distinguish same-named
 projects. Kakoune is also the default `$EDITOR`.
 
-The wrapped zsh includes direnv: allow a project's `.envrc` once with
-`direnv allow`, then each pane loads the nearest environment. An environment
+The wrapped zsh aliases `c` to `clear`. It includes direnv: allow a project's
+`.envrc` once with `direnv allow`, then each pane loads the nearest environment. An environment
 in a parent directory also applies to nested repositories. Project packages'
 zsh completions are refreshed after PATH changes. Direct editor commands
 (`Ctrl+Space e`) and review/Jujutsu popups use `mux-exec`
@@ -114,7 +114,9 @@ All tmux keyboard shortcuts start with `Ctrl+Space`, then release it and press t
 | `z` / `d` | Zoom pane / detach, keeping processes alive |
 | `1…9` / `p` / `n` | Select / previous / next tab |
 | `(` / `)` | Previous / next space |
-| `r` / `g` | tuicr review / jjui |
+| `r` / `g` | tuicr review / jjui popup |
+| `R` / `G` | tuicr review / jjui in a new tab |
+| `!` | Move the running review/jjui popup into a tab; otherwise break the pane into a tab |
 | `Space` | sysq shell assistant |
 
 `sysq` uses Pi and its authenticated/configured models. The first interactive
@@ -180,6 +182,11 @@ Review and jjui open a repository picker for `.ff/repo.yml` projects, using each
 node's real `path`, including nested modules and excluding unloaded modules.
 For ordinary repositories they open directly in the nearest repository.
 `mux-repo tuicr [PATH]` and `mux-repo jjui [PATH]` expose the same picker in a shell.
+The tuicr shortcut defaults to the branch diff: `-r 'trunk()..@' -w` in jj,
+including the working change; Git uses the branch merge base. Inside either
+popup, `Ctrl+Space !` moves the running application into a tab in the launching
+space without restarting it. Closing the popup without promoting it stops its
+application and removes its temporary session.
 After review, select comments, an idle agent, and **Fill composer** or **Send and
 run**. Cancel any picker to keep the review without sending it.
 

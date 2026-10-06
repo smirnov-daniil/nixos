@@ -7,13 +7,15 @@ from unittest.mock import patch
 import yaml
 
 from project import main, session_name
-from repo import project_root, repositories
+from repo import main as repo_main, project_root, repositories
+from navigate import main as navigate_main
 
 
 class ProjectTests(unittest.TestCase):
     def test_new_session_starts_only_one_project_shell(self):
         with tempfile.TemporaryDirectory(prefix="project with spaces ") as tmp:
             root = Path(tmp).resolve()
+            (root / ".jj").mkdir()
             name = session_name(root)
             with patch("sys.argv", ["mux", str(root)]), \
                     patch.dict("os.environ", {"TMUX": ""}), \
@@ -33,6 +35,7 @@ class ProjectTests(unittest.TestCase):
     def test_existing_session_is_reused_without_changing_windows(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp).resolve()
+            (root / ".jj").mkdir()
             with patch("sys.argv", ["mux", str(root)]), \
                     patch.dict("os.environ", {"TMUX": "/tmp/test-socket,1,0"}), \
                     patch("project.shutil.which") as which, \
@@ -91,6 +94,65 @@ class ProjectTests(unittest.TestCase):
                 self.assertNotIn(".", session_name(root))
                 self.assertNotIn(":", session_name(root))
             self.assertNotEqual(session_name(roots[0]), session_name(roots[1]))
+
+
+class RepoLauncherTests(unittest.TestCase):
+    def test_review_defaults_to_branch_and_keeps_handoff(self):
+        for vcs in [".jj", ".git"]:
+            with self.subTest(vcs=vcs), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp).resolve()
+                (root / vcs).mkdir()
+                with patch("sys.argv", ["mux-repo", "tuicr", str(root)]), \
+                        patch("repo.os.chdir") as chdir, \
+                        patch("repo.os.execvp", side_effect=SystemExit(0)) as execute:
+                    with self.assertRaises(SystemExit):
+                        repo_main()
+                    chdir.assert_called_once_with(root)
+                    execute.assert_called_once_with("mux-exec", [
+                        "mux-exec", "reviewctl", "open", "--repo", str(root),
+                        "--mode", "branch", "--handoff",
+                    ])
+
+    def test_jjui_launch_is_unchanged(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp).resolve()
+            (root / ".jj").mkdir()
+            with patch("sys.argv", ["mux-repo", "jjui", str(root)]), \
+                    patch("repo.os.chdir") as chdir, \
+                    patch("repo.os.execvp", side_effect=SystemExit(0)) as execute:
+                with self.assertRaises(SystemExit):
+                    repo_main()
+                chdir.assert_called_once_with(root)
+                execute.assert_called_once_with("mux-exec", ["mux-exec", "jjui"])
+
+
+class NavigationTests(unittest.TestCase):
+    def test_space_steps_use_current_session_and_calling_client(self):
+        for selection, expected in [("next", "$7"), ("previous", "$0")]:
+            with self.subTest(selection=selection), \
+                    patch("sys.argv", ["mux-navigate", "space", selection, "%1", "/dev/pts/2"]), \
+                    patch("navigate.output", side_effect=["10\t$0\n20\t$4\n30\t$7", "$4"]) as output, \
+                    patch("navigate.subprocess.run") as run:
+                navigate_main()
+                self.assertEqual(output.call_args_list[0].args[0], [
+                    "tmux", "list-sessions", "-f", "#{==:#{@mux-popup-parent},}",
+                    "-F", "#{session_created}\t#{session_id}",
+                ])
+                self.assertEqual(output.call_args_list[1].args[0], [
+                    "tmux", "display-message", "-p", "-t", "%1", "#{session_id}",
+                ])
+                run.assert_called_once_with(["tmux", "switch-client", "-c", "/dev/pts/2", "-t", expected], check=True)
+
+    def test_numbered_spaces_exclude_popup_sessions(self):
+        with patch("sys.argv", ["mux-navigate", "space", "2", "%1"]), \
+                patch("navigate.output", return_value="10\t$0\n20\t$4") as output, \
+                patch("navigate.subprocess.run") as run:
+            navigate_main()
+            output.assert_called_once_with([
+                "tmux", "list-sessions", "-f", "#{==:#{@mux-popup-parent},}",
+                "-F", "#{session_created}\t#{session_id}",
+            ])
+            run.assert_called_once_with(["tmux", "switch-client", "-t", "$4"], check=True)
 
 
 if __name__ == "__main__":

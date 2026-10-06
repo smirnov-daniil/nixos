@@ -13,6 +13,22 @@ from project import session_name
 
 @unittest.skipUnless(os.environ.get("TMUX_TEST_WRAPPER"), "requires the built tmux wrapper")
 class RuntimeTests(unittest.TestCase):
+    def test_popup_sessions_are_hidden_from_space_navigation(self):
+        with tempfile.TemporaryDirectory(prefix="tmux-spaces-") as directory:
+            env = dict(os.environ, SHELL=os.environ["TMUX_TEST_SHELL"])
+            command = [os.environ["TMUX_TEST_WRAPPER"], "-S", str(Path(directory) / "socket"), "-f", "/dev/null"]
+            try:
+                for name in ["project", "popup"]:
+                    subprocess.run([*command, "new-session", "-d", "-s", name], env=env, check=True)
+                subprocess.run([*command, "set-option", "-t", "popup", "@mux-popup-parent", "$0"],
+                               env=env, check=True)
+                sessions = subprocess.check_output([
+                    *command, "list-sessions", "-f", "#{==:#{@mux-popup-parent},}", "-F", "#{session_name}",
+                ], env=env, text=True).splitlines()
+                self.assertEqual(sessions, ["project"])
+            finally:
+                subprocess.run([*command, "kill-server"], env=env, capture_output=True)
+
     def test_fresh_server_uses_csi_u(self):
         with tempfile.TemporaryDirectory(prefix="tmux-keys-") as directory:
             env = dict(os.environ, SHELL=os.environ["TMUX_TEST_SHELL"])
