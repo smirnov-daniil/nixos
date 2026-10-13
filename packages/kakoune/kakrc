@@ -51,6 +51,14 @@ set-option global lsp_diagnostic_line_warning_sign '●'
 set-option global lsp_diagnostic_line_info_sign '●'
 set-option global lsp_diagnostic_line_hint_sign '○'
 lsp-enable
+hook global WinSetOption filetype=(c|cpp) %{
+    hook -group semantic-tokens window BufReload .* lsp-semantic-tokens
+    hook -group semantic-tokens window NormalIdle .* lsp-semantic-tokens
+    hook -group semantic-tokens window InsertIdle .* lsp-semantic-tokens
+    hook -once -always window WinSetOption filetype=.* %{
+        remove-hooks window semantic-tokens
+    }
+}
 lsp-inlay-hints-enable global
 lsp-auto-signature-help-enable
 set-option global modelinefmt '%val{bufname} %opt{lsp_modeline_code_actions}%opt{lsp_modeline_progress} {{mode_info}} %val{cursor_line}:%val{cursor_char_column} {{context_info}}'
