@@ -45,7 +45,7 @@
           integrations = {
             fzf = {
               enable = true;
-              package = self'.packages.fzf-history;
+              package = self'.packages.fzf;
             };
             oh-my-posh = {
               enable = true;
@@ -90,6 +90,9 @@
           typeset -U path
         '';
         extraRC = ''
+          export FZF_DEFAULT_OPTS=${lib.escapeShellArg self'.packages.fzf.defaultOptions}
+          export FZF_CTRL_T_COMMAND='${lib.getExe pkgs.fd} --type f'
+          export FZF_CTRL_T_OPTS="--preview '${lib.getExe self'.packages.bat} --paging=never --style=numbers --color=always --line-range :500 -- {}'"
           path=(${pkgs.sqlite}/bin ${self'.packages.sysq}/bin $path)
           source ${histdb}/share/zsh-histdb/sqlite-history.zsh
           source ${histdb}/share/zsh-histdb/histdb-fzf.zsh

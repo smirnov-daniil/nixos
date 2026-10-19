@@ -412,6 +412,19 @@ A package output is not installed automatically. Add it deliberately to one of t
 
 Use an underscore-prefixed helper for package data that is not itself a flake-parts module.
 
+### bat integrations
+
+`packages/bat/` builds bat's theme and immutable cache from `theme.nix`. The standard CLI environment includes:
+
+- `bat FILE`: themed file viewing; pipes remain uncolored by default.
+- `man COMMAND` and `batman COMMAND`: highlighted manual pages.
+- `batgrep PATTERN [PATH...]`: ripgrep matches with highlighted context.
+- `batfd [FD_OPTIONS] [PATTERN] [PATH...]`: find files with fd and view them in one bat invocation, e.g. `batfd -e nix theme`.
+- `battail [TAIL_OPTIONS] FILE...`: follow logs across rotation with log highlighting, e.g. `battail -n 100 app.log`.
+- `batwatch FILE...`: redraw highlighted files when they change.
+
+The `f` picker, Zsh's Ctrl-T and Kakoune's file/grep pickers use themed bat previews. History pickers have no file preview. Standard `cat`, `tail`, `fd`, `rg`, Git paging and the global `PAGER` are unchanged.
+
 ## Add a host
 
 Create:

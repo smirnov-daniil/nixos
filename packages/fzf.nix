@@ -4,16 +4,23 @@
   self,
   ...
 }: {
-  perSystem = {pkgs, ...}: {
+  perSystem = {
+    pkgs,
+    self',
+    ...
+  }: let
+    defaultOptions = "--info inline --border rounded --height 40% --layout reverse";
+  in {
     packages = {
       fzf = inputs.wrappers.lib.wrapPackage {
         inherit pkgs;
         package = pkgs.fzf;
         runtimeInputs = [pkgs.fd];
-        env = {
-          FZF_DEFAULT_COMMAND = "fd --type f";
-          FZF_DEFAULT_OPTS = "--info inline --border rounded --height 40% --layout reverse";
-        };
+        passthru = {inherit defaultOptions;};
+        preHook = ''
+          export FZF_DEFAULT_COMMAND="''${FZF_DEFAULT_COMMAND-fd --type f}"
+          export FZF_DEFAULT_OPTS="''${FZF_DEFAULT_OPTS-${defaultOptions}}"
+        '';
       };
 
       fzf-history = inputs.wrappers.lib.wrapPackage {
@@ -51,8 +58,10 @@
       fzf-files = inputs.wrappers.lib.wrapPackage {
         inherit pkgs;
         package = pkgs.fzf;
+        runtimeInputs = [pkgs.fd self'.packages.bat];
+        env.FZF_DEFAULT_COMMAND = "fd --type f";
         flags = {
-          "--preview" = "bat --style=numbers --color=always --line-range :500 {}";
+          "--preview" = "bat --paging=never --style=numbers --color=always --line-range :500 -- {}";
           "--layout" = "default";
           "--popup" = "center,75%,90%";
           "--bind" = "enter:become($EDITOR {})";

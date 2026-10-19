@@ -127,7 +127,7 @@
         pkgs.fzf
         pkgs.fd
         pkgs.ripgrep
-        pkgs.bat
+        self'.packages.bat
         pkgs.gawk
         pkgs.diffutils
         pkgs.perl

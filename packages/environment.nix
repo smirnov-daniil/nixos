@@ -22,7 +22,6 @@
       self'.packages.nh
 
       # other
-      pkgs.bat
       pkgs.brightnessctl
       pkgs.btop
       pkgs.cliphist
@@ -54,6 +53,12 @@
       pkgs.zoxide
 
       # wrapped
+      self'.packages.bat
+      self'.packages.batfd
+      self'.packages.batgrep
+      self'.packages.batman
+      self'.packages.battail
+      self'.packages.batwatch
       self'.packages.ccmux
       self'.packages.fzf
       self'.packages.git
@@ -101,6 +106,8 @@
         runtimeInputs = myTools;
         env = {
           EDITOR = lib.getExe self'.packages.kakoune;
+          MANPAGER = lib.getExe self'.packages.bat-man-pager;
+          MANROFFOPT = "-c";
           # New tmux panes inherit this environment instead of an older profile.
           SHELL = lib.getExe self'.packages.zsh;
         };
