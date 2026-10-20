@@ -399,11 +399,11 @@
         "nixpkgs-x86_64-darwin": "nixpkgs-x86_64-darwin"
       },
       "locked": {
-        "lastModified": 1791892157,
-        "narHash": "sha256-HwskvVBJpc4F5d+mnIQwbEeMvAKEVNE6IXczHx3wA3I=",
+        "lastModified": 1792574651,
+        "narHash": "sha256-M2UVwrUwzD/PsKLvn3vOm/TpGaG3IBRCPHqhQJcCreo=",
         "owner": "lukasl-dev",
         "repo": "pi.nix",
-        "rev": "f49d69d52582b5781e1705608b607e77a43e3071",
+        "rev": "e40b5a8551837d532b4f13355402cb88f1936d90",
         "type": "github"
       },
       "original": {
@@ -455,11 +455,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1792413028,
-        "narHash": "sha256-qxOjUA+pO5NO69ef2SvyzjoVKOtm1jS6EucdY1HN7jQ=",
+        "lastModified": 1792664269,
+        "narHash": "sha256-+0RfEnmYJbU4DLjdHN6bowxGBBXXJLClXlrQpmn6t5c=",
         "ref": "master",
-        "rev": "30d1dd8bf5320141b56faee8c12cc0951667c5ba",
-        "revCount": 103,
+        "rev": "0b0be3fcda0b40750b9e6dde696d4b4d9fde2bbc",
+        "revCount": 113,
         "type": "git",
         "url": "ssh://git@github.com/smirnov-daniil/tributum.git"
       },
