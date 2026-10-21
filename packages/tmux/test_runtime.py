@@ -133,18 +133,18 @@ class RuntimeTests(unittest.TestCase):
                 os.close(slave)
 
     @unittest.skipUnless(os.environ.get("TMUX_TEST_PROJECT"), "requires the built mux launcher")
-    def test_mux_opens_one_environment_shell_and_reuses_it(self):
+    def test_mux_inherits_environment_and_reuses_project_shell_session(self):
         with tempfile.TemporaryDirectory(prefix="tmux-project-") as directory:
             base = Path(directory)
             root = base / "project with spaces"
             (root / ".git").mkdir(parents=True)
-            (root / ".envrc").write_text("export MUX_TEST_IDENTITY=environment-loaded\n")
             env = dict(os.environ, TERM="xterm-256color", SHELL=os.environ["TMUX_TEST_SHELL"],
+                       MUX_TEST_IDENTITY="inherited-environment",
                        TMUX_TMPDIR=str(base), HOME=str(base / "home"),
                        XDG_CONFIG_HOME=str(base / "config"), XDG_DATA_HOME=str(base / "data"),
                        XDG_CACHE_HOME=str(base / "cache"), CCMUX_HOME=str(base / "ccmux"))
             for key in list(env):
-                if key.startswith("DIRENV_") or key in ("TMUX", "TMUX_PANE", "BASH_ENV", "ENV"):
+                if key.startswith("DEVENV_") or key in ("TMUX", "TMUX_PANE", "BASH_ENV", "ENV"):
                     env.pop(key)
             command = [os.environ["TMUX_TEST_WRAPPER"]]
 
@@ -159,7 +159,6 @@ class RuntimeTests(unittest.TestCase):
                     time.sleep(0.02)
                 self.fail("Timed out waiting for the isolated project shell")
 
-            subprocess.run(["direnv", "allow", str(root)], env=env, check=True, capture_output=True)
             master, slave = pty.openpty()
             client = None
             name = session_name(root)
@@ -175,7 +174,7 @@ class RuntimeTests(unittest.TestCase):
                 probe = base / "environment"
                 tmux("send-keys", "-t", pane,
                      'printf \'%s\\n\' "$MUX_TEST_IDENTITY" "$PWD" > ' + shlex.quote(str(probe)), "Enter")
-                expected = ["environment-loaded", str(root)]
+                expected = ["inherited-environment", str(root)]
                 wait_for(lambda: probe.exists() and probe.read_text().splitlines() == expected)
                 self.assertEqual(probe.read_text().splitlines(), expected)
                 inside_env = dict(env, TMUX=tmux("display-message", "-p", "-t", target,

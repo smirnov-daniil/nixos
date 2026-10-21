@@ -1,26 +1,16 @@
 # Run direct tmux commands in the same allowed environment as an interactive pane.
-# direnv searches parents too, including across nested Git/Jujutsu repositories.
-interactive=false
+project_root=$(devenv hook-should-activate) || exit "$?"
+
 if [[ $# == 0 ]]; then
-  interactive=true
-  set -- "${SHELL:-bash}" -i
+  if [[ -z "$project_root" && -f flake.nix ]]; then
+    exec nix develop --command "${SHELL:-bash}" -i
+  fi
+  exec "${SHELL:-bash}" -i
 fi
 
-directory=$PWD
-while :; do
-  if [[ -f "$directory/.envrc" ]]; then
-    exec direnv exec "$PWD" "$@"
-  fi
-  [[ "$directory" == / ]] && break
-  directory=${directory%/*}
-  [[ -n "$directory" ]] || directory=/
-done
-
-if [[ $interactive == true ]]; then
-  if [[ -f devenv.nix ]]; then
-    exec devenv shell -- "$@"
-  elif [[ -f flake.nix ]]; then
-    exec nix develop --command "$@"
-  fi
+if [[ -n "$project_root" && ${DEVENV_ROOT:-} != "$project_root" ]]; then
+  original_pwd=$PWD
+  cd -- "$project_root" || exit "$?"
+  exec devenv --no-tui shell -- bash -c $'cd -- "$1" || exit "$?"; shift; exec "$@"' mux-exec "$original_pwd" "$@"
 fi
 exec "$@"

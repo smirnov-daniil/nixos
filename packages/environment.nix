@@ -13,7 +13,6 @@
       # nix
       pkgs.alejandra
       pkgs.devenv
-      pkgs.direnv
       pkgs.manix
       pkgs.nil
       pkgs.nixd

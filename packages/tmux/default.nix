@@ -18,7 +18,7 @@
     });
     projectExec = pkgs.writeShellApplication {
       name = "mux-exec";
-      runtimeInputs = [pkgs.direnv pkgs.devenv pkgs.nix pkgs.bash];
+      runtimeInputs = [pkgs.devenv pkgs.nix pkgs.bash];
       text = builtins.readFile ./exec.sh;
     };
     repoPicker = pkgs.writeShellApplication {
@@ -143,7 +143,7 @@
     };
     checks.tmux-workflow =
       pkgs.runCommand "tmux-workflow-tests" {
-        nativeBuildInputs = [testPython pkgs.direnv pkgs.zsh];
+        nativeBuildInputs = [testPython pkgs.devenv pkgs.zsh];
         TMUX_TEST_EXEC = lib.getExe projectExec;
         TMUX_TEST_PROJECT = lib.getExe project;
         ZSH_COMPLETION_HOOK = ../zsh/project-environment.zsh;

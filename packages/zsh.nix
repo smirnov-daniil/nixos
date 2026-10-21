@@ -93,7 +93,7 @@
           export FZF_DEFAULT_OPTS=${lib.escapeShellArg self'.packages.fzf.defaultOptions}
           export FZF_CTRL_T_COMMAND='${lib.getExe pkgs.fd} --type f'
           export FZF_CTRL_T_OPTS="--preview '${lib.getExe self'.packages.bat} --paging=never --style=numbers --color=always --line-range :500 -- {}'"
-          path=(${pkgs.sqlite}/bin ${self'.packages.sysq}/bin $path)
+          path=(${pkgs.devenv}/bin ${pkgs.sqlite}/bin ${self'.packages.sysq}/bin $path)
           source ${histdb}/share/zsh-histdb/sqlite-history.zsh
           source ${histdb}/share/zsh-histdb/histdb-fzf.zsh
           bindkey '^R' _fzf_histdb_widget
@@ -105,8 +105,8 @@
           bindkey '^X^E' edit-command-line
           source ${pkgs.zsh-fast-syntax-highlighting}/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
           source ${./zsh/project-environment.zsh}
-          eval "$(${pkgs.direnv}/bin/direnv hook zsh)"
-          # Run after direnv so newly activated package completions work now,
+          eval "$(${lib.getExe pkgs.devenv} hook zsh -- --no-tui)"
+          # Run after devenv so newly activated package completions work now,
           # even though compinit already ran before the first prompt.
           autoload -Uz add-zsh-hook
           add-zsh-hook precmd _flake_project_completions

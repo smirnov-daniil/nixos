@@ -11,7 +11,7 @@ cd ~/flake
 nix run --inputs-from path:. nixpkgs#devenv -- shell
 ```
 
-Once the CLI is installed, use `devenv shell`, or run `direnv allow` once to enable automatic activation through `.envrc`. Shell entry provides Nix tooling (`nixd`, Alejandra, Statix, deadnix), Jujutsu, and the commands below. It does not format files, install Git hooks, decrypt secrets, evaluate hosts, or activate a system.
+Once the CLI is installed, use `devenv shell`, or run `devenv allow` once in the project root to trust native auto-activation. The wrapped zsh includes `eval "$(devenv hook zsh -- --no-tui)"`; add the same hook to other zsh configurations if needed. The hook starts a subshell at the resolved project root, even when entered from a nested repository, and returns to the outer shell when you leave the project. Shell entry provides Nix tooling (`nixd`, Alejandra, Statix, deadnix), Jujutsu, and the commands below. It does not format files, install Git hooks, decrypt secrets, evaluate hosts, or activate a system.
 
 ```bash
 devenv test                         # format, workflow regression tests, whole-flake evaluation
@@ -28,7 +28,7 @@ Checks and builds use a filtered source snapshot: new/uncommitted files are incl
 
 The private `skinem` input still needs your SSH access (or an already fetched source) for whole-flake evaluation/builds. Devenv does not provide credentials. Activation and deployment remain explicit operations described below.
 
-Both lock files are committed. When updating the root `nixpkgs` input in `flake.lock`, copy its revision into `devenv.yaml` and run `devenv update nixpkgs`; the regression tests check that the pins match. `devenv update` alone does not update the NixOS flake. Official references: [profiles](https://devenv.sh/profiles/), [tasks](https://devenv.sh/tasks/), and [direnv](https://devenv.sh/integrations/direnv/).
+Both lock files are committed. When updating the root `nixpkgs` input in `flake.lock`, copy its revision into `devenv.yaml` and run `devenv update nixpkgs`; the regression tests check that the pins match. `devenv update` alone does not update the NixOS flake. Official references: [profiles](https://devenv.sh/profiles/), [tasks](https://devenv.sh/tasks/), and [auto-activation](https://devenv.sh/auto-activation/).
 
 The pinned devenv `v2.3.1` release still has `2.2.2` in its upstream `src/modules/latest-version` metadata. Its shell can therefore print a version-mismatch hint even with the correct lock file; this does not indicate a failed setup.
 
@@ -79,24 +79,27 @@ Settings and command symlinks under `.claude/` are generated from `tools/_claude
 
 Ghostty opens the wrapped tmux in the persistent `main` session. Projects use
 separate sessions (spaces), windows are tabs, and splits are panes. `mux PATH`
-creates or attaches a project session with a single shell tab. New sessions load
-the allowed `.envrc`, or, without one, enter `devenv shell` for `devenv.nix` or
-`nix develop` for `flake.nix`. Otherwise they start a normal interactive shell.
+creates or attaches a project session with a single shell tab. New sessions start
+an interactive shell whose native hook activates the nearest trusted `devenv.nix`.
+Without a devenv project, a local `flake.nix` uses `nix develop`; otherwise the
+shell stays outside a development environment.
 It does not open an editor, create worktrees, change revisions, or launch agents.
 Existing sessions and their tabs are left unchanged.
 An `.ff/repo.yml` umbrella remains one space even when `mux` runs inside a
 submodule. Session names include a short path hash to distinguish same-named
 projects. Kakoune is also the default `$EDITOR`.
 
-The wrapped zsh aliases `c` to `clear`. It includes direnv: allow a project's
-`.envrc` once with `direnv allow`, then each pane loads the nearest environment. An environment
-in a parent directory also applies to nested repositories. Project packages'
-zsh completions are refreshed after PATH changes. Direct editor commands
-(`Ctrl+Space e`) and review/Jujutsu popups use `mux-exec`
-to load the selected directory's allowed environment. Without a parent `.envrc`,
-commands run normally; a blocked `.envrc` is never bypassed. After rebuilding,
-use the new environment's zsh and a newly started tmux server for these changes;
-existing editor processes retain their original environment.
+The wrapped zsh aliases `c` to `clear`. Trust a project once with `devenv allow`;
+its environment also applies to nested repositories. The native hook does not
+re-enter an already active devenv shell. Project packages' zsh completions are
+refreshed after PATH changes. Direct editor commands (`Ctrl+Space e`) and
+review/Jujutsu popups use `mux-exec` to enter the nearest trusted devenv project
+while preserving the selected directory and command arguments. Without a devenv
+project, commands run normally; an untrusted project is never bypassed. After
+rebuilding, install the updated environment in the profile used by your login
+shell, then start a fresh shell and tmux server. Native activation prefers the
+installed login-shell executable: launching a staged `bin/zsh` alone can still
+spawn an old subshell. Existing editor processes retain their original environment.
 
 `Ctrl+R` (also `Alt+R`) searches the existing histdb database through a themed fzf
 picker. Commands stay compact in the list; the lower preview shows the full
@@ -110,7 +113,11 @@ directory without running it. History remains local in `~/.histdb/zsh-history.db
 
 ```bash
 devenv --profile claude shell flake-build environment
-./.devenv/builds/environment/bin/zsh
+```
+
+After installing the built environment and starting a fresh shell:
+
+```bash
 mux ~/fft/baloo
 ```
 

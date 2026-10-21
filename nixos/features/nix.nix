@@ -6,10 +6,6 @@
     programs = {
       nix-index-database.comma.enable = true;
       nix-ld.enable = true;
-      direnv = {
-        enable = true;
-        nix-direnv.enable = true;
-      };
     };
     nix.settings = {
       substituters = [
