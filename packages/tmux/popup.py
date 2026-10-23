@@ -38,10 +38,16 @@ def main() -> None:
 
     cwd = tmux("display-message", "-p", "-t", args.pane, "#{pane_current_path}")
     temporary = "mux-popup-" + uuid.uuid4().hex
+    launch = (
+        "exit_code=0; " + shlex.join(["mux-repo", args.tool]) + " || exit_code=$?; "
+        'case "$exit_code" in 0|129|130) ;; *) '
+        + shlex.join(["printf", "\\n%s exited with status %s. Press Enter to close", args.tool])
+        + ' "$exit_code"; IFS= read -r line || : ;; esac; exit "$exit_code"'
+    )
     try:
         temporary = tmux("new-session", "-d", "-s", temporary, "-c", cwd,
                          "-e", "PATH=" + os.environ["PATH"], "-P", "-F", "#{session_id}",
-                         shlex.join(["mux-repo", args.tool]))
+                         launch)
         tmux("set-option", "-t", temporary, "@mux-popup-parent", session,
              ";", "set-option", "-t", temporary, "@mux-popup-client", args.client,
              ";", "set-option", "-t", temporary, "status", "off",

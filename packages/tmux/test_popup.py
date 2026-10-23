@@ -12,6 +12,9 @@ import tempfile
 import termios
 import time
 import unittest
+from unittest import mock
+
+import popup as popup_module
 
 try:
     import pyte
@@ -19,8 +22,109 @@ except ImportError:
     pyte = None
 
 
+class LaunchStatusTests(unittest.TestCase):
+    def test_launch_status_and_pause(self):
+        with mock.patch.dict(os.environ, TMUX="/unused/socket,0,0"), \
+                mock.patch.object(sys, "argv", ["mux-popup", "open", "tuicr", "%0", "/dev/pts/0"]), \
+                mock.patch.object(popup_module.subprocess, "check_output",
+                                  side_effect=["$0", "/tmp", "$1", ""]) as tmux, \
+                mock.patch.object(popup_module.subprocess, "run") as run:
+            run.return_value.returncode = 0
+            popup_module.main()
+            launch = tmux.call_args_list[2].args[0][-1]
+        for status in (0, 7, 129, 130):
+            with self.subTest(status=status):
+                script = f"mux-repo() {{ printf 'launch output\\n'; return {status}; }}; " + launch
+                result = subprocess.run([os.environ.get("TMUX_TEST_SHELL", "/bin/sh"), "-e", "-c", script],
+                                        input="\n", text=True, capture_output=True)
+                self.assertEqual(result.returncode, status)
+                self.assertIn("launch output", result.stdout)
+                if status == 7:
+                    self.assertIn("tuicr", result.stdout)
+                    self.assertIn("7", result.stdout)
+                    self.assertIn("Press Enter to close", result.stdout)
+                else:
+                    self.assertNotIn("Press Enter to close", result.stdout)
+
+
 @unittest.skipUnless(pyte and os.environ.get("TMUX_TEST_WRAPPER"), "requires tmux and pyte")
 class PopupTests(unittest.TestCase):
+    @unittest.skipUnless(os.environ.get("TMUX_TEST_POPUP"), "requires packaged mux-popup")
+    def test_failed_launch_waits_for_enter(self):
+        with tempfile.TemporaryDirectory(prefix="tmux-popup-failure-") as directory:
+            root = Path(directory)
+            env = dict(os.environ, TERM="xterm-256color", SHELL=os.environ["TMUX_TEST_SHELL"],
+                       REVIEWCTL_HOME=str(root / "reviewctl"))
+            for key in ("TMUX", "TMUX_PANE", "BASH_ENV", "ENV"):
+                env.pop(key, None)
+            command = [os.environ["TMUX_TEST_WRAPPER"], "-u", "-S", str(root / "socket"), "-f", "/dev/null"]
+
+            def tmux(*args):
+                return subprocess.check_output([*command, *args], env=env, text=True).strip()
+
+            class Screen(pyte.Screen):
+                def report_device_status(self, *args, **kwargs):
+                    pass
+
+            screen = Screen(100, 30)
+            stream = pyte.ByteStream(screen)
+            master, slave = pty.openpty()
+            fcntl.ioctl(slave, termios.TIOCSWINSZ, struct.pack("HHHH", 30, 100, 0, 0))
+            client = popup = None
+
+            def drain(duration):
+                deadline = time.monotonic() + duration
+                while time.monotonic() < deadline:
+                    if select.select([master], [], [], 0.01)[0]:
+                        stream.feed(os.read(master, 65536))
+
+            def wait_for(predicate):
+                deadline = time.monotonic() + 10
+                while time.monotonic() < deadline:
+                    drain(0.02)
+                    if predicate():
+                        return
+                self.fail("Timed out waiting for popup: " + "\n".join(screen.display))
+
+            try:
+                pane = tmux("new-session", "-d", "-s", "original", "-c", str(root),
+                            "-P", "-F", "#{pane_id}", env["SHELL"], "--noprofile", "--norc")
+                tmux("set", "-g", "default-shell", env["SHELL"])
+                tmux("set-hook", "-gu", "client-attached")
+                client = subprocess.Popen([*command, "attach", "-t", "original"], env=env,
+                                          stdin=slave, stdout=slave, stderr=slave)
+                wait_for(lambda: bool(tmux("list-clients", "-F", "#{client_tty}")))
+                tty = tmux("list-clients", "-F", "#{client_tty}")
+                popup_env = dict(env, TMUX=f"{root / 'socket'},0,0", TMUX_PANE=pane)
+                popup = subprocess.Popen([os.environ["TMUX_TEST_POPUP"], "open", "tuicr", pane, tty],
+                                         env=popup_env, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+                wait_for(lambda: any("Press Enter to close" in row for row in screen.display))
+                visible = "\n".join(screen.display)
+                self.assertIn("reviewctl: Not a repository:", visible)
+                self.assertRegex(visible, r"tuicr.*[1-9][0-9]*")
+                sessions = tmux("list-sessions", "-F", "#{session_name}").splitlines()
+                temporary = [name for name in sessions if name.startswith("mux-popup-")]
+                self.assertEqual(len(temporary), 1)
+                drain(0.2)
+                self.assertIsNone(popup.poll())
+                self.assertIn("Press Enter to close", "\n".join(screen.display))
+                self.assertIn(temporary[0], tmux("list-sessions", "-F", "#{session_name}"))
+                os.write(master, b"\r")
+                wait_for(lambda: popup.poll() is not None)
+                self.assertEqual(popup.returncode, 0, popup.stderr.read().decode())
+                self.assertEqual(tmux("list-sessions", "-F", "#{session_name}"), "original")
+                self.assertEqual(tmux("list-panes", "-t", "original", "-F", "#{pane_id}"), pane)
+                self.assertIsNone(client.poll())
+            finally:
+                subprocess.run([*command, "kill-server"], env=env, capture_output=True)
+                for process in (popup, client):
+                    if process:
+                        process.wait(timeout=3)
+                if popup and popup.stderr:
+                    popup.stderr.close()
+                os.close(master)
+                os.close(slave)
+
     def test_scrolling_behind_popup_preserves_borders_with_top_status(self):
         with tempfile.TemporaryDirectory(prefix="tmux-popup-") as directory:
             root = Path(directory)
