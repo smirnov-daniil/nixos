@@ -25,6 +25,7 @@ except ImportError:
 class LaunchStatusTests(unittest.TestCase):
     def test_launch_status_and_pause(self):
         with mock.patch.dict(os.environ, TMUX="/unused/socket,0,0"), \
+                mock.patch.object(popup_module.shutil, "which", return_value=None), \
                 mock.patch.object(sys, "argv", ["mux-popup", "open", "tuicr", "%0", "/dev/pts/0"]), \
                 mock.patch.object(popup_module.subprocess, "check_output",
                                   side_effect=["$0", "/tmp", "$1", ""]) as tmux, \
@@ -100,7 +101,7 @@ class PopupTests(unittest.TestCase):
                                          env=popup_env, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
                 wait_for(lambda: any("Press Enter to close" in row for row in screen.display))
                 visible = "\n".join(screen.display)
-                self.assertIn("reviewctl: Not a repository:", visible)
+                self.assertIn("Error: Not a repository", visible)
                 self.assertRegex(visible, r"tuicr.*[1-9][0-9]*")
                 sessions = tmux("list-sessions", "-F", "#{session_name}").splitlines()
                 temporary = [name for name in sessions if name.startswith("mux-popup-")]

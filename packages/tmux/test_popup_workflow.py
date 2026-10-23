@@ -119,6 +119,27 @@ class PopupWorkflowTests(unittest.TestCase):
         self.assertEqual(self.tmux("list-clients", "-F", "#{session_id}"), self.parent)
         self.assertIsNone(self.client.poll())
 
+    def test_wrapped_default_shell_cannot_shadow_the_selected_launcher(self):
+        legacy = self.root / "legacy"
+        legacy.mkdir()
+        marker = self.root / "legacy-started"
+        old = legacy / "mux-repo"
+        old.write_text(f"#!{sys.executable}\nfrom pathlib import Path\nPath({str(marker)!r}).touch()\n")
+        old.chmod(0o755)
+        shell = self.root / "wrapped-shell"
+        shell.write_text(
+            f"#!{sys.executable}\n"
+            "import os, sys\n"
+            f"os.environ['PATH'] = {str(legacy)!r} + os.pathsep + os.environ['PATH']\n"
+            f"os.execv({self.env['SHELL']!r}, [{self.env['SHELL']!r}, *sys.argv[1:]])\n"
+        )
+        shell.chmod(0o755)
+        self.tmux("set-option", "-g", "default-shell", str(shell))
+        self.open_popup("tuicr")
+        self.assertFalse(marker.exists())
+        (self.root / "exit").touch()
+        self.assert_closed()
+
     def test_prefix_promotes_live_pane_and_selects_outer_window(self):
         self.open_popup("tuicr")
         pane_pid = self.tmux("display-message", "-p", "-t", self.app["pane"], "#{pane_pid}")

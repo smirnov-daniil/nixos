@@ -23,7 +23,7 @@
     };
     repoPicker = pkgs.writeShellApplication {
       name = "mux-repo";
-      runtimeInputs = [projectExec pkgs.fzf self'.packages.tuicr-agent-review self'.packages.jjui self'.packages.jujutsu];
+      runtimeInputs = [projectExec pkgs.fzf pkgs.git self'.packages.tuicr self'.packages.jjui self'.packages.jujutsu];
       text = ''exec ${python}/bin/python3 ${./repo.py} "$@"'';
     };
     popup = pkgs.writeShellApplication {

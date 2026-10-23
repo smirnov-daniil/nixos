@@ -65,8 +65,6 @@ def main() -> None:
         picked.check_returncode()
         selected = choices[picked.stdout.decode().rstrip("\0")]
     os.chdir(selected)
-    if args.tool == "tuicr":
-        os.execvp("mux-exec", ["mux-exec", "reviewctl", "open", "--repo", str(selected), "--mode", "branch", "--handoff"])
     os.execvp("mux-exec", ["mux-exec", args.tool])
 
 

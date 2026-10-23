@@ -201,13 +201,12 @@ Review and jjui open a repository picker for `.ff/repo.yml` projects, using each
 node's real `path`, including nested modules and excluding unloaded modules.
 For ordinary repositories they open directly in the nearest repository.
 `mux-repo tuicr [PATH]` and `mux-repo jjui [PATH]` expose the same picker in a shell.
-The tuicr shortcut defaults to the branch diff: `-r 'trunk()..@' -w` in jj,
-including the working change; Git uses the branch merge base. Inside either
-popup, `Ctrl+Space !` moves the running application into a tab in the launching
-space without restarting it. Closing the popup without promoting it stops its
-application and removes its temporary session.
-After review, select comments, an idle agent, and **Fill composer** or **Send and
-run**. Cancel any picker to keep the review without sending it.
+The tuicr shortcut starts plain `tuicr`, so its native revision selector lets you
+choose what to review. It does not force a revision range or launch `reviewctl`'s
+agent-handoff picker afterward. Inside either popup, `Ctrl+Space !` moves the
+running application into a tab in the launching space without restarting it.
+Closing the popup without promoting it stops its application and removes its
+temporary session. Failed commands keep their diagnostic visible until Enter.
 
 [ccmux](https://github.com/epilande/ccmux) is pinned to 1.4.2 and built from source
 with locked Bun dependencies and a local tuicr adapter. Its daemon starts when a tmux

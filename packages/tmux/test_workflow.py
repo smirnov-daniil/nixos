@@ -97,7 +97,7 @@ class ProjectTests(unittest.TestCase):
 
 
 class RepoLauncherTests(unittest.TestCase):
-    def test_review_defaults_to_branch_and_keeps_handoff(self):
+    def test_review_launches_native_tuicr_without_scope_or_handoff(self):
         for vcs in [".jj", ".git"]:
             with self.subTest(vcs=vcs), tempfile.TemporaryDirectory() as tmp:
                 root = Path(tmp).resolve()
@@ -108,10 +108,40 @@ class RepoLauncherTests(unittest.TestCase):
                     with self.assertRaises(SystemExit):
                         repo_main()
                     chdir.assert_called_once_with(root)
-                    execute.assert_called_once_with("mux-exec", [
-                        "mux-exec", "reviewctl", "open", "--repo", str(root),
-                        "--mode", "branch", "--handoff",
-                    ])
+                    execute.assert_called_once_with("mux-exec", ["mux-exec", "tuicr"])
+
+    def test_both_tools_share_repository_selection_and_cancellation(self):
+        for tool in ("tuicr", "jjui"):
+            for status in (0, 1, 130):
+                with self.subTest(tool=tool, status=status), tempfile.TemporaryDirectory() as tmp:
+                    root = Path(tmp).resolve()
+                    (root / ".jj").mkdir()
+                    (root / ".ff").mkdir()
+                    module = root / "contrib/module with spaces"
+                    (module / ".jj").mkdir(parents=True)
+                    (root / ".ff/repo.yml").write_text(yaml.safe_dump({
+                        "nodes": {"module": {"path": "contrib/module with spaces"}},
+                    }))
+                    picked = subprocess.CompletedProcess([], status, b"contrib/module with spaces\0")
+                    with patch("sys.argv", ["mux-repo", tool, str(module)]), \
+                            patch("repo.subprocess.run", return_value=picked) as run, \
+                            patch("repo.os.chdir") as chdir, \
+                            patch("repo.os.execvp", side_effect=SystemExit(0)) as execute:
+                        if status == 0:
+                            with self.assertRaises(SystemExit):
+                                repo_main()
+                            chdir.assert_called_once_with(module)
+                            execute.assert_called_once_with("mux-exec", ["mux-exec", tool])
+                        else:
+                            repo_main()
+                            chdir.assert_not_called()
+                            execute.assert_not_called()
+                        run.assert_called_once_with(
+                            ["fzf", "--read0", "--print0", "--no-multi", "--prompt", f"{tool} repo> "],
+                            input=b". (root)\0contrib/module with spaces\0",
+                            stdout=subprocess.PIPE,
+                            check=False,
+                        )
 
     def test_jjui_launch_is_unchanged(self):
         with tempfile.TemporaryDirectory() as tmp:
