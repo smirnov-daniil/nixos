@@ -189,11 +189,10 @@ borders, use `theme.nix`. Existing ccmux preferences are preserved; the packaged
 defaults are available through the `packages.<system>.ccmux.defaultConfig`
 attribute when updating an existing theme.
 
-The packaged tmux includes a fix for 3.7c's popup clipping with a top status
-line: scrolling panes must clip against terminal coordinates, including the
-status offset. A PTY regression test checks popup borders after synchronized
-frames while both the background pane and popup update. A running unpatched
-server can avoid the bug with `tmux set -g status-position bottom`; the patch
+The packaged tmux 3.8 clips popups correctly with a top status line without
+local patches. A PTY regression test checks popup borders after synchronized
+frames while both the background pane and popup update. An older 3.7c server
+can avoid the bug with `tmux set -g status-position bottom`; the new version
 takes effect when a new server starts. Detaching and reattaching alone does
 not replace the server; keep running sessions alive until their work is done.
 

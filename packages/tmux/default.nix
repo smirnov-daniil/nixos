@@ -11,11 +11,7 @@
   }: let
     python = pkgs.python3.withPackages (p: [p.pyyaml]);
     testPython = pkgs.python3.withPackages (p: [p.pyyaml p.pyte]);
-    # Popup clipping uses terminal coordinates, including the top status line.
-    # tmux 3.7c otherwise overwrites its upper border when a pane scrolls.
-    tmuxCore = pkgs.tmux.overrideAttrs (old: {
-      patches = (old.patches or []) ++ [./popup-status-offset.patch];
-    });
+    tmuxCore = pkgs.tmux;
     projectExec = pkgs.writeShellApplication {
       name = "mux-exec";
       runtimeInputs = [pkgs.devenv pkgs.nix pkgs.bash];
